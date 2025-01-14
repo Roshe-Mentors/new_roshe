@@ -18,11 +18,11 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start space-y-8 md:space-y-0">
           {/* Logo and Tagline */}
           <div className="text-center md:text-left">
-            <Link legacyBehavior href="/">
-              <a className="flex items-center space-x-2 justify-center md:justify-start">
+            <Link href="/">
+              <div className="flex items-center space-x-2 justify-center md:justify-start cursor-pointer">
                 <div className="w-10 h-10 bg-gray-300 rounded-full" /> {/* Logo Placeholder */}
                 <span className="text-xl font-bold">Roshe Mentorship</span>
-              </a>
+              </div>
             </Link>
             <p className="mt-4 text-sm text-gray-600 max-w-md">
               To inspire powerful conversation and collaborations among members
@@ -34,31 +34,23 @@ const Footer: React.FC = () => {
           <div className="text-center md:text-left">
             <ul className="flex flex-wrap justify-center md:justify-start space-x-6 space-y-2 md:space-y-0">
               <li>
-                <Link legacyBehavior href="/mentors">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    find mentors
-                  </a>
+                <Link href="/mentors" className="hover:text-gray-800 transition text-gray-600">
+                  find mentors
                 </Link>
               </li>
               <li>
-                <Link legacyBehavior href="/become-a-mentor">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    become a mentor
-                  </a>
+                <Link href="/become-a-mentor" className="hover:text-gray-800 transition text-gray-600">
+                  become a mentor
                 </Link>
               </li>
               <li>
-                <Link legacyBehavior href="/community">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    community
-                  </a>
+                <Link href="/community" className="hover:text-gray-800 transition text-gray-600">
+                  community
                 </Link>
               </li>
               <li>
-                <Link legacyBehavior href="/blog">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    blog
-                  </a>
+                <Link href="/blog" className="hover:text-gray-800 transition text-gray-600">
+                  blog
                 </Link>
               </li>
             </ul>
@@ -124,24 +116,18 @@ const Footer: React.FC = () => {
             </div>
             <ul className="flex justify-center md:justify-end mt-4 space-x-6">
               <li>
-                <Link href="/join">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    join roshe mentorship
-                  </a>
+                <Link href="/join" className="hover:text-gray-800 transition text-gray-600">
+                  join roshe mentorship
                 </Link>
               </li>
               <li>
-                <Link legacyBehavior href="/faqs">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    FAQs
-                  </a>
+                <Link href="/faqs" className="hover:text-gray-800 transition text-gray-600">
+                  FAQs
                 </Link>
               </li>
               <li>
-                <Link legacyBehavior href="/partnerships">
-                  <a className="hover:text-gray-800 transition text-gray-600">
-                    partnerships
-                  </a>
+                <Link href="/partnerships" className="hover:text-gray-800 transition text-gray-600">
+                  partnerships
                 </Link>
               </li>
             </ul>
