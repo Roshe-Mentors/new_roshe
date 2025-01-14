@@ -15,50 +15,22 @@ const Footer: React.FC = () => {
     <footer className="bg-white border-t border-gray-200 py-8">
       <div className="container mx-auto px-4">
         {/* Top Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center md:items-start space-y-8 md:space-y-0">
-          {/* Logo and Tagline */}
-          <div className="text-center md:text-left">
-            <Link href="/">
-              <div className="flex items-center space-x-2 justify-center md:justify-start cursor-pointer">
-                <div className="w-10 h-10 bg-gray-300 rounded-full" /> {/* Logo Placeholder */}
-                <span className="text-xl font-bold">Roshe Mentorship</span>
-              </div>
+        <div className="flex flex-col md:flex-row justify-between items-start space-y-8 md:space-y-0">
+          {/* Left Section: Logo and Mission Statement */}
+          <div className="md:w-1/3">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gray-300 rounded-full" /> {/* Logo Placeholder */}
+              <span className="text-xl font-bold">Roshe Mentorship</span>
             </Link>
-            <p className="mt-4 text-sm text-gray-600 max-w-md">
+            <p className="mt-4 text-sm text-gray-600">
               To inspire powerful conversation and collaborations among members
               worldwide so together we can change the world with creativity.
             </p>
           </div>
 
-          {/* Navigation Links */}
-          <div className="text-center md:text-left">
-            <ul className="flex flex-wrap justify-center md:justify-start space-x-6 space-y-2 md:space-y-0">
-              <li>
-                <Link href="/mentors" className="hover:text-gray-800 transition text-gray-600">
-                  find mentors
-                </Link>
-              </li>
-              <li>
-                <Link href="/become-a-mentor" className="hover:text-gray-800 transition text-gray-600">
-                  become a mentor
-                </Link>
-              </li>
-              <li>
-                <Link href="/community" className="hover:text-gray-800 transition text-gray-600">
-                  community
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="hover:text-gray-800 transition text-gray-600">
-                  blog
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Social Media */}
-          <div className="text-center md:text-right">
-            <div className="flex justify-center md:justify-end space-x-4">
+          {/* Right Section: Social Media Icons and Additional Links */}
+          <div className="md:w-1/3 md:text-right">
+            <div className="flex justify-center md:justify-end space-x-4 mb-4">
               <a
                 href="https://www.linkedin.com/company/roshe-mentorship/"
                 target="_blank"
@@ -114,19 +86,19 @@ const Footer: React.FC = () => {
                 <FaTiktok size={20} />
               </a>
             </div>
-            <ul className="flex justify-center md:justify-end mt-4 space-x-6">
+            <ul className="flex justify-center md:justify-end space-x-6 text-gray-600 text-sm">
               <li>
-                <Link href="/join" className="hover:text-gray-800 transition text-gray-600">
+                <Link href="/join" className="hover:text-gray-800 transition">
                   join roshe mentorship
                 </Link>
               </li>
               <li>
-                <Link href="/faqs" className="hover:text-gray-800 transition text-gray-600">
+                <Link href="/faqs" className="hover:text-gray-800 transition">
                   FAQs
                 </Link>
               </li>
               <li>
-                <Link href="/partnerships" className="hover:text-gray-800 transition text-gray-600">
+                <Link href="/partnerships" className="hover:text-gray-800 transition">
                   partnerships
                 </Link>
               </li>
@@ -134,9 +106,33 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="text-center mt-8 text-sm text-gray-500">
-          © Roshe Mentorship, all rights reserved.
+        {/* Middle Section: Navigation Links */}
+        <div className="mt-8 text-center md:text-left md:flex md:justify-between">
+          <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-gray-600 text-sm">
+            <li>
+              <Link href="/mentors" className="hover:text-gray-800 transition">
+                find mentors
+              </Link>
+            </li>
+            <li>
+              <Link href="/become-a-mentor" className="hover:text-gray-800 transition">
+                become a mentor
+              </Link>
+            </li>
+            <li>
+              <Link href="/community" className="hover:text-gray-800 transition">
+                community
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog" className="hover:text-gray-800 transition">
+                blog
+              </Link>
+            </li>
+          </ul>
+          <div className="text-center md:text-right text-sm text-gray-500 mt-6 md:mt-0">
+            © Roshe Mentorship, all rights reserved.
+          </div>
         </div>
       </div>
     </footer>
