@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
                 height={40}
                 className="rounded-full"
               />
-              <span className="text-xl font-bold">Roshe Mentorship</span>
+              <span className="text-xl font-montserrat text-gray-800 font-bold">Roshe Mentorship</span>
             </Link>
             <p className="mt-4 text-sm text-gray-600">
               To inspire powerful conversation and collaborations among members

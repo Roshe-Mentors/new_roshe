@@ -2,6 +2,7 @@
 import { Montserrat } from 'next/font/google';
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from 'next/image';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,7 +13,13 @@ const Navbar: React.FC = () => {
         {/* Logo Section */}
         <Link href="/" className="flex items-center space-x-2">
           
-            <div className="w-8 h-8 bg-gray-300 rounded-full" /> {/* Placeholder for logo */}
+            <Image 
+              src="/images/roshementorship.png"
+              alt="Roshe Mentorship Logo"
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
             <span className="text-xl font-bold font-montserrat text-gray-800">
               Roshe Mentorship
             </span>
