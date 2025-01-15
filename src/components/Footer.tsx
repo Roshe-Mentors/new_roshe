@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from 'next/image';
 import Link from "next/link";
 import {
   FaFacebookF,
@@ -19,7 +20,13 @@ const Footer: React.FC = () => {
           {/* Left Section: Logo and Mission Statement */}
           <div className="md:w-1/3">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gray-300 rounded-full" /> {/* Logo Placeholder */}
+              <Image 
+                src="/images/roshementorship.png"
+                alt="Roshe Mentorship Logo"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
               <span className="text-xl font-bold">Roshe Mentorship</span>
             </Link>
             <p className="mt-4 text-sm text-gray-600">
