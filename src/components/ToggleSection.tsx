@@ -6,7 +6,7 @@ const ToggleSection: React.FC = () => {
   const [selectedView, setSelectedView] = useState<"mentor" | "mentee">("mentor");
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-24">
       <div className="container mx-auto px-4">
         {/* Toggle Buttons */}
         <div className="flex justify-center mb-8">
