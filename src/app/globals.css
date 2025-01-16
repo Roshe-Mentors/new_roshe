@@ -19,3 +19,9 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif, Montserrat;
 }
+@layer base {
+  .container {
+    @apply px-2;
+    /* Reduce padding on left and right */
+  }
+}

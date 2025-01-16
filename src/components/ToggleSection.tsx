@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from 'next/image';
 
 const ToggleSection: React.FC = () => {
   const [selectedView, setSelectedView] = useState<"mentor" | "mentee">("mentor");
 
   return (
     <section className="bg-white py-24">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto">
         {/* Toggle Buttons */}
         <div className="flex justify-center mb-8">
           <button
@@ -25,7 +26,7 @@ const ToggleSection: React.FC = () => {
             className={`text-lg font-semibold px-4 py-2 ${
               selectedView === "mentor"
                 ? "text-black border-b-2 border-black"
-                : "text-gray-500"
+                : "text-gray-800"
             } transition`}
           >
             Mentor
@@ -34,27 +35,35 @@ const ToggleSection: React.FC = () => {
 
         {/* Content Section */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start">
-          {/* Left Image Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-8 lg:mb-0 lg:mr-8">
-            <img
-              src="/profile1.jpg"
+          <div className="grid grid-cols-3 gap-4 mb-8 lg:mb-0 lg:mr-8">
+            <Image
+              src="/images/1.png"
               alt="Profile 1"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={120}
+              className="rounded-md object-cover w-24 h-[150px]"
             />
-            <img
-              src="/profile2.jpg"
+            <Image
+              src="/images/2.png"
               alt="Profile 2"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
-            <img
-              src="/profile3.jpg"
+            <Image
+              src="/images/3.png"
               alt="Profile 3"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
-            <img
-              src="/profile4.jpg"
+            
+            <Image
+              src="/images/4.png"
               alt="Profile 4"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
           </div>
 
@@ -91,35 +100,39 @@ const ToggleSection: React.FC = () => {
                     placeholder="What skill do you want to improve?"
                     className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm"
                   />
-                  <button className="absolute right-2 top-2">
-                    <span className="material-icons">search</span>
-                  </button>
                 </div>
               </>
             )}
           </div>
 
-          {/* Right Image Grid */}
-          <div className="grid grid-cols-2 gap-4 lg:ml-8">
-            <img
-              src="/profile5.jpg"
+          <div className="grid grid-cols-3 gap-4 lg:ml-8">
+            <Image
+              src="/images/3.png"
               alt="Profile 5"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
-            <img
-              src="/profile6.jpg"
+            <Image
+              src="/images/1.png"
               alt="Profile 6"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
-            <img
-              src="/profile7.jpg"
+            <Image
+              src="/images/1.png"
               alt="Profile 7"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
-            <img
-              src="/profile8.jpg"
+            <Image
+              src="/images/1.png"
               alt="Profile 8"
-              className="w-24 h-24 rounded-md object-cover"
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
             />
           </div>
         </div>
