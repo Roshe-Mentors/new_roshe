@@ -8,7 +8,7 @@ const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 border-b border-gray-700">
       <div className="container mx-auto flex items-center justify-between p-4">
         {/* Logo Section */}
         <Link href="/" className="flex items-center space-x-2">
@@ -29,7 +29,7 @@ const Navbar: React.FC = () => {
         {/* Desktop Buttons */}
         <div className="hidden md:flex space-x-4">
           <Link legacyBehavior href="/login">
-            <a className="px-4 py-2 border border-gray-800 rounded hover:bg-gray-100 transition">
+            <a className="px-3 py-2 border text-gray-800 border-gray-800 rounded hover:bg-gray-100 transition">
               Log in
             </a>
           </Link>
