@@ -12,30 +12,31 @@ const ToggleSection: React.FC = () => {
         {/* Toggle Buttons */}
         <div className="flex justify-center mb-8">
           <button
-            onClick={() => setSelectedView("mentee")}
-            className={`text-lg font-semibold px-4 py-2 ${
-              selectedView === "mentee"
-                ? "text-black border-b-2 border-black"
-                : "text-gray-500"
-            } transition`}
-          >
-            Mentee
-          </button>
-          <button
-            onClick={() => setSelectedView("mentor")}
-            className={`text-lg font-semibold px-4 py-2 ${
-              selectedView === "mentor"
-                ? "text-black border-b-2 border-black"
-                : "text-gray-800"
-            } transition`}
-          >
-            Mentor
-          </button>
+  onClick={() => setSelectedView("mentee")}
+  className={`text-lg font-semibold px-4 py-2 ${
+    selectedView === "mentee"
+      ? "text-black border-b-2 border-black"
+      : "text-gray-500"
+  } transition`}
+>
+  Mentee
+</button>
+<button
+  onClick={() => setSelectedView("mentor")}
+  className={`text-lg font-semibold px-4 py-2 ${
+    selectedView === "mentor"
+      ? "text-black border-b-2 border-black"
+      : "text-gray-500" // This will make the mentor button gray when mentee is selected
+  } transition`}
+>
+  Mentor
+</button>
+
         </div>
 
         {/* Content Section */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start">
-          <div className="grid grid-cols-3 gap-4 mb-8 lg:mb-0 lg:mr-8">
+          <div className="grid grid-cols-2 gap-4 mb-8 lg:mb-0 lg:mr-8">
             <Image
               src="/images/1.png"
               alt="Profile 1"
@@ -71,7 +72,7 @@ const ToggleSection: React.FC = () => {
           <div className="text-center lg:mx-8 lg:flex-1 transition-all duration-300">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-2xl font-bold mb-4">
+                <h2 className="text-2xl text-black font-bold mb-4">
                   Change the world through mentorship
                 </h2>
                 <p className="text-gray-600 mb-6">
@@ -87,7 +88,7 @@ const ToggleSection: React.FC = () => {
               </>
             ) : (
               <>
-                <h2 className="text-2xl font-bold mb-4">
+                <h2 className="text-black text-2xl font-bold mb-4">
                   Get mentored by industry professionals
                 </h2>
                 <p className="text-gray-600 mb-6">
@@ -105,7 +106,7 @@ const ToggleSection: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4 lg:ml-8">
+          <div className="grid grid-cols-2 gap-4 lg:ml-8">
             <Image
               src="/images/3.png"
               alt="Profile 5"
