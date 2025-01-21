@@ -7,7 +7,7 @@ const ExplainerVideo = () => {
       <header className="text-center mb-6">
         <h1 className="text-4xl text-black font-bold">Unlock your potential</h1>
         <p className="text-lg text-black mt-4">
-          Become the best version of yourself by accessing the perspectives and industry experiences of others who've been there, done that.
+          Become the best version of yourself by accessing the perspectives and industry experiences of others who&apos;ve been there, done that.
         </p>
       </header>
       <div className="w-full flex justify-center">
