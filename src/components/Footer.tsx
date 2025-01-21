@@ -34,62 +34,84 @@ const Footer: React.FC = () => {
             </p>
           </div>
 
-          {/* Right Section: Social Media Icons */}
-          <div className="flex justify-center md:justify-end space-x-6">
-            <a
-              href="https://www.linkedin.com/company/roshe-mentorship/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-800 transition"
-              title="Visit Roshe Mentorship on LinkedIn"
-            >
-              <FaLinkedinIn size={20} />
-            </a>
-            <a
-              href="https://www.instagram.com/roshe_mentorship/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-800 transition"
-              title="Follow Roshe Mentorship on Instagram"
-            >
-              <FaInstagram size={20} />
-            </a>
-            <a
-              href="https://x.com/roshementorship?s=21&t=TN5-Nr3z-NoaUxp_TbMOVA"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-800 transition"
-              title="Follow Roshe Mentorship on Twitter"
-            >
-              <FaTwitter size={20} />
-            </a>
-            <a
-              href="https://www.facebook.com/share/1BCqU9R9Pc/?mibextid=LQQJ4d"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-800 transition"
-              title="Follow Roshe Mentorship on Facebook"
-            >
-              <FaFacebookF size={20} />
-            </a>
-            <a
-              href="https://www.youtube.com/@RosheMentorship"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-800 transition"
-              title="Subscribe to Roshe Mentorship on YouTube"
-            >
-              <FaYoutube size={20} />
-            </a>
-            <a
-              href="https://www.tiktok.com/@roshementorship?is_from_webapp=1&sender_device=pc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-800 transition"
-              title="Follow Roshe Mentorship on TikTok"
-            >
-              <FaTiktok size={20} />
-            </a>
+          {/* Right Section: Social Media Icons and Additional Links */}
+          <div className="flex flex-col items-center md:items-end space-y-4 md:space-y-6">
+            {/* Social Media Icons */}
+            <div className="flex justify-center md:justify-end space-x-6">
+              <a
+                href="https://www.linkedin.com/company/roshe-mentorship/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800 transition"
+                title="Visit Roshe Mentorship on LinkedIn"
+              >
+                <FaLinkedinIn size={20} />
+              </a>
+              <a
+                href="https://www.instagram.com/roshe_mentorship/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800 transition"
+                title="Follow Roshe Mentorship on Instagram"
+              >
+                <FaInstagram size={20} />
+              </a>
+              <a
+                href="https://x.com/roshementorship?s=21&t=TN5-Nr3z-NoaUxp_TbMOVA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800 transition"
+                title="Follow Roshe Mentorship on Twitter"
+              >
+                <FaTwitter size={20} />
+              </a>
+              <a
+                href="https://www.facebook.com/share/1BCqU9R9Pc/?mibextid=LQQJ4d"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800 transition"
+                title="Follow Roshe Mentorship on Facebook"
+              >
+                <FaFacebookF size={20} />
+              </a>
+              <a
+                href="https://www.youtube.com/@RosheMentorship"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800 transition"
+                title="Subscribe to Roshe Mentorship on YouTube"
+              >
+                <FaYoutube size={20} />
+              </a>
+              <a
+                href="https://www.tiktok.com/@roshementorship?is_from_webapp=1&sender_device=pc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-800 transition"
+                title="Follow Roshe Mentorship on TikTok"
+              >
+                <FaTiktok size={20} />
+              </a>
+            </div>
+
+            {/* Navigation Links (Directly under Social Media Icons) */}
+            <ul className="flex flex-col items-center md:items-end space-y-2 text-gray-600 text-sm">
+              <li>
+                <Link href="/join" className="hover:text-gray-800 transition">
+                  join roshe mentorship
+                </Link>
+              </li>
+              <li>
+                <Link href="/faqs" className="hover:text-gray-800 transition">
+                  FAQs
+                </Link>
+              </li>
+              <li>
+                <Link href="/partnerships" className="hover:text-gray-800 transition">
+                  partnerships
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
