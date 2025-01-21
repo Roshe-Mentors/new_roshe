@@ -1,34 +1,25 @@
+// components/ExplainerVideo.tsx
 import React from 'react';
 
-const VideoExplainer = () => {
+const ExplainerVideo = () => {
   return (
-    <div className="video-explainer-container bg-gray-200 mx-auto my-8 p-4 rounded-lg">
-      <h1 className="text-3xl font-bold text-center mb-4">
-        Unlock your potential
-      </h1>
-      <p className="text-xl text-center mb-8">
-        Become the best version of yourself by accessing the perspectives and industry experiences of others who&apos;ve been there, done that.
-      </p>
-      <div className="video-responsive relative">
-        {/* The video iframe */}
-        <div className="relative w-full" style={{ paddingTop: '56.25%' /* 16:9 aspect ratio */ }}>
-          <iframe
-            src="https://www.youtube.com/embed/YOUR_VIDEO_ID?modestbranding=1&autoplay=1&controls=0&showinfo=0&rel=0&loop=1&playlist=YOUR_VIDEO_ID" // Replace 'YOUR_VIDEO_ID' with the actual YouTube video ID
-            title="Explainer Video"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute top-0 left-0 w-full h-full rounded-lg"
-          ></iframe>
-        </div>
-
-        {/* "Explainer Video" overlay text */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-2xl font-bold">
-          Explainer Video
+    <section className="w-full py-10 bg-white flex flex-col items-center">
+      <header className="text-center mb-6">
+        <h1 className="text-4xl text-black font-bold">Unlock your potential</h1>
+        <p className="text-lg text-black mt-4">
+          Become the best version of yourself by accessing the perspectives and industry experiences of others who've been there, done that.
+        </p>
+      </header>
+      <div className="w-full flex justify-center">
+        <div className="w-full sm:w-1/3">
+          <div className="relative w-full h-64 bg-gray-200 flex items-center justify-center text-xl text-gray-700 rounded-lg shadow-lg">
+            {/* Placeholder for Explainer Video */}
+            <span>Explainer Video</span>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default VideoExplainer;
+export default ExplainerVideo;
