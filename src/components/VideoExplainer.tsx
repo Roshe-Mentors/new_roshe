@@ -7,7 +7,7 @@ const VideoExplainer = () => {
         Unlock your potential
       </h1>
       <p className="text-xl text-center mb-8">
-        Become the best version of yourself by accessing the perspectives and industry experiences of others who've been there, done that.
+        Become the best version of yourself by accessing the perspectives and industry experiences of others who&apos;ve been there, done that.
       </p>
       <div className="video-responsive relative">
         <iframe
