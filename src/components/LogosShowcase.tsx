@@ -34,8 +34,8 @@ export default function LogosShowcase() {
                   <Image 
                     src={logo.src}
                     alt={logo.alt}
-                    width={150}    // Increased size for better visibility
-                    height={100}   // Consistent height
+                    width={150}    
+                    height={100}   
                     className="mx-4 transition-transform duration-300 transform hover:scale-105" // Scales uniformly
                   />
                 </a>
@@ -48,9 +48,9 @@ export default function LogosShowcase() {
                   <Image 
                     src={logo.src}
                     alt={logo.alt}
-                    width={150}    // Same size as above
-                    height={100}   // Same height as above
-                    className="mx-4 transition-transform duration-300 transform hover:scale-105" // Scales uniformly
+                    width={150}    
+                    height={100}  
+                    className="mx-4 transition-transform duration-300 transform hover:scale-110" // Scales uniformly
                   />
                 </a>
               </Link>
