@@ -32,9 +32,11 @@ body {
 
   100% {
     transform: translateX(-50%);
+    /* Move the container left by 50% */
   }
 }
 
 .animate-marquee {
-  animation: marquee 20s linear infinite;
+  animation: marquee 30s linear infinite;
+  /* Adjust duration to control speed */
 }
