@@ -1,7 +1,7 @@
 import ToggleSection from "../components/ToggleSection";
 import LogosShowcase from "../components/LogosShowcase";
 import VideoExplainer from "../components/VideoExplainer";
-
+import ThreeFeatures from "../components/ThreeFeatures";
 export default function Home() {
   return (
    
@@ -9,6 +9,7 @@ export default function Home() {
       <ToggleSection />
       <LogosShowcase />
       <VideoExplainer />
+      <ThreeFeatures />
     </div>
   );
 }

@@ -12,7 +12,7 @@ const ExplainerVideo = () => {
       </header>
       <div className="w-full flex justify-center">
         <div className="w-full sm:w-1/3">
-          <div className="relative w-full h-64 bg-gray-200 flex items-center justify-center text-xl text-gray-700 rounded-lg shadow-lg">
+          <div className="relative w-full h-72 bg-gray-300 flex items-center justify-center text-xl text-gray-700 rounded-lg shadow-lg">
             {/* Placeholder for Explainer Video */}
             <span>Explainer Video</span>
           </div>
