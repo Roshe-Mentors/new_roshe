@@ -102,15 +102,15 @@ const MentorsSection = () => {
       </div>
 
       {/* Cards Container */}
-      <div className="w-11/12 md:w-2/3 flex flex-wrap justify-center md:justify-between gap-6">
+      <div className="w-11/12 md:w-2/3 flex flex-wrap justify-center md:justify-between gap-4">
         {mentors.map((mentor) => (
           <Link
             key={mentor.id}
             href={`/mentors/${mentor.id}`}
-            className="group relative w-full sm:w-[220px] bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden"
+            className="group relative w-full sm:w-[180px] bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden"
           >
             {/* Image Wrapper */}
-            <div className="relative w-full h-[280px]">
+            <div className="relative w-full h-[200px]">
               <Image
                 src={mentor.image}
                 alt={mentor.name}
@@ -143,10 +143,10 @@ const MentorsSection = () => {
                 {mentor.name}{' '}
                 <span className="text-sm text-gray-500">({mentor.location})</span>
               </h3>
-              <p className="text-sm mt-1">{mentor.role}</p>
-              <p className="text-sm mt-1">{mentor.sessionsAndReviews}</p>
+              <p className="text-xs mt-1">{mentor.role}</p>
+              <p className="text-xs mt-1">{mentor.sessionsAndReviews}</p>
 
-              <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
+              <div className="flex justify-between items-center text-xs text-gray-600 mt-2">
                 <span>Experience: {mentor.experience}</span>
                 <span>Avg. Attendance: {mentor.attendance}</span>
               </div>
