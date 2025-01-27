@@ -138,10 +138,10 @@ const MentorsSection = () => {
             </div>
 
             {/* Card Content */}
-            <div className="p-4 text-black">
-              <h3 className="text-md font-semibold leading-tight">
+            <div className="p-2 text-black">
+              <h3 className="text-base font-semibold">
                 {mentor.name}{' '}
-                <span className="text-sm text-gray-500">({mentor.location})</span>
+                <span className="text-xs text-gray-500">({mentor.location})</span>
               </h3>
               <p className="text-xs mt-1">{mentor.role}</p>
               <p className="text-xs mt-1">{mentor.sessionsAndReviews}</p>
