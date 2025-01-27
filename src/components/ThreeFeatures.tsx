@@ -8,7 +8,7 @@ const ThreeFeatures = () => {
         
         {/* Feature 1 */}
         <div className="flex space-x-3">
-          <div className="w-8 h-8 rounded-full bg-red-400 flex items-center justify-center text-white font-bold">
+          <div className="w-14 h-6 rounded-full bg-red-400 flex items-center justify-center text-white font-bold">
             1
           </div>
           <div className="text-black">
@@ -19,7 +19,7 @@ const ThreeFeatures = () => {
 
         {/* Feature 2 */}
         <div className="flex space-x-3">
-          <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold">
+          <div className="w-14 h-6 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold">
             2
           </div>
           <div className="text-black">
@@ -30,7 +30,7 @@ const ThreeFeatures = () => {
 
         {/* Feature 3 */}
         <div className="flex space-x-3">
-          <div className="w-8 h-8 rounded-full bg-teal-400 flex items-center justify-center text-white font-bold">
+          <div className="w-14 h-6 rounded-full bg-teal-400 flex items-center justify-center text-white font-bold">
             3
           </div>
           <div className="text-black">
