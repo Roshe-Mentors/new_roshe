@@ -26,7 +26,9 @@ const stats = [
 
 const PlatformStats = () => {
   return (
-    <section className="w-full bg-gradient-to-r from-purple-600 to-purple-500 py-10 flex flex-col items-center">
+    <section className="w-full py-10 flex flex-col items-center"
+    style={{ background: 'linear-gradient(90deg, #9898FA 0%, #65658D 100%)' }}
+    >
       <h2 className="text-3xl font-bold text-white mb-8">
         A platform that delivers results
       </h2>
