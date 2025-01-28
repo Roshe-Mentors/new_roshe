@@ -1,0 +1,50 @@
+// components/PlatformStats.tsx
+import React from 'react';
+
+const stats = [
+  {
+    preText: "Career enhanced for",
+    bigText: "90%",
+    postText: "Happy Members",
+  },
+  {
+    preText: "Empowered by",
+    bigText: "300",
+    postText: "Expert mentors",
+  },
+  {
+    preText: "Global community from",
+    bigText: "80",
+    postText: "Countries",
+  },
+  {
+    preText: "We have built",
+    bigText: "10k",
+    postText: "Connections",
+  },
+];
+
+const PlatformStats = () => {
+  return (
+    <section className="w-full bg-gradient-to-r from-purple-600 to-purple-500 py-10 flex flex-col items-center">
+      <h2 className="text-3xl font-bold text-white mb-8">
+        A platform that delivers results
+      </h2>
+
+      <div className="w-2/3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {stats.map((item, idx) => (
+          <div
+            key={idx}
+            className="flex flex-col items-center justify-center bg-white rounded-md p-6 text-center text-black transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+          >
+            <p className="text-sm mb-1">{item.preText}</p>
+            <h3 className="text-3xl font-bold mb-1">{item.bigText}</h3>
+            <p className="text-sm">{item.postText}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+export default PlatformStats;

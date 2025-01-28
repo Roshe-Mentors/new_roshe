@@ -3,6 +3,7 @@ import LogosShowcase from "../components/LogosShowcase";
 import VideoExplainer from "../components/VideoExplainer";
 import ThreeFeatures from "../components/ThreeFeatures";
 import MentorsSection from "../components/MentorsSection";
+import PlatformStats from "../components/PlatformStats";
 export default function Home() {
   return (
    
@@ -12,6 +13,7 @@ export default function Home() {
       <VideoExplainer />
       <ThreeFeatures />
       <MentorsSection />
+      <PlatformStats />
     </div>
   );
 }
