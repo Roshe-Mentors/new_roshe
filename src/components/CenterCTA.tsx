@@ -1,4 +1,3 @@
-// components/CenterCTA.tsx
 "use client"
 import React, { useState } from 'react';
 
@@ -6,91 +5,121 @@ const CenterCTA = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
 
-  // Minimal email validation
+  const validateEmail = (email: string) => {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(email)) {
+    if (!validateEmail(email)) {
       setError('Please enter a valid email address');
     } else {
       setError('');
-      
+      // Add your form submission logic here
+      console.log('Email submitted:', email);
     }
   };
 
   return (
-    <section
-      className="w-full flex justify-center items-center py-10 px-4"
-      style={{
-        
-        backgroundImage: "url('/images/Community_image.jpg')",
-        backgroundRepeat: 'repeat-y',
-        backgroundPosition: 'center',
-        backgroundSize: 'cover',
-        backgroundAttachment: 'fixed'
-        // If you want to ensure the image doesn't stretch:
-        // backgroundSize: 'auto',
-      }}
-    >
-      {/* The container for heading, subtext, and form */}
-      <div className="w-full max-w-3xl text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-black mb-2">
-          Get started for free <br className="md:hidden" />
-          under 1 minute
+    <section className="w-full relative flex justify-center items-center py-16 px-4 overflow-hidden">
+      {/* Background with gradient overlay */}
+      <div
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)),
+            url("/images/Community_image.jpg")
+          `,
+          backgroundPosition: 'center top',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -1,
+        }}
+      />
+
+      <div className="w-full max-w-3xl text-center relative z-10">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Get Started for Free <span className="block md:inline">Under 1 Minute</span>
         </h2>
-        <p className="text-gray-700 mb-6">
-          Our goal is to help you craft an extraordinary career with the guidance of expert mentors.
-          Whether you’re starting out or stepping into leadership, we’re here to support you.
+        
+        <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
+          Craft an extraordinary career with expert mentorship. Whether you're starting out or 
+          stepping into leadership, we're here to support your journey.
         </p>
 
-        {/* Form */}
-        <form
+        <form 
           onSubmit={handleSubmit}
-          className="flex flex-col md:flex-row items-stretch justify-center gap-2 md:gap-0"
+          className="flex flex-col md:flex-row items-stretch justify-center gap-3 max-w-md mx-auto md:max-w-2xl"
+          noValidate
         >
-          {/* Email Input (with icon) */}
           <div className="relative flex-grow">
-            <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-              {/* Envelope Icon */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
+            <label htmlFor="email-input" className="sr-only">Email address</label>
+            <div className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
                 className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
                 strokeWidth={2}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2 
-                     8H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 
-                     2v8a2 2 0 01-2 2z"
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-            </span>
+            </div>
             <input
+              id="email-input"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your Email"
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md md:rounded-r-none outline-none 
-                         focus:border-indigo-500 transition-colors"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError('');
+              }}
+              placeholder="Enter your email"
+              className={`w-full pl-10 pr-4 py-3 border ${
+                error ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg md:rounded-r-none outline-none focus:ring-2 ${
+                error ? 'focus:ring-red-300' : 'focus:ring-indigo-300'
+              } transition-all`}
+              aria-invalid={!!error}
+              aria-describedby="error-message"
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
-            className="bg-black text-white px-4 py-2 rounded-md md:rounded-l-none 
-                       border border-black hover:cursor-pointer"
+            className="bg-gray-900 text-white px-6 py-3 rounded-lg md:rounded-l-none font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors"
           >
-            Join now for free
+            Get Started Free
           </button>
         </form>
 
-        {/* Error Text (if any) */}
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        {error && (
+          <div 
+            id="error-message"
+            className="mt-3 flex items-center justify-center gap-2 text-red-600"
+            role="alert"
+            aria-live="polite"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="text-sm">{error}</span>
+          </div>
+        )}
       </div>
     </section>
   );
