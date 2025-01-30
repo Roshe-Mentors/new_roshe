@@ -85,7 +85,7 @@ Whether you&apos;re starting out or stepping into leadership, we&apos;re here to
               } rounded-lg md:rounded-r-none outline-none focus:ring-2 ${
                 error ? 'focus:ring-red-300' : 'focus:ring-indigo-300'
               } transition-all`}
-              aria-invalid={!!error}
+              aria-invalid={!!error ? 'true' : 'false'}
               aria-describedby="error-message"
             />
           </div>
