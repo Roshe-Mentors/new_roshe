@@ -45,7 +45,7 @@ const CenterCTA = () => {
         
         <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
           Our goal is to help you craft an extraordinary career with the guidance of expert mentors.
-Whether you're starting out or stepping into leadership, we're here to support you.
+Whether you&apos;re starting out or stepping into leadership, we&apos;re here to support you.
         </p>
 
         <form 
