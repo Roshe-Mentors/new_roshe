@@ -4,6 +4,7 @@ import VideoExplainer from "../components/VideoExplainer";
 import ThreeFeatures from "../components/ThreeFeatures";
 import MentorsSection from "../components/MentorsSection";
 import PlatformStats from "../components/PlatformStats";
+import CenterCTA from "../components/CenterCTA"
 export default function Home() {
   return (
    
@@ -14,6 +15,7 @@ export default function Home() {
       <ThreeFeatures />
       <MentorsSection />
       <PlatformStats />
+      <CenterCTA />
     </div>
   );
 }

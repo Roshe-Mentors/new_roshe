@@ -1,4 +1,5 @@
 // components/CenterCTA.tsx
+"use client"
 import React, { useState } from 'react';
 
 const CenterCTA = () => {
@@ -13,7 +14,7 @@ const CenterCTA = () => {
       setError('Please enter a valid email address');
     } else {
       setError('');
-      // You can handle form submission here if needed
+      
     }
   };
 
@@ -21,11 +22,12 @@ const CenterCTA = () => {
     <section
       className="w-full flex justify-center items-center py-10 px-4"
       style={{
-        // The JPEG with all circular portraits
-        // repeated vertically, covering full width
-        backgroundImage: "url('/images/bg-portraits.jpg')",
+        
+        backgroundImage: "url('/images/Community_image.jpg')",
         backgroundRepeat: 'repeat-y',
         backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed'
         // If you want to ensure the image doesn't stretch:
         // backgroundSize: 'auto',
       }}
