@@ -80,21 +80,21 @@ Whether you&apos;re starting out or stepping into leadership, we&apos;re here to
                 if (error) setError('');
               }}
               placeholder="Enter your email"
-              className={`w-full pl-10 pr-4 py-3 border ${
+              className={`w-full pl-10 pr-4 py-3 text-gray-800 border ${
                 error ? 'border-red-500' : 'border-gray-300'
               } rounded-lg md:rounded-r-none outline-none focus:ring-2 ${
-                error ? 'focus:ring-red-300' : 'focus:ring-indigo-300'
+                error ? 'focus:ring-red-300' : 'focus:ring-gray-700'
               } transition-all`}
               aria-invalid={!!error ? 'true' : 'false'}
               aria-describedby="error-message"
             />
-          </div>
+</div>
 
           <button
             type="submit"
-            className="bg-gray-900 text-white px-6 py-3 rounded-lg md:rounded-l-none font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors"
-          >
-            Get Started Free
+            className="bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 px-6 py-3 rounded-lg md:rounded-l-none font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors"
+            >
+            Join now for free
           </button>
         </form>
 
