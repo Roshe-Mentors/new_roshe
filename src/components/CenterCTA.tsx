@@ -38,12 +38,12 @@ const CenterCTA = () => {
         }}
       />
 
-      <div className="w-full max-w-3xl text-center relative z-10">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <div className="w-full max-w-3xl px-4 py-4 text-center relative z-10">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900  mb-4">
           Get Started for Free <span className="block md:inline">Under 1 Minute</span>
         </h2>
         
-        <p className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
+        <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-lg leading-relaxed">
           Our goal is to help you craft an extraordinary career with the guidance of expert mentors.
 Whether you&apos;re starting out or stepping into leadership, we&apos;re here to support you.
         </p>
