@@ -58,13 +58,13 @@ const MentorSignUp = () => {
       setError(validationError);
     } else {
       setError('');
-      // Handle successful form submission (e.g., API call)
+      // Handle successful form submission (API call)
       console.log('Form Data Submitted:', formData);
     }
   };
 
   return (
-    <div className="w-full bg-white max-w-3xl mx-auto py-20 px-4">
+    <div className="w-full text-black bg-white max-w mx-auto py-20 px-3">
       <div className="flex flex-col md:flex-row justify-between items-start space-y-6 md:space-y-0 gap-8">
         {/* Left Form Section */}
         <form onSubmit={handleSubmit} className="w-full md:w-2/3 space-y-6">
@@ -82,7 +82,7 @@ const MentorSignUp = () => {
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
-              className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+              className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
             />
           </div>
 
@@ -97,11 +97,11 @@ const MentorSignUp = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+              className="mt-2 block w-full max-w-sm px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>
 
-          <div className="flex space-x-6">
+          <div className="flex space-x-4">
             <div className="w-full">
               <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
                 LinkedIn URL
@@ -113,11 +113,11 @@ const MentorSignUp = () => {
                 value={formData.linkedin}
                 onChange={handleChange}
                 placeholder="https://www.linkedin.com/in/yourprofile"
-                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+                className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full max-w-xs">
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth 
               </label>
@@ -128,7 +128,7 @@ const MentorSignUp = () => {
                 value={formData.dob}
                 onChange={handleChange}
                 placeholder="DD/MM/YYYY"
-                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+                className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ const MentorSignUp = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Password"
-              className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+              className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>
 
@@ -152,7 +152,7 @@ const MentorSignUp = () => {
 
           <button
             type="submit"
-            className="w-full py-3 text-white font-medium rounded-md mt-4"
+            className="w-full py-3 text-white max-w-xs font-medium rounded-md mt-4"
             style={{
               background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
             }}
@@ -164,7 +164,7 @@ const MentorSignUp = () => {
         {/* Right Image Section */}
         <div className="w-full md:w-1/3">
           <Image
-            src="/images/image_ment.jpg" // Adjust to your actual image path
+            src="/images/image_mentor.jpg" // Adjust to your actual image path
             alt="Sign Up"
             width={600}
             height={375}
