@@ -64,10 +64,10 @@ const MentorSignUp = () => {
   };
 
   return (
-    <div className="w-full bg-white max-w-4xl mx-auto py-20 px-4">
-      <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+    <div className="w-full bg-white max-w-3xl mx-auto py-20 px-4">
+      <div className="flex flex-col md:flex-row justify-between items-start space-y-6 md:space-y-0 gap-8">
         {/* Left Form Section */}
-        <form onSubmit={handleSubmit} className="w-full md:w-1/2 space-y-6">
+        <form onSubmit={handleSubmit} className="w-full md:w-2/3 space-y-6">
           <h2 className="text-3xl font-bold text-gray-900">Get Started Now</h2>
           <p className="text-gray-600">Enter your credentials to create your account</p>
 
@@ -101,34 +101,36 @@ const MentorSignUp = () => {
             />
           </div>
 
-          <div>
-            <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
-              LinkedIn URL
-            </label>
-            <input
-              type="url"
-              name="linkedin"
-              id="linkedin"
-              value={formData.linkedin}
-              onChange={handleChange}
-              placeholder="https://www.linkedin.com/in/yourprofile"
-              className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
-            />
-          </div>
+          <div className="flex space-x-6">
+            <div className="w-full">
+              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
+                LinkedIn URL
+              </label>
+              <input
+                type="url"
+                name="linkedin"
+                id="linkedin"
+                value={formData.linkedin}
+                onChange={handleChange}
+                placeholder="https://www.linkedin.com/in/yourprofile"
+                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-              Date of Birth (DD/MM/YYYY)
-            </label>
-            <input
-              type="text"
-              name="dob"
-              id="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              placeholder="DD/MM/YYYY"
-              className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
-            />
+            <div className="w-full">
+              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
+                Date of Birth 
+              </label>
+              <input
+                type="text"
+                name="dob"
+                id="dob"
+                value={formData.dob}
+                onChange={handleChange}
+                placeholder="DD/MM/YYYY"
+                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+              />
+            </div>
           </div>
 
           <div>
@@ -160,16 +162,18 @@ const MentorSignUp = () => {
         </form>
 
         {/* Right Image Section */}
+        <div className="w-full md:w-1/3">
           <Image
             src="/images/image_ment.jpg" // Adjust to your actual image path
             alt="Sign Up"
-            width={700}
-            height={475}
-            className="rounded-lg shadow-lg w-full max-w-xs md:max-w-lg"
+            width={600}
+            height={375}
+            className="rounded-lg shadow-lg w-full"
             priority
           />
         </div>
       </div>
+    </div>
   );
 };
 
