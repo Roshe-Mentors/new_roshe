@@ -1,5 +1,5 @@
 "use client";
-
+import Link from 'next/link';
 import React, { useState } from "react";
 import Image from 'next/image';
 
@@ -80,10 +80,14 @@ const ToggleSection: React.FC = () => {
                   and shape your lasting impact.
                 </p>
                 <button
-                  onClick={() => (window.location.href = "/signup")}
+                  
                   className="px-6 py-3 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition"
                 >
-                  Become a Mentor
+                 <Link href="/signup/mentor" legacyBehavior>
+                  <a >
+                    Become a Mentor
+                  </a>
+                </Link>
                 </button>
               </>
             ) : (

@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
 
@@ -63,7 +64,7 @@ const MentorSignUp = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-12 px-4">
+    <div className="w-full bg-white max-w-4xl mx-auto py-20 px-4">
       <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
         {/* Left Form Section */}
         <form onSubmit={handleSubmit} className="w-full md:w-1/2 space-y-6">
@@ -160,7 +161,7 @@ const MentorSignUp = () => {
 
         {/* Right Image Section */}
           <Image
-            src="/images/signup-photo.jpg" // Adjust to your actual image path
+            src="/images/image_ment.jpg" // Adjust to your actual image path
             alt="Sign Up"
             width={700}
             height={475}
