@@ -117,7 +117,7 @@ const MentorSignUp = () => {
               />
             </div>
 
-            <div className="w-full max-w-xs">
+            <div className="w-full max-w-xs px-1">
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth 
               </label>
@@ -128,7 +128,7 @@ const MentorSignUp = () => {
                 value={formData.dob}
                 onChange={handleChange}
                 placeholder="DD/MM/YYYY"
-                className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
+                className="mt-2 block w-full px-1 py-3 border border-gray-300 rounded-md"
               />
             </div>
           </div>

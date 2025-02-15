@@ -8,16 +8,16 @@ const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 border-b border-gray-700">
-      <div className="container mx-auto flex items-center justify-between p-4">
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+      <div className="container mx-auto flex items-center justify-between p-2">
         {/* Logo Section */}
         <Link href="/" className="flex items-center space-x-2">
           
             <Image 
               src="/images/roshementorship.png"
               alt="Roshe Mentorship Logo"
-              width={40}
-              height={40}
+              width={35}
+              height={35}
               className="rounded-full"
             />
             <span className="text-xl font-bold font-montserrat text-gray-800">
