@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { signUp } from '../../../../lib/auth';
+import { supabase } from '../../../../lib/supabaseClient';
 
 const MentorSignUp = () => {
   const [formData, setFormData] = useState({
@@ -51,15 +53,39 @@ const MentorSignUp = () => {
     return '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
     } else {
       setError('');
-      // Handle successful form submission (API call)
-      console.log('Form Data Submitted:', formData);
+      
+      // Call Supabase sign-up function
+      const { user, error } = await signUp(formData.email, formData.password);
+
+      if (error) {
+        setError(error); // If error, display it
+      } else {
+        // After successful sign-up, insert additional user profile data into the 'mentors' table
+        const { data, error: insertError } = await supabase
+          .from('mentors')
+          .insert([
+            { 
+              user_id: user.id,
+              name: formData.name,
+              linkedin: formData.linkedin,
+              dob: formData.dob,
+            }
+          ]);
+         
+        if (insertError) {
+          setError(insertError.message);
+        } else {
+          console.log('Mentor data inserted:', data);
+          // Optionally, redirect user or show a success message
+        }
+      }
     }
   };
 
