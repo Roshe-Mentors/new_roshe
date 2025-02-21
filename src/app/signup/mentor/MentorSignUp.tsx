@@ -14,6 +14,7 @@ const MentorSignUp = () => {
   });
 
   const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false); // New state to manage loading
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -60,7 +61,8 @@ const MentorSignUp = () => {
       setError(validationError);
     } else {
       setError('');
-      
+      setLoading(true); // Set loading to true when form is submitted
+
       // Call Supabase sign-up function
       const { user, error } = await signUp(formData.email, formData.password);
 
@@ -86,6 +88,8 @@ const MentorSignUp = () => {
           // Optionally, redirect user or show a success message
         }
       }
+
+      setLoading(false); // Set loading to false once the request is complete
     }
   };
 
@@ -182,8 +186,9 @@ const MentorSignUp = () => {
             style={{
               background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
             }}
+            disabled={loading} // Disable button while loading
           >
-            Sign Up
+            {loading ? 'Signing Up...' : 'Sign Up'} {/* Change button text while loading */}
           </button>
         </form>
 

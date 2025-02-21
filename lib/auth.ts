@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 
 // Sign up new user
 export const signUp = async (email: string, password: string) => {
-  const { user, error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
   });
@@ -12,12 +12,12 @@ export const signUp = async (email: string, password: string) => {
     return { error: error.message };
   }
 
-  return { user };
+  return { user: data.user };
 };
 
 // Log in user
 export const logIn = async (email: string, password: string) => {
-  const { user, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -27,7 +27,7 @@ export const logIn = async (email: string, password: string) => {
     return { error: error.message };
   }
 
-  return { user };
+  return { user: data.user };
 };
 
 // Log out user
@@ -39,6 +39,7 @@ export const logOut = async () => {
 };
 
 // Get currently logged-in user
-export const getUser = () => {
-  return supabase.auth.user();
+export const getUser = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user;
 };
