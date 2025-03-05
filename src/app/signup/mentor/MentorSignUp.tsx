@@ -66,8 +66,8 @@ const MentorSignUp = () => {
       // Call Supabase sign-up function
       const { user, error } = await signUp(formData.email, formData.password);
 
-      if (error) {
-        setError(error); // If error, display it
+      if (error || !user) {
+        setError(error || 'Failed to create user'); // If error or no user, display error
       } else {
         // After successful sign-up, insert additional user profile data into the 'mentors' table
         const { data, error: insertError } = await supabase
