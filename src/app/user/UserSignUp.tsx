@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { signUp } from '../../../lib/auth';
-import { supabase } from '../../../lib/supabaseClient';
+import { signUp } from '../../../lib/auth'; 
+import { supabase } from '../../../lib/supabaseClient'; 
+import { useRouter } from 'next/navigation';
+
 
 const UserSignUp = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +16,9 @@ const UserSignUp = () => {
   });
 
   const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false); // New state to manage loading
+  const [loading, setLoading] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>(''); // Success message state
+  const router = useRouter(); // Initialize Next.js router for redirection
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,11 +71,12 @@ const UserSignUp = () => {
       const { user, error } = await signUp(formData.email, formData.password);
 
       if (error || !user) {
-        setError(error || 'Failed to create user'); // If error or no user, display error
+        setError(error || 'Failed to create user');
+        setLoading(false);
       } else {
         // After successful sign-up, insert additional user profile data into the 'users' table
         const { data, error: insertError } = await supabase
-          .from('users')  // Change from 'mentors' to 'users'
+          .from('Users')
           .insert([
             { 
               user_id: user.id,
@@ -84,8 +89,11 @@ const UserSignUp = () => {
         if (insertError) {
           setError(insertError.message);
         } else {
-          console.log('User data inserted:', data);
-          // Optionally, redirect user or show a success message
+          setSuccessMessage('Sign-up successful! Please check your email for verification.');
+          // Redirect to dashboard or homepage after successful sign-up
+          setTimeout(() => {
+            router.push('/dashboard'); // Redirect to the user dashboard
+          }, 2000); // Wait for 2 seconds before redirecting
         }
       }
 
@@ -101,67 +109,67 @@ const UserSignUp = () => {
           <h2 className="text-3xl font-bold text-gray-900">Get Started Now</h2>
           <p className="text-gray-600">Enter your credentials to create your account</p>
 
-            <div>
+          <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Name
+              Name
             </label>
             <input
-                type="text"
-                name="name"
-                id="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
+              type="text"
+              name="name"
+              id="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
             />
-            </div>
+          </div>
 
-            <div>
+          <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+              Email Address
             </label>
             <input
-                type="email"
-                name="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                className="mt-2 block w-full max-w-sm px-4 py-3 border border-gray-300 rounded-md"
+              type="email"
+              name="email"
+              id="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              className="mt-2 block w-full max-w-sm px-4 py-3 border border-gray-300 rounded-md"
             />
+          </div>
+
+          <div className="flex gap-2">  
+            <div className="w-[25%]">  
+              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
+                LinkedIn URL
+              </label>
+              <input
+                type="url"
+                name="linkedin"
+                id="linkedin"
+                value={formData.linkedin}
+                onChange={handleChange}
+                placeholder="https://www.linkedin.com/in/yourprofile"
+                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+              />
             </div>
 
-            <div className="flex gap-2">  
-    <div className="w-[30%]">  
-    <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
-        LinkedIn URL
-    </label>
-    <input
-        type="url"
-        name="linkedin"
-        id="linkedin"
-        value={formData.linkedin}
-        onChange={handleChange}
-        placeholder="https://www.linkedin.com/in/yourprofile"
-        className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
-    />
-    </div>
-
-    <div className="w-[30%]">  
-        <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-        Date of Birth 
-        </label>
-        <input
-        type="text"
-        name="dob"
-        id="dob"
-        value={formData.dob}
-        onChange={handleChange}
-        placeholder="DD/MM/YYYY"
-        className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"  
-        />
-        </div>
-    </div>
+            <div className="w-[25%]">  
+              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
+                Date of Birth 
+              </label>
+              <input
+                type="text"
+                name="dob"
+                id="dob"
+                value={formData.dob}
+                onChange={handleChange}
+                placeholder="DD/MM/YYYY"
+                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"  
+              />
+            </div>
+          </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -180,6 +188,8 @@ const UserSignUp = () => {
 
           {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
 
+          {successMessage && <p className="text-green-600 text-sm mt-2">{successMessage}</p>}
+
           <button
             type="submit"
             className="w-full py-3 text-white max-w-xs font-medium rounded-md mt-4"
@@ -188,7 +198,7 @@ const UserSignUp = () => {
             }}
             disabled={loading} // Disable button while loading
           >
-            {loading ? 'Signing Up...' : 'Sign Up'} {/* Change button text while loading */}
+            {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
         </form>
 
