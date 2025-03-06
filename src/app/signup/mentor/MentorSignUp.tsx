@@ -83,8 +83,12 @@ const MentorSignUp = () => {
             }
           ]);
 
-      if (insertError) {
-          setError(insertError.message);
+        if (insertError) {
+          if (insertError.message.includes("new row violates row-level security policy")) {
+            setError("You do not have permission to insert data into the mentors table.");
+          } else {
+            setError(insertError.message);
+          }
         } else {
           console.log('Mentor data inserted:', data);
           router.push('/dashboard'); // Redirect to dashboard after successful signup
