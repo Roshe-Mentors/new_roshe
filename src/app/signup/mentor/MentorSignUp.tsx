@@ -83,10 +83,11 @@ const MentorSignUp = () => {
             }
           ]);
 
-        if (insertError) {
+      if (insertError) {
           setError(insertError.message);
         } else {
           console.log('Mentor data inserted:', data);
+          router.push('/dashboard'); // Redirect to dashboard after successful signup
         }
       }
 
