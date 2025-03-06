@@ -101,67 +101,67 @@ const UserSignUp = () => {
           <h2 className="text-3xl font-bold text-gray-900">Get Started Now</h2>
           <p className="text-gray-600">Enter your credentials to create your account</p>
 
-          <div>
+            <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Name
+                Name
             </label>
             <input
-              type="text"
-              name="name"
-              id="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              className="mt-2 block w-full max-w-sm px-4 py-3 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div className="flex space-x-4">
-            <div className="w-full">
-              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
-                LinkedIn URL
-              </label>
-              <input
-                type="url"
-                name="linkedin"
-                id="linkedin"
-                value={formData.linkedin}
-                onChange={handleChange}
-                placeholder="https://www.linkedin.com/in/yourprofile"
-                className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
-              />
-            </div>
-
-            <div className="w-full max-w-xs px-1">
-              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-                Date of Birth 
-              </label>
-              <input
                 type="text"
-                name="dob"
-                id="dob"
-                value={formData.dob}
+                name="name"
+                id="name"
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="DD/MM/YYYY"
-                className="mt-2 block w-full px-1 py-3 border border-gray-300 rounded-md"
-              />
+                placeholder="Full Name"
+                className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
+            />
             </div>
-          </div>
+
+            <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email Address
+            </label>
+            <input
+                type="email"
+                name="email"
+                id="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                className="mt-2 block w-full max-w-sm px-4 py-3 border border-gray-300 rounded-md"
+            />
+            </div>
+
+            <div className="flex gap-2">  
+    <div className="w-[30%]">  
+    <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
+        LinkedIn URL
+    </label>
+    <input
+        type="url"
+        name="linkedin"
+        id="linkedin"
+        value={formData.linkedin}
+        onChange={handleChange}
+        placeholder="https://www.linkedin.com/in/yourprofile"
+        className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
+    />
+    </div>
+
+    <div className="w-[30%]">  
+        <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
+        Date of Birth 
+        </label>
+        <input
+        type="text"
+        name="dob"
+        id="dob"
+        value={formData.dob}
+        onChange={handleChange}
+        placeholder="DD/MM/YYYY"
+        className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"  
+        />
+        </div>
+    </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
