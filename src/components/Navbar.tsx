@@ -33,7 +33,7 @@ const Navbar: React.FC = () => {
               Log in
             </a>
           </Link>
-          <Link legacyBehavior href="/signup">
+          <Link legacyBehavior href="/user">
             <a
               className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
               style={{
@@ -75,7 +75,7 @@ const Navbar: React.FC = () => {
           <Link legacyBehavior href="/login">
             <a className="block px-4 py-2 border-b hover:bg-gray-100">Log in</a>
           </Link>
-          <Link legacyBehavior href="/signup">
+          <Link legacyBehavior href="/user">
             <a className="block px-4 py-2 hover:bg-gray-100">Get Started</a>
           </Link>
         </div>

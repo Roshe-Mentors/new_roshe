@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { signUp } from '../../../../lib/auth';
-import { supabase } from '../../../../lib/supabaseClient';
+import { signUp } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabaseClient';
 
-const MentorSignUp = () => {
+const UserSignUp = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -69,9 +69,9 @@ const MentorSignUp = () => {
       if (error || !user) {
         setError(error || 'Failed to create user'); // If error or no user, display error
       } else {
-        // After successful sign-up, insert additional user profile data into the 'mentors' table
+        // After successful sign-up, insert additional user profile data into the 'users' table
         const { data, error: insertError } = await supabase
-          .from('mentors')
+          .from('users')  // Change from 'mentors' to 'users'
           .insert([
             { 
               user_id: user.id,
@@ -80,11 +80,11 @@ const MentorSignUp = () => {
               dob: formData.dob,
             }
           ]);
-         
+
         if (insertError) {
           setError(insertError.message);
         } else {
-          console.log('Mentor data inserted:', data);
+          console.log('User data inserted:', data);
           // Optionally, redirect user or show a success message
         }
       }
@@ -195,7 +195,7 @@ const MentorSignUp = () => {
         {/* Right Image Section */}
         <div className="w-full md:w-1/3">
           <Image
-            src="/images/image_mentor.jpg" 
+            src="/images/image_mentor.jpg"
             alt="Sign Up"
             width={600}
             height={375}
@@ -208,4 +208,4 @@ const MentorSignUp = () => {
   );
 };
 
-export default MentorSignUp;
+export default UserSignUp;
