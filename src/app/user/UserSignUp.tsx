@@ -1,10 +1,9 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { signUp } from '../../../lib/auth'; 
-import { supabase } from '../../../lib/supabaseClient'; 
-import { useRouter } from 'next/navigation';
-
+import { signUp } from '../../../lib/auth'; // Sign-up function
+import { supabase } from '../../../lib/supabaseClient'; // Supabase client
+import { useRouter } from 'next/navigation'; // Use the Next.js router for redirection
 
 const UserSignUp = () => {
   const [formData, setFormData] = useState({
@@ -76,7 +75,7 @@ const UserSignUp = () => {
       } else {
         // After successful sign-up, insert additional user profile data into the 'users' table
         const { data, error: insertError } = await supabase
-          .from('Users')
+          .from('users')
           .insert([
             { 
               user_id: user.id,
@@ -89,6 +88,7 @@ const UserSignUp = () => {
         if (insertError) {
           setError(insertError.message);
         } else {
+          console.log('User data inserted:', data);
           setSuccessMessage('Sign-up successful! Please check your email for verification.');
           // Redirect to dashboard or homepage after successful sign-up
           setTimeout(() => {

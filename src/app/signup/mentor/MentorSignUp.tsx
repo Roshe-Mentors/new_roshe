@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { signUp } from '../../../../lib/auth';
 import { supabase } from '../../../../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 const MentorSignUp = () => {
   const [formData, setFormData] = useState({
@@ -10,13 +11,15 @@ const MentorSignUp = () => {
     email: '',
     linkedin: '',
     dob: '',
+    biography: '', // Adding biography field
     password: '',
   });
 
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false); // New state to manage loading
+  const router = useRouter(); // Initialize Next.js router for redirection
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -78,9 +81,10 @@ const MentorSignUp = () => {
               name: formData.name,
               linkedin: formData.linkedin,
               dob: formData.dob,
+              biography: formData.biography, // Insert biography data
             }
           ]);
-         
+
         if (insertError) {
           setError(insertError.message);
         } else {
@@ -101,6 +105,7 @@ const MentorSignUp = () => {
           <h2 className="text-3xl font-bold text-gray-900">Get Started Now</h2>
           <p className="text-gray-600">Enter your credentials to create your account</p>
 
+          {/* Name Field */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Name
@@ -116,6 +121,7 @@ const MentorSignUp = () => {
             />
           </div>
 
+          {/* Email Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email Address
@@ -131,8 +137,9 @@ const MentorSignUp = () => {
             />
           </div>
 
-          <div className="flex space-x-4">
-            <div className="w-full">
+          {/* LinkedIn and DOB Fields */}
+          <div className="flex gap-2">  
+            <div className="w-[30%]">  
               <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
                 LinkedIn URL
               </label>
@@ -143,11 +150,11 @@ const MentorSignUp = () => {
                 value={formData.linkedin}
                 onChange={handleChange}
                 placeholder="https://www.linkedin.com/in/yourprofile"
-                className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
+                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
               />
             </div>
 
-            <div className="w-full max-w-xs px-1">
+            <div className="w-[30%]">  
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth 
               </label>
@@ -158,11 +165,28 @@ const MentorSignUp = () => {
                 value={formData.dob}
                 onChange={handleChange}
                 placeholder="DD/MM/YYYY"
-                className="mt-2 block w-full px-1 py-3 border border-gray-300 rounded-md"
+                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"  
               />
             </div>
           </div>
 
+          {/* Biography Field */}
+          <div>
+            <label htmlFor="biography" className="block text-sm font-medium text-gray-700">
+              Biography
+            </label>
+            <textarea
+              name="biography"
+              id="biography"
+              value={formData.biography}
+              onChange={handleChange}
+              placeholder="Write a brief biography"
+              className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
+              rows={4}
+            />
+          </div>
+
+          {/* Password Field */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
@@ -188,15 +212,15 @@ const MentorSignUp = () => {
             }}
             disabled={loading} // Disable button while loading
           >
-            {loading ? 'Signing Up...' : 'Sign Up'} {/* Change button text while loading */}
+            {loading ? 'Signing Up...' : 'Join the waiting list'} {/* Change button text */}
           </button>
         </form>
 
         {/* Right Image Section */}
         <div className="w-full md:w-1/3">
           <Image
-            src="/images/image_mentor.jpg" 
-            alt="Sign Up"
+            src="/images/chris_lee_mentor.png" // Replace with the actual image path
+            alt="Mentor Sign Up"
             width={600}
             height={375}
             className="rounded-lg shadow-lg w-full"
