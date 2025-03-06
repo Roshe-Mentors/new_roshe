@@ -15,3 +15,5 @@ CREATE POLICY "Allow users to view own data"
 ON public.mentors
 FOR SELECT
 USING (auth.uid() = user_id);
+
+
