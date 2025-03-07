@@ -61,7 +61,7 @@ const LoginPage = () => {
       } else {
         router.push('/dashboard');
       }
-    } catch (_) {
+    } catch {
       setError('An error occurred with social login. Please try again.');
     } finally {
       setLoading(false);
@@ -150,7 +150,7 @@ const LoginPage = () => {
             </button>
             
             <p className="text-center mt-6 text-gray-600 text-sm">
-              Don't have an account?
+              Don&apos;t have an account?
             </p>
           </form>
         </div>
