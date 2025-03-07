@@ -72,7 +72,7 @@ const LoginPage = () => {
     <div className="w-full min-h-screen flex items-center bg-white">
       <div className="container mx-auto px-4 py-8 flex">
         <div className="w-full lg:w-1/2 z-10">
-          <h1 className="text-4xl font-bold mb-8 text-gray-900">Log In to Your Account</h1>
+          <h1 className="text-4xl font-bold mb-8 text-gray-900">Log In</h1>
           
           <form onSubmit={handleSubmit} className="max-w-md">
             {/* Social Login Buttons */}
