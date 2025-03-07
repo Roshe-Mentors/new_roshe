@@ -69,12 +69,12 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center bg-white">
-      <div className="container mx-auto px-4 py-8 flex">
-        <div className="w-full lg:w-1/2 z-10">
-          <h1 className="text-4xl font-bold mb-8 text-gray-900">Log In</h1>
+    <div className="w-full bg-white py-12 px-4 md:py-20">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+        <div className="w-full lg:w-1/2 flex flex-col">
+          <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">Log In</h1>
           
-          <form onSubmit={handleSubmit} className="max-w-md">
+          <form className="w-full max-w-md">
             {/* Social Login Buttons */}
             <button
               type="button"
@@ -140,6 +140,7 @@ const LoginPage = () => {
             
             <button
               type="submit"
+              onClick={handleSubmit}
               className="w-full py-3 text-white font-medium rounded-md hover:opacity-90"
               style={{
                 background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)'
@@ -162,7 +163,7 @@ const LoginPage = () => {
             alt="Login"
             width={600}
             height={800}
-            className="rounded-lg shadow-lg object-cover h-full w-full"
+            className="rounded-lg shadow-lg object-cover w-full h-full"
             priority
           />
         </div>
