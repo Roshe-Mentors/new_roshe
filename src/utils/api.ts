@@ -46,8 +46,11 @@ export const getMentors = async (token: string) => {
       },
     });
     return response.data;
-  } catch (error: any) {
-    throw error.response || error.message;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw error.response?.data || error.message;
+    }
+    throw error;
   }
 };
 
