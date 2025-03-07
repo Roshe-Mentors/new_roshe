@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
 
         {/* Desktop Buttons */}
         <div className="hidden md:flex space-x-4">
-          <Link legacyBehavior href="/login">
+          <Link legacyBehavior href="/signIn">
             <a className="px-3 py-2 border text-gray-800 border-gray-800 rounded hover:bg-gray-100 transition">
               Log in
             </a>
@@ -72,7 +72,7 @@ const Navbar: React.FC = () => {
       {/* Mobile Dropdown */}
       {isMenuOpen && (
         <div className="md:hidden bg-white shadow-md">
-          <Link legacyBehavior href="/login">
+          <Link legacyBehavior href="/signIn">
             <a className="block px-4 py-2 border-b hover:bg-gray-100">Log in</a>
           </Link>
           <Link legacyBehavior href="/user">

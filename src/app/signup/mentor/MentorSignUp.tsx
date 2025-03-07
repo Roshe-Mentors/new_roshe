@@ -62,39 +62,50 @@ const MentorSignUp = () => {
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
-    } else {
-      setError('');
-      setLoading(true);
+      return;
+    }
 
-      const { user, error } = await signUp(formData.email, formData.password);
+    setError('');
+    setLoading(true);
 
-      if (error || !user) {
-        setError(error || 'Failed to create user');
-      } else {
-        const { data, error: insertError } = await supabase
-          .from('mentors')
-          .insert([
-            { 
-              user_id: user.id,
-              name: formData.name,
-              linkedin: formData.linkedin,
-              dob: formData.dob,
-              biography: formData.biography,
-            }
-          ]);
-
-        if (insertError) {
-          if (insertError.message.includes("new row violates row-level security policy")) {
-            setError("You do not have permission to insert data into the mentors table.");
-          } else {
-            setError(insertError.message);
-          }
-        } else {
-          console.log('Mentor data inserted:', data);
-          router.push('/dashboard'); // Redirect to dashboard after successful signup
-        }
+    try {
+      // First, sign up the user
+      const { user, error: signUpError } = await signUp(formData.email, formData.password);
+      
+      if (signUpError || !user) {
+        throw new Error(signUpError || 'Failed to create user');
       }
 
+      // Get the session to ensure we have proper authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error(sessionError?.message || 'Failed to get session');
+      }
+
+      // Then insert the mentor data with authenticated client
+      const { error: insertError } = await supabase
+        .from('mentors')
+        .insert([
+          { 
+            user_id: user.id,
+            name: formData.name,
+            linkedin: formData.linkedin,
+            dob: formData.dob,
+            biography: formData.biography,
+          }
+        ]);
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+
+      // Redirect on success
+      router.push('/dashboard');
+      
+    } catch (err: Error | unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
       setLoading(false);
     }
   };
