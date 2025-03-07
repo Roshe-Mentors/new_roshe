@@ -28,12 +28,12 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const { user, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
-      if (error || !user) {
+      if (error || !data.user) {
         setError(error?.message || 'Failed to log in');
       } else {
         if (formData.rememberMe) {
@@ -41,7 +41,7 @@ const LoginPage = () => {
         }
         router.push('/dashboard');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -52,16 +52,16 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const { user, error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
       });
 
-      if (error || !user) {
+      if (error || !data) {
         setError(error?.message || 'Failed to log in with social account');
       } else {
         router.push('/dashboard');
       }
-    } catch (err) {
+    } catch (_) {
       setError('An error occurred with social login. Please try again.');
     } finally {
       setLoading(false);
