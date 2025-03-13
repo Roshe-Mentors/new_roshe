@@ -66,14 +66,14 @@ const ToggleSection: React.FC = () => {
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/1.png"
+              src="/images/5.png"
               alt="Profile 5"
               width={96}
               height={96}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/2.png"
+              src="/images/6.png"
               alt="Profile 6"
               width={96}
               height={96}
