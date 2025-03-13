@@ -36,7 +36,7 @@ const ToggleSection: React.FC = () => {
 
         {/* Content Section */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start">
-          <div className="grid grid-cols-2 gap-4 mb-8 lg:mb-0 lg:mr-8">
+          <div className="grid grid-cols-3 gap-4 mb-8 lg:mb-0 lg:mr-8">
             <Image
               src="/images/1.png"
               alt="Profile 1"
@@ -49,22 +49,35 @@ const ToggleSection: React.FC = () => {
               alt="Profile 2"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
               src="/images/3.png"
               alt="Profile 3"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
             />
-            
             <Image
               src="/images/4.png"
               alt="Profile 4"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/1.png"
+              alt="Profile 5"
+              width={96}
+              height={96}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/2.png"
+              alt="Profile 6"
+              width={96}
+              height={96}
+              className="rounded-md object-cover w-24 h-[150px]"
             />
           </div>
 
