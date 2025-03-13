@@ -123,34 +123,48 @@ const ToggleSection: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 lg:ml-8">
+          <div className="grid grid-cols-3 gap-4 lg:ml-8">
             <Image
-              src="/images/3.png"
+              src="/images/7.png"
               alt="Profile 5"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/1.png"
+              src="/images/8.png"
               alt="Profile 6"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/1.png"
+              src="/images/9.png"
               alt="Profile 7"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/1.png"
+              src="/images/10.png"
               alt="Profile 8"
               width={96}
               height={96}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/11.png"
+              alt="Profile 9"
+              width={96}
+              height={96}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/12.png"
+              alt="Profile 10"
+              width={96}
+              height={96}
+              className="rounded-md object-cover w-24 h-[150px]"
             />
           </div>
         </div>
