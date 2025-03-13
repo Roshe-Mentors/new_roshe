@@ -85,30 +85,25 @@ const ToggleSection: React.FC = () => {
           <div className="text-center lg:mx-8 lg:flex-1 transition-all duration-300">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-2xl text-black font-bold mb-4">
+                <h2 className="text-4xl text-black font-bold mb-6">
                   Change the world through mentorship
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-8 text-xl">
                   Enhance your leadership confidence, expand your connections,
                   and shape your lasting impact.
                 </p>
-                <button
-                  
-                  className="px-6 py-3 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition"
-                >
-                 <Link href="/signup/mentor" legacyBehavior>
-                  <a >
-                    Become a Mentor
-                  </a>
-                </Link>
+                <button className="px-6 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg">
+                  <Link href="/signup/mentor" legacyBehavior>
+                    <a>Become a Mentor</a>
+                  </Link>
                 </button>
               </>
             ) : (
               <>
-                <h2 className="text-black text-2xl font-bold mb-4">
+                <h2 className="text-black text-4xl font-bold mb-6">
                   Get mentored by industry professionals
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-8 text-xl">
                   Fast-track your career with personalized 1:1 guidance from
                   over 1000 expert mentors in our community.
                 </p>
@@ -116,7 +111,7 @@ const ToggleSection: React.FC = () => {
                   <input
                     type="text"
                     placeholder="What skill do you want to improve?"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm"
+                    className="w-full px-6 py-4 border border-gray-300 rounded-md shadow-sm text-lg"
                   />
                 </div>
               </>
