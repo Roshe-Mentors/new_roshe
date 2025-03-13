@@ -116,7 +116,7 @@ const MentorSignUp = () => {
         {/* Left Image Section */}
         <div className="w-full md:w-1/2">
           <Image
-            src="/images/chris_lee_mentor.png"
+            src="/images/mentor_pic.png"
             alt="Mentor Sign Up"
             width={600}
             height={600}

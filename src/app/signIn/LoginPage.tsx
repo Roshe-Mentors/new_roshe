@@ -166,7 +166,7 @@ const LoginPage = () => {
         {/* Right Image Section */}
         <div className="hidden lg:block lg:w-1/2">
           <Image
-            src="/images/signIn.png" 
+            src="/images/login.png" 
             alt="Login"
             width={600}
             height={800}

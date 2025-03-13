@@ -12,10 +12,16 @@ const ExplainerVideo = () => {
       </header>
       <div className="w-full flex justify-center">
         <div className="w-full sm:w-1/3">
-          <div className="relative w-full h-72 bg-gray-300 flex items-center justify-center text-xl text-gray-700 rounded-lg shadow-lg">
-            {/* Placeholder for Explainer Video */}
-            <span>Explainer Video</span>
-          </div>
+          <video 
+            className="w-full rounded-lg shadow-lg"
+            controls
+            autoPlay
+            muted
+            loop
+          >
+            <source src="/images/rosheVid.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
       </div>
     </section>
