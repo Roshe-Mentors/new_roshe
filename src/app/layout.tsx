@@ -24,8 +24,23 @@ export const metadata: Metadata = {
   title: "Roshe Mentorship",
   description: "Change the world through mentorship",
   icons: {
-    icon: "/images/roshementorship.png",   
-    
+    icon: [
+      {
+        url: '/roshementorship.png',
+        sizes: '32x32',
+        type: 'image/ico',
+      },
+      {
+        url: '/roshementorship.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+    ],
+    apple: {
+      url: "/roshementorship.png",
+      sizes: "180x180",
+      type: "image/png",
+    },
   }
 };
 
