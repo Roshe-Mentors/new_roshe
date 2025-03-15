@@ -3,20 +3,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const logos = [
-  { src: "/images/disney.png", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/DreamWorks.png", alt: 'Pixar', href: 'https://www.pixar.com' },
-  { src: "/images/Illumination.png", alt: 'DreamWorks', href: 'https://www.dreamworks.com' },
-  { src: "/images/images.png", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
-  { src: "/images/pixar.png", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
-  { src: "/images/Skydance_Animation.png", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/Sony_Pictures.png", alt: 'Pixar', href: 'https://www.pixar.com' },
-  { src: "/images/disney.png", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/DreamWorks.png", alt: 'Pixar', href: 'https://www.pixar.com' },
-  { src: "/images/Illumination.png", alt: 'DreamWorks', href: 'https://www.dreamworks.com' },
-  { src: "/images/images.png", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
-  { src: "/images/pixar.png", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
-  { src: "/images/Skydance_Animation.png", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/Sony_Pictures.png", alt: 'Pixar', href: 'https://www.pixar.com' },
+  { src: "/images/logo 1.jpg", alt: 'Disney', href: 'https://www.disney.com' },
+  { src: "/images/logo 2.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
+  { src: "/images/logo 3.jpg", alt: 'DreamWorks', href: 'https://www.dreamworks.com' },
+  { src: "/images/logo 4.jpg", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
+  { src: "/images/logo 5.jpg", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
+  { src: "/images/logo 6.jpg", alt: 'Disney', href: 'https://www.disney.com' },
+  { src: "/images/logo 7.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
+  { src: "/images/logo 8.jpg", alt: 'Disney', href: 'https://www.disney.com' },
+  { src: "/images/logo 9.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
+  { src: "/images/logo 10.jpg", alt: 'DreamWorks', href: 'https://www.dreamworks.com' },
+  { src: "/images/logo 11.jpg", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
+  { src: "/images/logo 12.jpg", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
+  { src: "/images/logo 13.jpg", alt: 'Disney', href: 'https://www.disney.com' },
+  { src: "/images/logo 14.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
 ];
 
 export default function LogosShowcase() {
@@ -34,9 +34,9 @@ export default function LogosShowcase() {
                   <Image 
                     src={logo.src}
                     alt={logo.alt}
-                    width={150}    
-                    height={100}   
-                    className="mx-4 transition-transform duration-300 transform hover:scale-105" // Scales uniformly
+                    width={400}    
+                    height={800}  
+                    className="mx-4 w-[200px] h-auto transition-transform duration-300 transform hover:scale-105"// Scales uniformly
                   />
                 </a>
               </Link>
@@ -48,9 +48,9 @@ export default function LogosShowcase() {
                   <Image 
                     src={logo.src}
                     alt={logo.alt}
-                    width={150}    
-                    height={100}  
-                    className="mx-4 transition-transform duration-300 transform hover:scale-110" // Scales uniformly
+                    width={400}    
+                    height={800}  
+                    className="mx-4 w-[200px] h-auto transition-transform duration-300 transform hover:scale-105" // Scales uniformly
                   />
                 </a>
               </Link>
