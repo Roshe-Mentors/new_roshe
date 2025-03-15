@@ -11,7 +11,7 @@ const ExplainerVideo = () => {
         </p>
       </header>
       <div className="w-full flex justify-center">
-        <div className="w-full sm:w-1/3">
+        <div className="w-full sm:w-2/3">
           <video 
             className="w-full rounded-lg shadow-lg"
             controls
