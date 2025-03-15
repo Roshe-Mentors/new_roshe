@@ -40,56 +40,56 @@ const ToggleSection: React.FC = () => {
             <Image
               src="/images/1.png"
               alt="Profile 1"
-              width={96}
-              height={120}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/2.png"
               alt="Profile 2"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/3.png"
               alt="Profile 3"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/4.png"
               alt="Profile 4"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/5.png"
               alt="Profile 5"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/6.png"
               alt="Profile 6"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
           </div>
 
           {/* Middle Section: Dynamic Content */}
-          <div className="text-center lg:mx-8 lg:flex-1 transition-all duration-300 mb-8 lg:mb-0">
+          <div className="text-center lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-3xl md:text-4xl text-black font-bold mb-4 md:mb-6">
+                <h2 className="text-6xl md:text-5xl text-black font-extrabold mb-6 md:mb-8">
                   Change the world through mentorship
                 </h2>
-                <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl px-4 md:px-0">
-                  Enhance your leadership confidence, expand your connections,
+                <p className="text-gray-800 mb-8 md:mb-10 text-lg md:text-xl px-4 md:px-0">
+                  Enhance your leadership confidence, expand your <br/>connections,
                   and shape your lasting impact.
                 </p>
                 <button className="w-full md:w-auto px-6 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
@@ -100,7 +100,7 @@ const ToggleSection: React.FC = () => {
               </>
             ) : (
               <>
-                <h2 className="text-3xl md:text-4xl text-black font-bold mb-4 md:mb-6">
+                <h2 className="text-4xl md:text-5xl text-black font-bold mb-6 md:mb-8">
                   Get mentored by industry professionals
                 </h2>
                 <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl px-4 md:px-0">
@@ -123,44 +123,44 @@ const ToggleSection: React.FC = () => {
             <Image
               src="/images/7.png"
               alt="Profile 5"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/8.png"
               alt="Profile 6"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/9.png"
               alt="Profile 7"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/10.png"
               alt="Profile 8"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/11.png"
               alt="Profile 9"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
               src="/images/12.png"
               alt="Profile 10"
-              width={96}
-              height={96}
-              className="rounded-md object-cover w-24 h-[150px]"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
             />
           </div>
         </div>
