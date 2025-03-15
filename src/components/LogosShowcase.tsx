@@ -23,35 +23,39 @@ export default function LogosShowcase() {
   return (
     <div className="bg-white py-8 overflow-hidden">
       <div className="container mx-auto px-4 text-center">
-        <p className="text-black mb-6">Proven success with 50+ top studios</p>
-        <div className="relative">
-          {/* Container with infinite scroll effect */}
-          <div className="flex animate-marquee space-x-10">
+        <p className="text-black mb-6 text-lg md:text-xl">Proven success with 50+ top studios</p>
+        <div className="relative w-full overflow-hidden">
+          <div className="flex animate-marquee-fast whitespace-nowrap min-w-full">
             {/* First set of logos */}
             {logos.map((logo, index) => (
               <Link legacyBehavior key={index} href={logo.href} passHref>
                 <a target="_blank" rel="noopener noreferrer" className="inline-block">
-                  <Image 
-                    src={logo.src}
-                    alt={logo.alt}
-                    width={400}    
-                    height={800}  
-                    className="mx-4 w-[200px] h-auto transition-transform duration-300 transform hover:scale-105"// Scales uniformly
-                  />
+                  <div className="w-[150px] sm:w-[200px] md:w-[300px] lg:w-[400px] relative">
+                    <Image 
+                      src={logo.src}
+                      alt={logo.alt}
+                      width={800}    
+                      height={533}   
+                      className="transition-transform duration-300 transform hover:scale-105 object-contain"
+                      
+                    />
+                  </div>
                 </a>
               </Link>
             ))}
-            {/* Second set of logos (duplicated for continuous loop) */}
+            {/* Second set of logos */}
             {logos.map((logo, index) => (
               <Link legacyBehavior key={index + logos.length} href={logo.href} passHref>
                 <a target="_blank" rel="noopener noreferrer" className="inline-block">
-                  <Image 
-                    src={logo.src}
-                    alt={logo.alt}
-                    width={400}    
-                    height={800}  
-                    className="mx-4 w-[200px] h-auto transition-transform duration-300 transform hover:scale-105" // Scales uniformly
-                  />
+                  <div className="w-[150px] sm:w-[200px] md:w-[300px] lg:w-[400px] relative">
+                    <Image 
+                      src={logo.src}
+                      alt={logo.alt}
+                      width={800}    
+                      height={533}   
+                      className="transition-transform duration-300 transform hover:scale-105 object-contain"
+                    />
+                  </div>
                 </a>
               </Link>
             ))}

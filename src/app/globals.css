@@ -36,9 +36,23 @@ body {
   }
 }
 
+@keyframes marquee-fast {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 .animate-marquee {
   animation: marquee 30s linear infinite;
   /* Adjust duration to control speed */
+}
+
+.animate-marquee-fast {
+  animation: marquee-fast 20s linear infinite;
+  will-change: transform;
 }
 
 .video-responsive {
@@ -60,4 +74,14 @@ body {
   height: 100%;
   border: none;
   /* No border as per your requirement */
+}
+
+@media (max-width: 768px) {
+  .animate-marquee {
+    animation-duration: 10s;
+    /* Faster on mobile */
+  }
+  .animate-marquee-fast {
+    animation-duration: 15s;
+  }
 }
