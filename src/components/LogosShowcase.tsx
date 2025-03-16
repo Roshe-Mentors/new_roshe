@@ -34,8 +34,8 @@ export default function LogosShowcase() {
                     <Image 
                       src={logo.src}
                       alt={logo.alt}
-                      width={800}    
-                      height={533}   
+                      width={700}    
+                      height={433}   
                       className="transition-transform duration-300 transform hover:scale-105 object-contain"
                       
                     />
@@ -51,8 +51,8 @@ export default function LogosShowcase() {
                     <Image 
                       src={logo.src}
                       alt={logo.alt}
-                      width={800}    
-                      height={533}   
+                      width={700}    
+                      height={433}   
                       className="transition-transform duration-300 transform hover:scale-105 object-contain"
                     />
                   </div>
