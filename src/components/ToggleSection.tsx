@@ -147,7 +147,7 @@ const ToggleSection: React.FC = () => {
                              onMouseEnter={() => setActiveSubmenu(skill)}
                              onMouseLeave={() => setActiveSubmenu(null)}>
                           <button
-                            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex justify-between items-center"
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex justify-between items-center text-black"
                             onClick={() => subskills.length === 0 ? handleSkillSelect(skill) : null}
                           >
                             {skill}
@@ -159,7 +159,7 @@ const ToggleSection: React.FC = () => {
                               {subskills.map((subskill) => (
                                 <button
                                   key={subskill}
-                                  className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                                  className="w-full px-4 py-2 text-left hover:bg-gray-100 text-black"
                                   onClick={() => handleSkillSelect(skill, subskill)}
                                 >
                                   {subskill}
