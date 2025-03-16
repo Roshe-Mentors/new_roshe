@@ -1,6 +1,5 @@
 // components/MentorsSection.tsx
 import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 
 interface Mentor {
@@ -103,10 +102,9 @@ const MentorsSection = () => {
       {/* Cards Container */}
       <div className="w-11/12 max-w-7xl flex flex-wrap justify-center gap-6">
         {mentors.map((mentor) => (
-          <Link
+          <div
             key={mentor.id}
-            href={`/mentors/${mentor.id}`}
-            className="group w-56 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-100"
+            className="w-56 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-100"
           >
             {/* Image Wrapper */}
             <div className="relative w-full h-56">
@@ -114,8 +112,10 @@ const MentorsSection = () => {
                 src={mentor.image}
                 alt={mentor.name}
                 fill
+                quality={95}
+                priority
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 256px"
+                sizes="(max-width: 768px) 100vw, 224px"
               />
 
               {/* Badges with correct styling */}
@@ -191,7 +191,7 @@ const MentorsSection = () => {
                 </div>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </section>
