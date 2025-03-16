@@ -92,9 +92,9 @@ const MentorsSection = () => {
         <h2 className="text-4xl font-bold text-gray-900">
           Discover the world&apos;s top mentors
         </h2>
-        <p className="mt-4 text-gray-700 leading-relaxed max-w-3xl mx-auto">
+        <p className="mt-4 text-base text-gray-700 leading-relaxed max-w-3xl mx-auto">
           Our mentors are the heart and soul of Roshe Mentorship. Veteran studio pro animators
-          from powerhouses like Pixar,<br/> DreamWorks, and Industrial Light & Magic, teach you the
+          from powerhouses like Pixar, DreamWorks, and Industrial Light & Magic, teach you the
           ins and outs of production level animation.
         </p>
       </div>
