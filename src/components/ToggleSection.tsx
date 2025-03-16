@@ -3,8 +3,33 @@ import Link from 'next/link';
 import React, { useState } from "react";
 import Image from 'next/image';
 
+const menuItems = {
+  "Design": ["Graphic Design", "Motion Design", "3D Design", "Product Design", "Multimedia", "Interaction Design", "Game Design"],
+  "3D Character Animation": [],
+  "2D Character Animation": [],
+  "3D Rigging": [],
+  "Concept Art": ["Character Design", "Environment Design", "Prop Design", "Digital Matte Painting", "Background Painting", "Color Script", "Painting"],
+  "Storyboard": [],
+  "Game Animation": [],
+  "Texturing and Lookdev": [],
+  "Lighting": [],
+  "Visual Effect (Vfx)": [],
+  "Character Effect (Cfx)": ["Cloth Simulation", "Hair Simulation", "Crowd Simulation"],
+  "Modeling & Sculpting": ["Character Modeling", "Environment Modeling", "Prop Modeling", "Sculpting"],
+  "Film Making": ["Acting", "Film Directing", "Film Distribution", "Cinematography", "Photography", "Production Design", "Hair & Makeup", "Film Editing"]
+};
+
 const ToggleSection: React.FC = () => {
   const [selectedView, setSelectedView] = useState<"mentor" | "mentee">("mentor");
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState("");
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+
+  const handleSkillSelect = (skill: string, subskill?: string) => {
+    setSelectedSkill(subskill || skill);
+    setIsOpen(false);
+    setActiveSubmenu(null);
+  };
 
   return (
     <section className="bg-white py-12 md:py-24">
@@ -108,11 +133,44 @@ const ToggleSection: React.FC = () => {
                   over 1000 expert mentors in our community.
                 </p>
                 <div className="relative px-4 md:px-0">
-                  <input
-                    type="text"
-                    placeholder="What skill do you want to improve?"
-                    className="w-full px-4 md:px-6 py-3 md:py-4 border border-gray-300 rounded-md shadow-sm text-base md:text-lg"
-                  />
+                  <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full px-4 md:px-6 py-3 md:py-4 border border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
+                  >
+                    {selectedSkill || "What skill do you want to improve?"}
+                  </button>
+                  
+                  {isOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-96 overflow-y-auto">
+                      {Object.entries(menuItems).map(([skill, subskills]) => (
+                        <div key={skill} className="relative"
+                             onMouseEnter={() => setActiveSubmenu(skill)}
+                             onMouseLeave={() => setActiveSubmenu(null)}>
+                          <button
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex justify-between items-center"
+                            onClick={() => subskills.length === 0 ? handleSkillSelect(skill) : null}
+                          >
+                            {skill}
+                            {subskills.length > 0 && <span>→</span>}
+                          </button>
+                          
+                          {subskills.length > 0 && activeSubmenu === skill && (
+                            <div className="absolute left-full top-0 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                              {subskills.map((subskill) => (
+                                <button
+                                  key={subskill}
+                                  className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                                  onClick={() => handleSkillSelect(skill, subskill)}
+                                >
+                                  {subskill}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}
