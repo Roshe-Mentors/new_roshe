@@ -43,7 +43,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: false,
     coaching: true,
-    image: "/images/1.png",
+    image: "/images/2.png",
   },
   {
     id: 3,
@@ -56,7 +56,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: false,
     coaching: false,
-    image: "/images/1.png",
+    image: "/images/10.png",
   },
   {
     id: 4,
@@ -69,7 +69,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: true,
     coaching: false,
-    image: "/images/1.png",
+    image: "/images/11.png",
   },
   {
     id: 5,
@@ -82,7 +82,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: false,
     coaching: true,
-    image: "/images/1.png",
+    image: "/images/12.png",
   },
 ];
 
