@@ -6,7 +6,7 @@ const logos = [
   { src: "/images/logo 1.jpg", alt: 'Disney', href: 'https://www.disney.com' },
   { src: "/images/logo 2.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
   { src: "/images/logo 3.jpg", alt: 'DreamWorks', href: 'https://www.dreamworks.com' },
-  { src: "/images/logo 4.jpg", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
+  { src: "/images/Logo4.jpg", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
   { src: "/images/logo 5.jpg", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
   { src: "/images/logo 6.jpg", alt: 'Disney', href: 'https://www.disney.com' },
   { src: "/images/logo 7.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
