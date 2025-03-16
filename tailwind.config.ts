@@ -16,6 +16,11 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        'gradient-start': '#F0EEB4',
+        'gradient-end': '#DBA508',
+      },
+      backgroundImage: {
+        'custom-gradient': 'linear-gradient(90deg, var(--tw-gradient-from), var(--tw-gradient-to))',
       },
     },
   },
