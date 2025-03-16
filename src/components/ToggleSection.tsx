@@ -10,7 +10,7 @@ const ToggleSection: React.FC = () => {
     <section className="bg-white py-12 md:py-24">
       <div className="container mx-auto px-4 md:px-0">
         {/* Toggle Buttons */}
-        <div className="flex justify-center mb-8 space-x-4">
+        <div className="flex justify-center mb-12 space-x-4">
           <button
             onClick={() => setSelectedView("mentee")}
             className={`text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${
@@ -85,14 +85,14 @@ const ToggleSection: React.FC = () => {
           <div className="text-center lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-6xl md:text-5xl text-black font-extrabold mb-6 md:mb-8">
+                <h2 className="text-6xl md:text-5xl text-black font-extrabold mb-6 mt-12 md:mb-8">
                   Change the world through mentorship
                 </h2>
                 <p className="text-gray-800 mb-8 md:mb-10 text-lg md:text-xl px-4 md:px-0">
                   Enhance your leadership confidence, expand your <br/>connections,
                   and shape your lasting impact.
                 </p>
-                <button className="w-full md:w-auto px-6 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
+                <button className="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
                   <Link href="/signup/mentor" legacyBehavior>
                     <a>Become a Mentor</a>
                   </Link>
