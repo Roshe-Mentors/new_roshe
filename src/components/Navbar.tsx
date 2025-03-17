@@ -29,7 +29,10 @@ const Navbar: React.FC = () => {
         {/* Desktop Buttons */}
         <div className="hidden md:flex space-x-4">
           <Link legacyBehavior href="/signIn">
-            <a className="px-3 py-2 border text-gray-800 border-gray-800 rounded hover:bg-gray-100 transition">
+            <a className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
+               style={{
+                 borderColor: "#9898FA"
+               }}>
               Log in
             </a>
           </Link>
@@ -37,8 +40,7 @@ const Navbar: React.FC = () => {
             <a
               className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
               style={{
-                background:
-                  "linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)",
+                background: "#9898FA",
               }}
             >
               Get Started
