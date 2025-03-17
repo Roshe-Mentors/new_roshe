@@ -117,7 +117,7 @@ const ToggleSection: React.FC = () => {
                   Enhance your leadership confidence, expand your <br/>connections,
                   and shape your lasting impact.
                 </p>
-                <button className="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
+                <button className="w-full md:w-auto px-12 py-4 bg-[#9898FA] text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
                   <Link href="/signup/mentor" legacyBehavior>
                     <a>Become a Mentor</a>
                   </Link>
