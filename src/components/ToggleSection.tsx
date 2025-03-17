@@ -135,7 +135,7 @@ const ToggleSection: React.FC = () => {
                 <div className="relative px-4 md:px-0">
                   <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full px-4 md:px-6 py-3 md:py-4 border border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
+                    className="w-full px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
                   >
                     {selectedSkill || "What skill do you want to improve?"}
                   </button>
@@ -155,7 +155,7 @@ const ToggleSection: React.FC = () => {
                           </button>
                           
                           {subskills.length > 0 && activeSubmenu === skill && (
-                            <div className="absolute left-full top-0 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                            <div className="absolute lg:left-full left-0 lg:top-0 top-full w-full bg-white border border-gray-300 rounded-md shadow-lg z-50">
                               {subskills.map((subskill) => (
                                 <button
                                   key={subskill}
