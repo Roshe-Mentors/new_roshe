@@ -31,6 +31,23 @@ const ToggleSection: React.FC = () => {
     setActiveSubmenu(null);
   };
 
+  const handleParentClick = (skill: string, subskills: string[]) => {
+    if (subskills.length === 0) {
+      handleSkillSelect(skill);
+    } else {
+      setActiveSubmenu(activeSubmenu === skill ? null : skill);
+    }
+  };
+
+  // Add click handler for mobile devices
+  const handleSkillClick = (skill: string, subskills: string[]) => {
+    if (subskills.length === 0) {
+      handleSkillSelect(skill);
+    } else if (window.innerWidth < 1024) { // for mobile
+      setActiveSubmenu(activeSubmenu === skill ? null : skill);
+    }
+  };
+
   return (
     <section className="bg-white py-12 md:py-24">
       <div className="container mx-auto px-4 md:px-0">
@@ -143,24 +160,30 @@ const ToggleSection: React.FC = () => {
                   {isOpen && (
                     <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-96 overflow-y-auto">
                       {Object.entries(menuItems).map(([skill, subskills]) => (
-                        <div key={skill} className="relative"
-                             onMouseEnter={() => setActiveSubmenu(skill)}
-                             onMouseLeave={() => setActiveSubmenu(null)}>
+                        <div key={skill} 
+                             className="relative group"
+                             onClick={() => handleSkillClick(skill, subskills)}
+                             onMouseEnter={() => window.innerWidth >= 1024 && setActiveSubmenu(skill)}
+                             onMouseLeave={() => window.innerWidth >= 1024 && setActiveSubmenu(null)}>
                           <button
                             className="w-full px-4 py-2 text-left hover:bg-gray-100 flex justify-between items-center text-black"
-                            onClick={() => subskills.length === 0 ? handleSkillSelect(skill) : null}
                           >
                             {skill}
-                            {subskills.length > 0 && <span>→</span>}
+                            {subskills.length > 0 && <span className="transform group-hover:rotate-90 transition-transform">→</span>}
                           </button>
                           
                           {subskills.length > 0 && activeSubmenu === skill && (
-                            <div className="absolute lg:left-full left-0 lg:top-0 top-full w-full bg-white border border-gray-300 rounded-md shadow-lg z-50">
+                            <div className="lg:absolute lg:left-full lg:top-0 mt-0 lg:mt-0 w-full 
+                                          bg-white border border-gray-300 rounded-md shadow-lg z-[60]
+                                          lg:w-64 lg:-mr-2">
                               {subskills.map((subskill) => (
                                 <button
                                   key={subskill}
                                   className="w-full px-4 py-2 text-left hover:bg-gray-100 text-black"
-                                  onClick={() => handleSkillSelect(skill, subskill)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSkillSelect(skill, subskill);
+                                  }}
                                 >
                                   {subskill}
                                 </button>
