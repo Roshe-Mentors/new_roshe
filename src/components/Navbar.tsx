@@ -31,7 +31,8 @@ const Navbar: React.FC = () => {
           <Link legacyBehavior href="/signIn">
             <a className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
                style={{
-                 borderColor: "#9898FA"
+                 borderColor: "#9898FA",
+                 borderWidth: "2px"
                }}>
               Log in
             </a>
@@ -51,7 +52,7 @@ const Navbar: React.FC = () => {
         {/* Hamburger Menu */}
         <button
           aria-label="Toggle navigation menu"
-          className="md:hidden flex items-center px-3 py-2 border rounded text-gray-800"
+          className="md:hidden flex items-center px-3 py-2 border rounded text-black"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           <svg
@@ -75,10 +76,10 @@ const Navbar: React.FC = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white shadow-md">
           <Link legacyBehavior href="/signIn">
-            <a className="block px-4 py-2 border-b hover:bg-gray-100">Log in</a>
+            <a className="block text-black px-4 py-2 border-b hover:bg-gray-100">Log in</a>
           </Link>
           <Link legacyBehavior href="/user">
-            <a className="block px-4 py-2 hover:bg-gray-100">Get Started</a>
+            <a className="block text-black px-4 py-2 hover:bg-gray-100">Get Started</a>
           </Link>
         </div>
       )}
