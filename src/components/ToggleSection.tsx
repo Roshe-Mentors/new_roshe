@@ -81,9 +81,6 @@ const ToggleSection: React.FC = () => {
     }
   };
 
-  // Check if any skills have submenus to determine the initial layout
-  const hasSubmenus = Object.values(menuItems).some(subskills => subskills.length > 0);
-
   return (
     <section className="bg-white py-12 md:py-24">
       <div className="container mx-auto px-4 md:px-0">
