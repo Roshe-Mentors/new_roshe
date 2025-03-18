@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from 'next/image';
 
 const menuItems = {
@@ -9,7 +9,7 @@ const menuItems = {
   "2D Character Animation": [],
   "3D Rigging": [],
   "Concept Art": ["Character Design", "Environment Design", "Prop Design", "Digital Matte Painting", "Background Painting", "Color Script", "Painting"],
-  "Storyboard": [],
+  "Storyboard & Animatics": [],
   "Game Animation": [],
   "Texturing and Lookdev": [],
   "Lighting": [],
@@ -24,6 +24,32 @@ const ToggleSection: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState("");
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Close dropdown on outside click
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setActiveSubmenu(null);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleSkillSelect = (skill: string, subskill?: string) => {
     setSelectedSkill(subskill || skill);
@@ -32,21 +58,31 @@ const ToggleSection: React.FC = () => {
   };
 
   const handleParentClick = (skill: string, subskills: string[]) => {
+    // If there are no subskills, immediately select
     if (subskills.length === 0) {
       handleSkillSelect(skill);
-    } else {
+    } else if (isMobile) {
+      // Toggle sub-menu only on mobile devices
       setActiveSubmenu(activeSubmenu === skill ? null : skill);
     }
   };
 
-  // Add click handler for mobile devices
-  const handleSkillClick = (skill: string, subskills: string[]) => {
-    if (subskills.length === 0) {
-      handleSkillSelect(skill);
-    } else if (window.innerWidth < 1024) { // for mobile
-      setActiveSubmenu(activeSubmenu === skill ? null : skill);
+  const handleMenuHover = (skill: string, subskills: string[]) => {
+    // Only change submenu on hover if not on mobile and if there are subskills
+    if (!isMobile && subskills.length > 0) {
+      setActiveSubmenu(skill);
     }
   };
+
+  const handleMenuLeave = () => {
+    // On non-mobile, clear active submenu when mouse leaves
+    if (!isMobile) {
+      setActiveSubmenu(null);
+    }
+  };
+
+  // Check if any skills have submenus to determine the initial layout
+  const hasSubmenus = Object.values(menuItems).some(subskills => subskills.length > 0);
 
   return (
     <section className="bg-white py-12 md:py-24">
@@ -134,7 +170,7 @@ const ToggleSection: React.FC = () => {
                   Enhance your leadership confidence, expand your <br/>connections,
                   and shape your lasting impact.
                 </p>
-                <button className="w-full md:w-auto px-12 py-4 bg-[#9898FA] text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
+                <button className="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0">
                   <Link href="/signup/mentor" legacyBehavior>
                     <a>Become a Mentor</a>
                   </Link>
@@ -149,7 +185,7 @@ const ToggleSection: React.FC = () => {
                   Fast-track your career with personalized 1:1 guidance from
                   over 1000 expert mentors in our community.
                 </p>
-                <div className="relative px-4 md:px-0">
+                <div className="relative px-4 md:px-0" ref={dropdownRef}>
                   <button
                     onClick={() => setIsOpen(!isOpen)}
                     className="w-full px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
@@ -158,40 +194,56 @@ const ToggleSection: React.FC = () => {
                   </button>
                   
                   {isOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-96 overflow-y-auto">
-                      {Object.entries(menuItems).map(([skill, subskills]) => (
-                        <div key={skill} 
-                             className="relative group"
-                             onClick={() => handleSkillClick(skill, subskills)}
-                             onMouseEnter={() => window.innerWidth >= 1024 && setActiveSubmenu(skill)}
-                             onMouseLeave={() => window.innerWidth >= 1024 && setActiveSubmenu(null)}>
-                          <button
-                            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex justify-between items-center text-black"
-                          >
-                            {skill}
-                            {subskills.length > 0 && <span className="transform group-hover:rotate-90 transition-transform">→</span>}
-                          </button>
-                          
-                          {subskills.length > 0 && activeSubmenu === skill && (
-                            <div className="lg:absolute lg:left-full lg:top-0 mt-0 lg:mt-0 w-full 
-                                          bg-white border border-gray-300 rounded-md shadow-lg z-[60]
-                                          lg:w-64 lg:-mr-2">
-                              {subskills.map((subskill) => (
+                    <div
+                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg mt-1 overflow-hidden"
+                      style={{ width: '100%', maxWidth: '500px' }}
+                      onMouseLeave={handleMenuLeave}
+                    >
+                      <div className="flex h-96">
+                        {/* Main menu column - Always visible */}
+                        <div className={`${activeSubmenu ? 'w-1/2' : 'w-full'} border-r border-gray-300 overflow-y-auto transition-all duration-200 scrollbar-hide`}>
+                          {Object.entries(menuItems).map(([skill, subskills]) => (
+                            <div
+                              key={skill}
+                              className="relative"
+                              onMouseEnter={() => handleMenuHover(skill, subskills)}
+                            >
+                              <button
+                                className={`w-full px-4 py-3 text-left hover:bg-gray-100 flex justify-between items-center text-black ${
+                                  activeSubmenu === skill ? 'bg-gray-100' : ''
+                                }`}
+                                onClick={() => handleParentClick(skill, subskills)}
+                              >
+                                <span>{skill}</span>
+                                {subskills.length > 0 && (
+                                  <span className="ml-2 text-gray-500">›</span>
+                                )}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Submenu column - Only visible when a submenu is active */}
+                        {activeSubmenu && (
+                          <div className="w-1/2 overflow-y-auto bg-gray-50 transition-all duration-200 scrollbar-hide">
+                            {menuItems[activeSubmenu]?.length > 0 ? (
+                              menuItems[activeSubmenu].map((subskill) => (
                                 <button
                                   key={subskill}
-                                  className="w-full px-4 py-2 text-left hover:bg-gray-100 text-black"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSkillSelect(skill, subskill);
-                                  }}
+                                  className="w-full px-4 py-3 text-left hover:bg-gray-100 text-black"
+                                  onClick={() => handleSkillSelect(activeSubmenu, subskill)}
                                 >
                                   {subskill}
                                 </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                              ))
+                            ) : (
+                              <div className="px-4 py-3 text-gray-500">
+                                No subskills available
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -203,47 +255,46 @@ const ToggleSection: React.FC = () => {
           <div className="hidden lg:grid grid-cols-3 sm:grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto">
             <Image
               src="/images/7.png"
-              alt="Profile 5"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-32 h-[200px]"
-            />
-            <Image
-              src="/images/8.png"
-              alt="Profile 6"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-32 h-[200px]"
-            />
-            <Image
-              src="/images/9.png"
               alt="Profile 7"
               width={120}
               height={150}
               className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
-              src="/images/10.png"
+              src="/images/8.png"
               alt="Profile 8"
               width={120}
               height={150}
               className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
-              src="/images/11.png"
+              src="/images/9.png"
               alt="Profile 9"
               width={120}
               height={150}
               className="rounded-md object-cover w-32 h-[200px]"
             />
             <Image
-              src="/images/12.png"
+              src="/images/10.png"
               alt="Profile 10"
               width={120}
               height={150}
               className="rounded-md object-cover w-32 h-[200px]"
             />
-           
+            <Image
+              src="/images/11.png"
+              alt="Profile 11"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
+            />
+            <Image
+              src="/images/12.png"
+              alt="Profile 12"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-32 h-[200px]"
+            />
           </div>
         </div>
       </div>
