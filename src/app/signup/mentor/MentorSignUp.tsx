@@ -75,7 +75,7 @@ const MentorSignUp = () => {
     setLoading(true);
 
     try {
-      // First, sign up the user with Supabase
+      // Sign up the user with Supabase
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -85,7 +85,20 @@ const MentorSignUp = () => {
         throw new Error(signUpError?.message || 'Failed to create user');
       }
 
-      // Insert the mentor data
+      // Wait for session to be established
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Then sign in to get a fresh session
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError || !signInData.user) {
+        throw new Error(signInError?.message || 'Failed to sign in');
+      }
+
+      // Insert the mentor data with the established session
       const { error: insertError } = await supabase
         .from('mentors')
         .insert([
