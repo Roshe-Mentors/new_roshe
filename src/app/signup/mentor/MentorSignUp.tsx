@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { signUp } from '../../../../lib/auth';
 import { supabase } from '../../../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import emailjs from '@emailjs/browser';
 
 const MentorSignUp = () => {
   const [formData, setFormData] = useState({
@@ -69,7 +70,7 @@ const MentorSignUp = () => {
     setLoading(true);
 
     try {
-      // First, sign up the user
+      // First, sign up the user with Supabase
       const { user, error: signUpError } = await signUp(formData.email, formData.password);
       
       if (signUpError || !user) {
@@ -83,7 +84,7 @@ const MentorSignUp = () => {
         throw new Error(sessionError?.message || 'Failed to get session');
       }
 
-      // Then insert the mentor data with authenticated client
+      // Insert the mentor data with authenticated client
       const { error: insertError } = await supabase
         .from('mentors')
         .insert([
@@ -99,6 +100,26 @@ const MentorSignUp = () => {
       if (insertError) {
         throw new Error(insertError.message);
       }
+
+      // Send email notification using EmailJS
+      const emailParams = {
+        to_email: formData.email,
+        to_name: formData.name,
+        message: `
+          Name: ${formData.name}
+          Email: ${formData.email}
+          LinkedIn: ${formData.linkedin}
+          Date of Birth: ${formData.dob}
+          Biography: ${formData.biography}
+        `
+      };
+
+      await emailjs.send(
+        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
+        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+        emailParams,
+        'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
+      );
 
       // Redirect on success
       router.push('/dashboard');
