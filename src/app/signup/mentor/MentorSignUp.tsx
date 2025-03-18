@@ -20,6 +20,11 @@ const MentorSignUp = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
+  // Initialize EmailJS
+  React.useEffect(() => {
+    emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '');
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -71,25 +76,21 @@ const MentorSignUp = () => {
 
     try {
       // First, sign up the user with Supabase
-      const { user, error: signUpError } = await signUp(formData.email, formData.password);
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
       
-      if (signUpError || !user) {
-        throw new Error(signUpError || 'Failed to create user');
+      if (signUpError || !signUpData.user) {
+        throw new Error(signUpError?.message || 'Failed to create user');
       }
 
-      // Get the session to ensure we have proper authentication
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        throw new Error(sessionError?.message || 'Failed to get session');
-      }
-
-      // Insert the mentor data with authenticated client
+      // Insert the mentor data
       const { error: insertError } = await supabase
         .from('mentors')
         .insert([
           { 
-            user_id: user.id,
+            user_id: signUpData.user.id,
             name: formData.name,
             linkedin: formData.linkedin,
             dob: formData.dob,
@@ -115,17 +116,16 @@ const MentorSignUp = () => {
       };
 
       await emailjs.send(
-        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
-        emailParams,
-        'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '',
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '',
+        emailParams
       );
 
       // Redirect on success
       router.push('/dashboard');
       
-    } catch (err: Error | unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } catch (err: any) {
+      setError(err?.message || 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
