@@ -75,15 +75,10 @@ const MentorSignUp = () => {
     setLoading(true);
 
     try {
-      // Sign up the user
+      // First, sign up the user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-          },
-        },
       });
       
       if (signUpError) {
@@ -94,21 +89,30 @@ const MentorSignUp = () => {
         throw new Error('User registration failed');
       }
 
-      // Insert the mentor data immediately after signup
+      // Get current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error('Unable to get session. Please try signing in.');
+      }
+
+      // Insert mentor data using the session
       const { error: insertError } = await supabase
         .from('mentors')
         .insert([
           { 
-            user_id: signUpData.user.id,
+            user_id: session.user.id, // Use session user id instead of signUpData
             name: formData.name,
             linkedin: formData.linkedin,
             dob: formData.dob,
             biography: formData.biography,
           }
-        ]);
+        ])
+        .select();
 
       if (insertError) {
-        throw new Error(insertError.message);
+        console.error('Insert Error:', insertError);
+        throw new Error('Failed to create mentor profile. Please try again.');
       }
 
       // Send email notification using EmailJS
@@ -130,10 +134,10 @@ const MentorSignUp = () => {
         emailParams
       );
 
-      // Show success message instead of immediate redirect
       setError('Registration successful! Please check your email to confirm your account.');
       
     } catch (err: any) {
+      console.error('Error:', err);
       setError(err?.message || 'An unknown error occurred');
     } finally {
       setLoading(false);
