@@ -118,8 +118,8 @@ const MentorSignUp = () => {
           <Image
             src="/images/mentor_pic.png"
             alt="Mentor Sign Up"
-            width={500}
-            height={500}
+            width={550}
+            height={550}
             className="rounded-lg shadow-lg w-full h-auto object-cover"
             priority
           />
