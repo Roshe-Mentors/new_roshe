@@ -75,30 +75,26 @@ const MentorSignUp = () => {
     setLoading(true);
 
     try {
-      // Sign up the user with Supabase
+      // Sign up the user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+          },
+        },
       });
       
-      if (signUpError || !signUpData.user) {
-        throw new Error(signUpError?.message || 'Failed to create user');
+      if (signUpError) {
+        throw new Error(signUpError.message);
       }
 
-      // Wait for session to be established
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Then sign in to get a fresh session
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (signInError || !signInData.user) {
-        throw new Error(signInError?.message || 'Failed to sign in');
+      if (!signUpData.user) {
+        throw new Error('User registration failed');
       }
 
-      // Insert the mentor data with the established session
+      // Insert the mentor data immediately after signup
       const { error: insertError } = await supabase
         .from('mentors')
         .insert([
@@ -129,13 +125,13 @@ const MentorSignUp = () => {
       };
 
       await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '',
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '',
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
         emailParams
       );
 
-      // Redirect on success
-      router.push('/dashboard');
+      // Show success message instead of immediate redirect
+      setError('Registration successful! Please check your email to confirm your account.');
       
     } catch (err: any) {
       setError(err?.message || 'An unknown error occurred');
