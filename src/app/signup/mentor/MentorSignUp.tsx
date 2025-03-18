@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { signUp } from '../../../../lib/auth';
 import { supabase } from '../../../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import emailjs from '@emailjs/browser';
+import { sendMentorSignupEmail } from '@/services/emailService';
 
 const MentorSignUp = () => {
   const [formData, setFormData] = useState({
@@ -14,9 +14,11 @@ const MentorSignUp = () => {
     dob: '',
     biography: '',
     password: '',
+    showPassword: false
   });
 
   const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
@@ -33,6 +35,13 @@ const MentorSignUp = () => {
     }));
   };
 
+  const togglePasswordVisibility = () => {
+    setFormData((prev) => ({
+      ...prev,
+      showPassword: !prev.showPassword,
+    }));
+  };
+
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^\S+@\S+\.\S+$/;
     return emailRegex.test(email);
@@ -43,9 +52,37 @@ const MentorSignUp = () => {
     return linkedinRegex.test(linkedin);
   };
 
+  const validatePassword = (password: string): boolean => {
+    // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const validateDob = (dob: string): boolean => {
+    if (!dob.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      return false;
+    }
+    
+    // Parse the date
+    const [day, month, year] = dob.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    // Check if date is valid
+    if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
+      return false;
+    }
+    
+    // Check if the person is at least 18 years old
+    const today = new Date();
+    const minAge = 18;
+    const minDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+    
+    return date <= minDate;
+  };
+
   const validateForm = () => {
     if (!formData.name || !formData.email || !formData.dob || !formData.password) {
-      return 'Please fill in all fields.';
+      return 'Please fill in all required fields.';
     }
 
     if (!validateEmail(formData.email)) {
@@ -53,11 +90,15 @@ const MentorSignUp = () => {
     }
 
     if (!validateLinkedIn(formData.linkedin)) {
-      return 'Please enter a valid LinkedIn URL.';
+      return 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username).';
     }
 
-    if (formData.dob.length !== 10 || !formData.dob.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      return 'Please enter a valid date of birth in DD/MM/YYYY format.';
+    if (!validateDob(formData.dob)) {
+      return 'Please enter a valid date of birth in DD/MM/YYYY format. You must be at least 18 years old.';
+    }
+
+    if (!validatePassword(formData.password)) {
+      return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.';
     }
 
     return '';
@@ -68,10 +109,12 @@ const MentorSignUp = () => {
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
+      setSuccess('');
       return;
     }
 
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -101,7 +144,7 @@ const MentorSignUp = () => {
         .from('mentors')
         .insert([
           { 
-            user_id: session.user.id, // Use session user id instead of signUpData
+            user_id: session.user.id,
             name: formData.name,
             linkedin: formData.linkedin,
             dob: formData.dob,
@@ -115,30 +158,50 @@ const MentorSignUp = () => {
         throw new Error('Failed to create mentor profile. Please try again.');
       }
 
-      // Send email notification using EmailJS
-      const emailParams = {
-        to_email: formData.email,
-        to_name: formData.name,
-        message: `
-          Name: ${formData.name}
-          Email: ${formData.email}
-          LinkedIn: ${formData.linkedin}
-          Date of Birth: ${formData.dob}
-          Biography: ${formData.biography}
-        `
-      };
+      // Send email notification using the new service
+      try {
+        await sendMentorSignupEmail({
+          to_email: formData.email,
+          to_name: formData.name,
+          message: `
+Welcome to our mentorship platform!
 
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        emailParams
-      );
+Your profile details:
+Name: ${formData.name}
+Email: ${formData.email}
+LinkedIn: ${formData.linkedin}
 
-      setError('Registration successful! Please check your email to confirm your account.');
+Please verify your email address to complete your registration.
+
+Best regards,
+The Team
+          `
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Continue with registration even if email fails
+        setError('Account created but verification email might be delayed.');
+        return;
+      }
+
+      setSuccess('Registration successful! Please check your email to verify your account.');
+      
+      // Redirect to confirmation page after a short delay
+      setTimeout(() => {
+        router.push('/registration-success');
+      }, 3000);
       
     } catch (err: any) {
       console.error('Error:', err);
-      setError(err?.message || 'An unknown error occurred');
+      
+      // Provide more specific error messages
+      if (err.message?.includes('email')) {
+        setError('This email is already registered. Please use a different email or try logging in.');
+      } else if (err.message?.includes('password')) {
+        setError('Password error: ' + err.message);
+      } else {
+        setError(err?.message || 'An unknown error occurred. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -168,7 +231,7 @@ const MentorSignUp = () => {
             {/* Name Field */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Name
+                Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -177,14 +240,15 @@ const MentorSignUp = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Full Name"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md"
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
 
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
+                Email address <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
@@ -193,7 +257,8 @@ const MentorSignUp = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md"
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
 
@@ -201,7 +266,7 @@ const MentorSignUp = () => {
             <div className="flex flex-col sm:flex-row gap-4">  
               <div className="w-full sm:w-1/2">  
                 <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1">
-                  LinkedIn
+                  LinkedIn <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="url"
@@ -210,13 +275,14 @@ const MentorSignUp = () => {
                   value={formData.linkedin}
                   onChange={handleChange}
                   placeholder="https://linkedin.com/in/..."
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
                 />
               </div>
 
               <div className="w-full sm:w-1/2">  
                 <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth 
+                  Date of Birth <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -225,8 +291,10 @@ const MentorSignUp = () => {
                   value={formData.dob}
                   onChange={handleChange}
                   placeholder="DD/MM/YYYY"
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md"  
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
                 />
+                <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old</p>
               </div>
             </div>
 
@@ -241,7 +309,7 @@ const MentorSignUp = () => {
                 value={formData.biography}
                 onChange={handleChange}
                 placeholder="Write a brief biography"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md"
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 rows={4}
               />
             </div>
@@ -249,31 +317,64 @@ const MentorSignUp = () => {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md"
-              />
+              <div className="relative">
+                <input
+                  type={formData.showPassword ? "text" : "password"}
+                  name="password"
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {formData.showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                At least 8 characters, 1 uppercase, 1 lowercase, and 1 number
+              </p>
             </div>
 
             {error && <p className="text-red-600 text-sm">{error}</p>}
+            {success && <p className="text-green-600 text-sm">{success}</p>}
 
             <button
               type="submit"
-              className="w-full py-3 text-white font-medium rounded-md mt-4"
+              className="w-full py-3 text-white font-medium rounded-md mt-4 transition duration-300 ease-in-out transform hover:scale-105 flex justify-center items-center"
               style={{
                 background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
               }}
               disabled={loading}
             >
-              {loading ? 'Signing Up...' : 'Join the waiting list'}
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing Up...
+                </>
+              ) : (
+                'Join the waiting list'
+              )}
             </button>
+
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <a href="/login" className="text-blue-600 hover:text-blue-800">
+                  Log in
+                </a>
+              </p>
+            </div>
           </form>
         </div>
       </div>
