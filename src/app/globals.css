@@ -81,10 +81,12 @@ body {
     display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
+/* Hide scrollbar for all browsers */
 .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+    overflow: -moz-scrollbars-none;  /* Old Firefox */
+    overflow: hidden;  /* Fallback for other browsers */
 }
 
 @media (max-width: 768px) {

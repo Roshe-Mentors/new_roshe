@@ -9,21 +9,19 @@ const logos = [
   { src: "/images/sonypic.jpg", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
   { src: "/images/skydance.jpg", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
   { src: "/images/disney.jpg", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/mpc.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
-  { src: "/images/marvel.jpg", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/imageworks.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
-  { src: "/images/dneg.jpg", alt: 'DreamWorks', href: 'https://www.dreamworks.com' },
-  { src: "/images/cinesite.jpg", alt: 'Sony Pictures Animation', href: 'https://www.sonypicturesanimation.com' },
-  { src: "/images/industrial.jpg", alt: 'Skydance Animation', href: 'https://www.skydance.com' },
-  { src: "/images/logo 13.jpg", alt: 'Disney', href: 'https://www.disney.com' },
-  { src: "/images/logo 14.jpg", alt: 'Pixar', href: 'https://www.pixar.com' },
+  { src: "/images/mpc.jpg", alt: 'MPC', href: 'https://www.mpc.com' },
+  { src: "/images/marvel.jpg", alt: 'Marvel', href: 'https://www.marvel.com' },
+  { src: "/images/imageworks.jpg", alt: 'Sony Pictures Imageworks', href: 'https://www.imageworks.com' },
+  { src: "/images/dneg.jpg", alt: 'DNEG', href: 'https://www.dneg.com' },
+  { src: "/images/cinesite.jpg", alt: 'Cinesite', href: 'https://www.cinesite.com' },
+  { src: "/images/industrial.jpg", alt: 'Industrial Light & Magic', href: 'https://www.ilm.com' },
 ];
 
 export default function LogosShowcase() {
   return (
     <div className="bg-white py-8 overflow-hidden">
       <div className="container mx-auto px-4 text-center">
-        <p className="text-black mb-4 text-lg md:text-xl">Proven success with 50+ top studios</p>
+        <p className="text-black mb-4 text-lg md:text-xl">Proven success with 20+ top studios</p>
         <div className="relative w-full overflow-hidden">
           <div className="flex animate-marquee-fast whitespace-nowrap min-w-full">
             {/* First set of logos */}
