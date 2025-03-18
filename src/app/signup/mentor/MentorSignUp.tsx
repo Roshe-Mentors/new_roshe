@@ -111,22 +111,22 @@ const MentorSignUp = () => {
   };
 
   return (
-    <div className="w-full text-black bg-white flex items-center justify-center py-12 px-4">
-      <div className="max-w-6xl w-full flex flex-col md:flex-row justify-between gap-8">
+    <div className="w-full text-black bg-white flex items-center justify-center py-16 px-4 mt-8">
+      <div className="max-w-5xl w-full flex flex-col md:flex-row justify-between items-stretch gap-8">
         {/* Left Image Section */}
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-1/2 flex items-center">
           <Image
             src="/images/mentor_pic.png"
             alt="Mentor Sign Up"
-            width={600}
-            height={600}
+            width={500}
+            height={500}
             className="rounded-lg shadow-lg w-full h-auto object-cover"
             priority
           />
         </div>
 
         {/* Right Form Section */}
-        <div className="w-full md:w-1/2 bg-white rounded-lg p-6">
+        <div className="w-full md:w-1/2 bg-white rounded-lg p-6 flex flex-col">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Get Started Now</h2>
           <p className="text-gray-600 mb-6">Enter your credentials to create your account</p>
 
