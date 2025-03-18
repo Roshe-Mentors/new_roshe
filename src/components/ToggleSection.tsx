@@ -3,7 +3,11 @@ import Link from 'next/link';
 import React, { useState, useRef, useEffect } from "react";
 import Image from 'next/image';
 
-const menuItems = {
+type MenuItems = {
+  [key: string]: string[];
+};
+
+const menuItems: MenuItems = {
   "Design": ["Graphic Design", "Motion Design", "3D Design", "Product Design", "Multimedia", "Interaction Design", "Game Design"],
   "3D Character Animation": [],
   "2D Character Animation": [],
