@@ -122,66 +122,48 @@ const MentorSignUp = () => {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+          },
+        },
       });
       
-      if (signUpError) {
-        throw new Error(signUpError.message);
+      if (signUpError || !signUpData.user) {
+        throw new Error(signUpError?.message || 'User registration failed');
       }
 
-      if (!signUpData.user) {
-        throw new Error('User registration failed');
-      }
-
-      // Get current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        throw new Error('Unable to get session. Please try signing in.');
-      }
-
-      // Insert mentor data using the session
+      // Insert mentor data using the signup user id
       const { error: insertError } = await supabase
         .from('mentors')
         .insert([
           { 
-            user_id: session.user.id,
+            user_id: signUpData.user.id,
             name: formData.name,
             linkedin: formData.linkedin,
             dob: formData.dob,
             biography: formData.biography,
           }
-        ])
-        .select();
+        ]);
 
       if (insertError) {
         console.error('Insert Error:', insertError);
         throw new Error('Failed to create mentor profile. Please try again.');
       }
 
-      // Send email notification using the new service
+      // Add a small delay before sending the email
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Send welcome email
       try {
         await sendMentorSignupEmail({
           to_email: formData.email,
           to_name: formData.name,
-          message: `
-Welcome to our mentorship platform!
-
-Your profile details:
-Name: ${formData.name}
-Email: ${formData.email}
-LinkedIn: ${formData.linkedin}
-
-Please verify your email address to complete your registration.
-
-Best regards,
-The Team
-          `
+          message: `Welcome ${formData.name}! Thank you for registering as a mentor.`
         });
       } catch (emailError) {
         console.error('Email sending failed:', emailError);
-        // Continue with registration even if email fails
-        setError('Account created but verification email might be delayed.');
-        return;
+        setError('Account created but welcome email failed to send.');
       }
 
       setSuccess('Registration successful! Please check your email to verify your account.');
@@ -193,15 +175,7 @@ The Team
       
     } catch (err: any) {
       console.error('Error:', err);
-      
-      // Provide more specific error messages
-      if (err.message?.includes('email')) {
-        setError('This email is already registered. Please use a different email or try logging in.');
-      } else if (err.message?.includes('password')) {
-        setError('Password error: ' + err.message);
-      } else {
-        setError(err?.message || 'An unknown error occurred. Please try again later.');
-      }
+      setError(err?.message || 'An unknown error occurred. Please try again later.');
     } finally {
       setLoading(false);
     }
