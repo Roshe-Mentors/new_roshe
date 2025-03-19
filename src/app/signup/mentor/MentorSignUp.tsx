@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { supabase } from '../../../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import emailjs from '@emailjs/browser';
 import { sendMentorSignupEmail } from '@/services/emailService';
@@ -24,7 +23,13 @@ const MentorSignUp = () => {
 
   // Initialize EmailJS
   React.useEffect(() => {
-    emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '');
+    if (process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY) {
+      emailjs.init({
+        publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+      });
+    } else {
+      console.error('EmailJS public key is not set');
+    }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -118,64 +123,37 @@ const MentorSignUp = () => {
     setLoading(true);
 
     try {
-      // First, sign up the user
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-          },
-        },
+      await sendMentorSignupEmail({
+        to_email: formData.email,
+        to_name: formData.name,
+        message: `
+New Mentor Registration Details:
+----------------------------
+Name: ${formData.name}
+Email: ${formData.email}
+LinkedIn: ${formData.linkedin}
+Date of Birth: ${formData.dob}
+Biography: ${formData.biography}
+        `.trim()
       });
+
+      setSuccess('Thank you for your interest! We will review your application and contact you soon.');
       
-      if (signUpError || !signUpData.user) {
-        throw new Error(signUpError?.message || 'User registration failed');
-      }
+      // Clear form
+      setFormData({
+        name: '',
+        email: '',
+        linkedin: '',
+        dob: '',
+        biography: '',
+        password: '',
+        showPassword: false
+      });
 
-      // Insert mentor data using the signup user id
-      const { error: insertError } = await supabase
-        .from('mentors')
-        .insert([
-          { 
-            user_id: signUpData.user.id,
-            name: formData.name,
-            linkedin: formData.linkedin,
-            dob: formData.dob,
-            biography: formData.biography,
-          }
-        ]);
-
-      if (insertError) {
-        console.error('Insert Error:', insertError);
-        throw new Error('Failed to create mentor profile. Please try again.');
-      }
-
-      // Add a small delay before sending the email
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Send welcome email
-      try {
-        await sendMentorSignupEmail({
-          to_email: formData.email,
-          to_name: formData.name,
-          message: `Welcome ${formData.name}! Thank you for registering as a mentor.`
-        });
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        setError('Account created but welcome email failed to send.');
-      }
-
-      setSuccess('Registration successful! Please check your email to verify your account.');
-      
-      // Redirect to confirmation page after a short delay
-      setTimeout(() => {
-        router.push('/registration-success');
-      }, 3000);
-      
-    } catch (err: any) {
-      console.error('Error:', err);
-      setError(err?.message || 'An unknown error occurred. Please try again later.');
+    } catch (error) {
+      console.error('Form submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit form. Please try again later.';
+      setError(`${errorMessage} (If this persists, please contact support)`);
     } finally {
       setLoading(false);
     }
@@ -189,8 +167,8 @@ const MentorSignUp = () => {
           <Image
             src="/images/mentor_pic.png"
             alt="Mentor Sign Up"
-            width={650}
-            height={800}
+            width={700}
+            height={1000}
             className="rounded-lg shadow-lg w-full h-auto object-cover"
             priority
           />
