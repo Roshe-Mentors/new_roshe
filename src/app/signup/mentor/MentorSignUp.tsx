@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import emailjs from '@emailjs/browser';
 import { sendMentorSignupEmail } from '@/services/emailService';
 
@@ -19,7 +18,7 @@ const MentorSignUp = () => {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const router = useRouter();
+  
 
   // Initialize EmailJS
   React.useEffect(() => {
