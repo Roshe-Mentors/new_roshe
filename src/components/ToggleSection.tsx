@@ -349,35 +349,35 @@ const ToggleSection: React.FC = () => {
     className="rounded-md object-cover w-24 h-[150px]"
   />
   <Image
-    src="/images/woman1.jpg"
+    src="/images/woman8.jpg"
     alt="Profile 8"
     width={120}
     height={150}
     className="rounded-md object-cover w-24 h-[150px]"
   />
   <Image
-    src="/images/woman1.jpg"
+    src="/images/man11.jpg"
     alt="Profile 9"
     width={120}
     height={150}
     className="rounded-md object-cover w-24 h-[150px]"
   />
   <Image
-    src="/images/woman1.jpg"
+    src="/images/woman9.jpg"
     alt="Profile 10"
     width={120}
     height={150}
     className="rounded-md object-cover w-24 h-[150px]"
   />
   <Image
-    src="/images/woman1.jpg"
+    src="/images/man12.jpg"
     alt="Profile 11"
     width={120}
     height={150}
     className="rounded-md object-cover w-24 h-[150px]"
   />
   <Image
-    src="/images/woman1.jpg"
+    src="/images/woman10.jpg"
     alt="Profile 12"
     width={120}
     height={150}
