@@ -118,7 +118,7 @@ const ToggleSection: React.FC = () => {
          {/* Left Image Grid */}
 <div className="hidden lg:grid grid-cols-4 gap-3 md:gap-4 w-full lg:w-auto mb-8 lg:mb-0 lg:mr-8">
   <Image
-    src="/images/supaman.jpg"
+    src="/images/supaman.JPG"
     alt="Profile 1"
     width={120}
     height={150}
