@@ -334,7 +334,7 @@ const ToggleSection: React.FC = () => {
     className="rounded-md object-cover w-24 h-[150px]"
   />
   <Image
-    src="/images/woman1.jpg"
+    src="/images/woman11.jpg"
     alt="Profile 12"
     width={120}
     height={150}
