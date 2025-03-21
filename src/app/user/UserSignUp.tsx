@@ -110,7 +110,7 @@ const UserSignUp = () => {
   };
 
   return (
-    <div className="w-full text-black bg-white flex items-center justify-center py-16 px-4">
+    <div className="w-full text-black bg-white flex items-center justify-center py-32 px-4">
       <div className="max-w-5xl w-full flex flex-col md:flex-row justify-between items-stretch gap-8">
         {/* Left Form Section */}
         <div className="w-full md:w-1/2 bg-white p-6 flex flex-col justify-center">

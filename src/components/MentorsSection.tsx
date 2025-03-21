@@ -28,7 +28,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: true,
     coaching: false,
-    image: "/images/1.png", 
+    image: "/images/supaman.JPG", 
   },
   {
     id: 2,
@@ -41,7 +41,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: false,
     coaching: true,
-    image: "/images/2.png",
+    image: "/images/woman2.jpg",
   },
   {
     id: 3,
@@ -54,7 +54,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: false,
     coaching: true,
-    image: "/images/10.png",
+    image: "/images/man7.jpg",
   },
   {
     id: 4,
@@ -67,7 +67,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: true,
     coaching: false,
-    image: "/images/11.png",
+    image: "/images/woman3.jpg",
   },
   {
     id: 5,
@@ -80,7 +80,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: false,
     coaching: true,
-    image: "/images/12.png",
+    image: "/images/man5.jpg",
   },
 ];
 
@@ -107,7 +107,7 @@ const MentorsSection = () => {
             className="w-56 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-100"
           >
             {/* Image Wrapper */}
-            <div className="relative w-full h-56">
+            <div className="relative w-full h-60">
               <Image
                 src={mentor.image}
                 alt={mentor.name}
