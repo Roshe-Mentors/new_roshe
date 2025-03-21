@@ -321,7 +321,7 @@ Biography: ${formData.biography}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <a href="/login" className="text-blue-600 hover:text-blue-800">
+                <a href="/signIn" className="text-blue-600 hover:text-blue-800">
                   Log in
                 </a>
               </p>

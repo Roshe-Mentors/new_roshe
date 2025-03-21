@@ -12,6 +12,7 @@ const UserSignUp = () => {
     linkedin: '',
     dob: '',
     password: '',
+    showPassword: false
   });
 
   const [error, setError] = useState<string>('');
@@ -24,6 +25,13 @@ const UserSignUp = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setFormData((prev) => ({
+      ...prev,
+      showPassword: !prev.showPassword,
     }));
   };
 
@@ -77,7 +85,7 @@ const UserSignUp = () => {
         const { data, error: insertError } = await supabase
           .from('users')
           .insert([
-            { 
+            {
               user_id: user.id,
               name: formData.name,
               linkedin: formData.linkedin,
@@ -102,114 +110,146 @@ const UserSignUp = () => {
   };
 
   return (
-    <div className="w-full text-black bg-white max-w mx-auto py-20 px-3">
-      <div className="flex flex-col md:flex-row justify-between items-start space-y-6 md:space-y-0 gap-8">
+    <div className="w-full text-black bg-white flex items-center justify-center py-16 px-4">
+      <div className="max-w-5xl w-full flex flex-col md:flex-row justify-between items-stretch gap-8">
         {/* Left Form Section */}
-        <form onSubmit={handleSubmit} className="w-full md:w-2/3 space-y-6">
-          <h2 className="text-3xl font-bold text-gray-900">Get Started Now</h2>
-          <p className="text-gray-600">Enter your credentials to create your account</p>
+        <div className="w-full md:w-1/2 bg-white p-6 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Get Started Now</h2>
+          <p className="text-gray-600 mb-6">Enter your credentials to create your account</p>
 
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="mt-2 block w-full px-4 py-3 max-w-sm border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@example.com"
-              className="mt-2 block w-full max-w-sm px-4 py-3 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div className="flex gap-2">  
-            <div className="w-[25%]">  
-              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
-                LinkedIn URL
-              </label>
-              <input
-                type="url"
-                name="linkedin"
-                id="linkedin"
-                value={formData.linkedin}
-                onChange={handleChange}
-                placeholder="https://www.linkedin.com/in/yourprofile"
-                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"
-              />
-            </div>
-
-            <div className="w-[25%]">  
-              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-                Date of Birth 
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="dob"
-                id="dob"
-                value={formData.dob}
+                name="name"
+                id="name"
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="DD/MM/YYYY"
-                className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md"  
+                placeholder="Full Name"
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Password"
-              className="mt-2 block w-full max-w-xs px-4 py-3 border border-gray-300 rounded-md"
-            />
-          </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
 
-          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="w-full sm:w-1/2">
+                <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1">
+                  LinkedIn URL <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="url"
+                  name="linkedin"
+                  id="linkedin"
+                  value={formData.linkedin}
+                  onChange={handleChange}
+                  placeholder="https://linkedin.com/in/..."
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
 
-          {successMessage && <p className="text-green-600 text-sm mt-2">{successMessage}</p>}
+              <div className="w-full sm:w-1/2">
+                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
+                  Date of Birth <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="dob"
+                  id="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                  placeholder="DD/MM/YYYY"
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
 
-          <button
-            type="submit"
-            className="w-full py-3 text-white max-w-xs font-medium rounded-md mt-4"
-            style={{
-              background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
-            }}
-            disabled={loading} // Disable button while loading
-          >
-            {loading ? 'Signing Up...' : 'Sign Up'}
-          </button>
-        </form>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={formData.showPassword ? "text" : "password"}
+                  name="password"
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {formData.showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+            {successMessage && <p className="text-green-600 text-sm">{successMessage}</p>}
+
+            <button
+              type="submit"
+              className="w-full py-3 text-white font-medium rounded-md mt-4 flex justify-center items-center"
+              style={{
+                background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing Up...
+                </>
+              ) : 'Sign Up'}
+            </button>
+            
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <a href="/signIn" className="text-blue-600 hover:text-blue-800">
+                  Log in
+                </a>
+              </p>
+            </div>
+          </form>
+        </div>
 
         {/* Right Image Section */}
-        <div className="w-full md:w-1/3">
+        <div className="w-full md:w-1/2 flex items-center justify-center">
           <Image
             src="/images/image_mentor.jpg"
             alt="Sign Up"
             width={600}
-            height={375}
-            className="rounded-lg shadow-lg w-full"
+            height={800}
+            className="rounded-lg shadow-lg w-full h-full object-cover"
             priority
           />
         </div>
