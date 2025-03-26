@@ -218,11 +218,11 @@ const ToggleSection: React.FC = () => {
                   
                   {isOpen && (
                     <div
-                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg mt-1 overflow-hidden"
+                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg mt-1 overflow-y-auto max-h-[400px] md:max-h-[50vh]"
                       style={{ width: '100%', maxWidth: '500px' }}
                       onMouseLeave={handleMenuLeave}
                     >
-                      <div className="flex h-96">
+                      <div className="flex">
                         {/* Main menu column - Always visible */}
                         <div className={`${activeSubmenu ? 'w-1/2' : 'w-full'} border-r border-gray-300 overflow-y-auto transition-all duration-200 scrollbar-hide`}>
                           {Object.entries(menuItems).map(([skill, subskills]) => (
