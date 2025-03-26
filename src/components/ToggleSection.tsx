@@ -118,63 +118,63 @@ const ToggleSection: React.FC = () => {
          {/* Left Image Grid */}
           <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto mb-8 lg:mb-0 lg:mr-8">
             <Image
-              src="/images/supaman.JPG"
+              src="/images/1.jpg"
               alt="Profile 1"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man1.jpg"
+              src="/images/2.jpg"
               alt="Profile 2"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man2.jpg"
+              src="/images/3.jpg"
               alt="Profile 3"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman1.jpg"
+              src="/images/4.jpg"
               alt="Profile 1"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man3.jpg"
+              src="/images/5.jpg"
               alt="Profile 1"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman2.jpg"
+              src="/images/6.jpg"
               alt="Profile 1"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man4.jpg"
+              src="/images/7.jpeg"
               alt="Profile 4"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman3.jpg"
+              src="/images/8.jpg"
               alt="Profile 5"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man5.jpg"
+              src="/images/9.jpg"
               alt="Profile 6"
               width={120}
               height={150}
@@ -277,63 +277,63 @@ const ToggleSection: React.FC = () => {
          {/* Right Image Grid */}
           <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto">
             <Image
-              src="/images/man7.jpg"
+              src="/images/10.jpg"
               alt="Profile 7"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman6.jpg"
+              src="/images/11.jpg"
               alt="Profile 8"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man8.jpg"
+              src="/images/18.jpg"
               alt="Profile 9"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman7.jpg"
+              src="/images/12.jpg"
               alt="Profile 10"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man9.jpg"
+              src="/images/17.jpg"
               alt="Profile 11"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman11.jpg"
+              src="/images/13.jpg"
               alt="Profile 12"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man10.jpg"
+              src="/images/14.jpg"
               alt="Profile 7"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/woman8.jpg"
+              src="/images/15.jpg"
               alt="Profile 8"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
             <Image
-              src="/images/man11.jpg"
+              src="/images/16.jpg"
               alt="Profile 9"
               width={120}
               height={150}
