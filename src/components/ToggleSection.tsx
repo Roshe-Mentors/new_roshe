@@ -116,93 +116,71 @@ const ToggleSection: React.FC = () => {
         {/* Content Section */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start space-y-8 lg:space-y-0">
          {/* Left Image Grid */}
-<div className="hidden lg:grid grid-cols-4 gap-3 md:gap-4 w-full lg:w-auto mb-8 lg:mb-0 lg:mr-8">
-  <Image
-    src="/images/supaman.JPG"
-    alt="Profile 1"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man1.jpg"
-    alt="Profile 2"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man2.jpg"
-    alt="Profile 3"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman1.jpg"
-    alt="Profile 1"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man3.jpg"
-    alt="Profile 1"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman2.jpg"
-    alt="Profile 1"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man4.jpg"
-    alt="Profile 4"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman3.jpg"
-    alt="Profile 5"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man5.jpg"
-    alt="Profile 6"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  {/* Added images for a 4x3 grid */}
-  <Image
-    src="/images/woman4.jpg"
-    alt="Profile 7"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man6.jpg"
-    alt="Profile 8"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman5.jpg"
-    alt="Profile 9"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-</div>
+          <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto mb-8 lg:mb-0 lg:mr-8">
+            <Image
+              src="/images/supaman.JPG"
+              alt="Profile 1"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man1.jpg"
+              alt="Profile 2"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man2.jpg"
+              alt="Profile 3"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman1.jpg"
+              alt="Profile 1"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man3.jpg"
+              alt="Profile 1"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman2.jpg"
+              alt="Profile 1"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man4.jpg"
+              alt="Profile 4"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman3.jpg"
+              alt="Profile 5"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man5.jpg"
+              alt="Profile 6"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+          </div>
 
           {/* Middle Section: Dynamic Content */}
           <div className="text-center lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
@@ -297,93 +275,71 @@ const ToggleSection: React.FC = () => {
           </div>
 
          {/* Right Image Grid */}
-<div className="hidden lg:grid grid-cols-4 gap-3 md:gap-4 w-full lg:w-auto">
-  <Image
-    src="/images/man7.jpg"
-    alt="Profile 7"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman6.jpg"
-    alt="Profile 8"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man8.jpg"
-    alt="Profile 9"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman7.jpg"
-    alt="Profile 10"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man9.jpg"
-    alt="Profile 11"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman11.jpg"
-    alt="Profile 12"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  {/* Repeat the images to complete the 4x3 grid */}
-  <Image
-    src="/images/man10.jpg"
-    alt="Profile 7"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman8.jpg"
-    alt="Profile 8"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man11.jpg"
-    alt="Profile 9"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman9.jpg"
-    alt="Profile 10"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/man12.jpg"
-    alt="Profile 11"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-  <Image
-    src="/images/woman10.jpg"
-    alt="Profile 12"
-    width={120}
-    height={150}
-    className="rounded-md object-cover w-24 h-[150px]"
-  />
-</div>
+          <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto">
+            <Image
+              src="/images/man7.jpg"
+              alt="Profile 7"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman6.jpg"
+              alt="Profile 8"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man8.jpg"
+              alt="Profile 9"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman7.jpg"
+              alt="Profile 10"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man9.jpg"
+              alt="Profile 11"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman11.jpg"
+              alt="Profile 12"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man10.jpg"
+              alt="Profile 7"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/woman8.jpg"
+              alt="Profile 8"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+            <Image
+              src="/images/man11.jpg"
+              alt="Profile 9"
+              width={120}
+              height={150}
+              className="rounded-md object-cover w-24 h-[150px]"
+            />
+          </div>
         </div>
       </div>
     </section>
