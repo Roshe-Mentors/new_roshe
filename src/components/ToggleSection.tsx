@@ -94,9 +94,10 @@ const ToggleSection: React.FC = () => {
             onClick={() => setSelectedView("mentee")}
             className={`text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${
               selectedView === "mentee"
-                ? "text-black border-b-2 border-black"
+                ? "text-black border-b border-black"
                 : "text-gray-500"
             } transition`}
+            style={{ borderBottomWidth: '1px' }}
           >
             Mentee
           </button>
@@ -104,9 +105,10 @@ const ToggleSection: React.FC = () => {
             onClick={() => setSelectedView("mentor")}
             className={`text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${
               selectedView === "mentor"
-                ? "text-black border-b-2 border-black"
+                ? "text-black border-b border-black"
                 : "text-gray-500"
             } transition`}
+            style={{ borderBottomWidth: '1px' }}
           >
             Mentor
           </button>
