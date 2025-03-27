@@ -121,7 +121,7 @@ const MentorsSection = () => {
               {/* Badges with correct styling */}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
                 {mentor.topRated && (
-                  <span className="bg-white text-gray-900 text-sm font-medium px-3 py-1 rounded-md shadow-sm">
+                  <span className="bg-white bg-opacity-70 text-gray-900 text-sm font-medium px-3 py-1 rounded-md shadow-sm">
                     Top rated
                   </span>
                 )}
