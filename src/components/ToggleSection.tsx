@@ -65,8 +65,8 @@ const ToggleSection: React.FC = () => {
     // If there are no subskills, immediately select
     if (subskills.length === 0) {
       handleSkillSelect(skill);
-    } else if (isMobile) {
-      // Toggle sub-menu only on mobile devices
+    } else {
+      // Toggle sub-menu for both mobile and desktop
       setActiveSubmenu(activeSubmenu === skill ? null : skill);
     }
   };
@@ -161,7 +161,7 @@ const ToggleSection: React.FC = () => {
           </div>
 
           {/* Middle Section: Dynamic Content */}
-          <div className="text-center lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
+          <div className="text-center pt-12 lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
             {selectedView === "mentor" ? (
               <>
                 <h2 className="text-6xl md:text-5xl text-black font-medium leading-relaxed mb-6 mt-12 md:mb-8">
@@ -182,7 +182,7 @@ const ToggleSection: React.FC = () => {
                 <h2 className="text-4xl md:text-5xl text-black font-medium leading-relaxed mb-6 md:mb-8">
                   Get mentored by industry professionals
                 </h2>
-                <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-4 md:px-0">
+                <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-8 md:px-0">
                   Fast-track your career with personalized 1:1 guidance from
                   over 1000 expert mentors in our community.
                 </p>
@@ -191,7 +191,7 @@ const ToggleSection: React.FC = () => {
                     onClick={() => setIsOpen(!isOpen)}
                     className="w-full px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
                   >
-                    {selectedSkill || "What skill do you want to improve?"}
+                    {selectedSkill || "🔍 What skill do you want to improve?"}
                   </button>
                   
                   {isOpen && (
@@ -200,16 +200,17 @@ const ToggleSection: React.FC = () => {
                       style={{ maxWidth: '500px' }}
                       onMouseLeave={handleMenuLeave}
                     >
-                      {/* Menu items in a single column with submenu appearing below parent */}
+                      {/* Menu items in a single column */}
                       <div className="w-full overflow-y-auto transition-all duration-200 scrollbar-hide">
                         {Object.entries(menuItems).map(([skill, subskills]) => (
                           <div
                             key={skill}
-                            className="relative"
+                            className="relative" // This is important for absolute positioning
                             onMouseEnter={() => handleMenuHover(skill, subskills)}
                             onMouseLeave={() => isMobile ? null : setActiveSubmenu(null)}
                           >
                             <button
+                              data-skill={skill}
                               className={`w-full px-4 py-3 text-left hover:bg-gray-100 flex justify-between items-center text-black ${
                                 activeSubmenu === skill ? 'bg-gray-100' : ''
                               }`}
@@ -217,14 +218,38 @@ const ToggleSection: React.FC = () => {
                             >
                               <span>{skill}</span>
                               {subskills.length > 0 && (
-                                <span className="ml-2 text-gray-500">
-                                  {isMobile ? '›' : '▼'}
-                                </span>
+                                <span className="ml-2 text-gray-500">›</span>
                               )}
                             </button>
-                            
-                            {/* Submenu directly under parent item */}
-                            {activeSubmenu === skill && subskills.length > 0 && (
+
+                            {/* Improved submenu with guaranteed visibility */}
+                            {activeSubmenu === skill && subskills.length > 0 && !isMobile && (
+                              <div
+                                className="fixed bg-white border-2 border-gray-400 shadow-xl rounded-md w-64 z-[100]"
+                                style={{
+                                  left: `calc(${dropdownRef.current?.querySelector(`[data-skill="${skill}"]`)?.getBoundingClientRect().right ?? 0}px)`,
+                                  top: `calc(${dropdownRef.current?.querySelector(`[data-skill="${skill}"]`)?.getBoundingClientRect().top}px)`,
+                                  boxShadow:
+                                    '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                }}
+                              >
+                                {subskills.map((subskill) => (
+                                  <button
+                                    key={subskill}
+                                    className="w-full px-4 py-3 text-left hover:bg-gray-100 text-black border-b border-gray-200 last:border-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSkillSelect(activeSubmenu, subskill);
+                                    }}
+                                  >
+                                    {subskill}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Mobile submenu */}
+                            {activeSubmenu === skill && subskills.length > 0 && isMobile && (
                               <div className="w-full bg-gray-50 transition-all duration-200 pl-4">
                                 {subskills.map((subskill) => (
                                   <button
