@@ -189,7 +189,7 @@ const ToggleSection: React.FC = () => {
                 <div className="relative px-4 md:px-0" ref={dropdownRef}>
                   <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
+                    className="w-4/6 px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white"
                   >
                     {selectedSkill || "🔍 What skill do you want to improve?"}
                   </button>

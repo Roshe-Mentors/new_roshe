@@ -28,7 +28,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: true,
     coaching: false,
-    image: "/images/supaman.JPG", 
+    image: "/images/1.jpg", 
   },
   {
     id: 2,
@@ -41,7 +41,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: false,
     coaching: true,
-    image: "/images/woman2.jpg",
+    image: "/images/2.jpg",
   },
   {
     id: 3,
@@ -54,7 +54,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: false,
     coaching: true,
-    image: "/images/man7.jpg",
+    image: "/images/8.jpg",
   },
   {
     id: 4,
@@ -67,7 +67,7 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: true,
     coaching: false,
-    image: "/images/woman3.jpg",
+    image: "/images/17.jpg",
   },
   {
     id: 5,
@@ -80,7 +80,7 @@ const mentors: Mentor[] = [
     topRated: false,
     availableASAP: false,
     coaching: true,
-    image: "/images/man5.jpg",
+    image: "/images/15.jpg",
   },
 ];
 
