@@ -73,7 +73,6 @@ const ToggleSection: React.FC = () => {
 
   const handleMenuHover = (skill: string, subskills: string[]) => {
     // Only change submenu on hover if not on mobile and if there are subskills
-    
     if (!isMobile && subskills.length > 0) {
       setActiveSubmenu(skill);
     }
@@ -159,37 +158,16 @@ const ToggleSection: React.FC = () => {
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
-            <Image
-              src="/images/7.jpeg"
-              alt="Profile 4"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/8.jpg"
-              alt="Profile 5"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/9.jpg"
-              alt="Profile 6"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
           </div>
 
           {/* Middle Section: Dynamic Content */}
           <div className="text-center lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-6xl md:text-5xl text-black font-extrabold mb-6 mt-12 md:mb-8">
+                <h2 className="text-6xl md:text-5xl text-black font-medium leading-relaxed mb-6 mt-12 md:mb-8">
                   Change the world through mentorship
                 </h2>
-                <p className="text-gray-800 mb-8 md:mb-10 text-lg md:text-xl px-4 md:px-0">
+                <p className="text-gray-800 mb-8 md:mb-10 text-lg md:text-xl leading-relaxed px-4 md:px-0">
                   Enhance your leadership confidence, expand your <br/>connections,
                   and shape your lasting impact.
                 </p>
@@ -201,10 +179,10 @@ const ToggleSection: React.FC = () => {
               </>
             ) : (
               <>
-                <h2 className="text-4xl md:text-5xl text-black font-bold mb-6 md:mb-8">
+                <h2 className="text-4xl md:text-5xl text-black font-medium leading-relaxed mb-6 md:mb-8">
                   Get mentored by industry professionals
                 </h2>
-                <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl px-4 md:px-0">
+                <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-4 md:px-0">
                   Fast-track your career with personalized 1:1 guidance from
                   over 1000 expert mentors in our community.
                 </p>
@@ -218,54 +196,49 @@ const ToggleSection: React.FC = () => {
                   
                   {isOpen && (
                     <div
-                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg mt-1 overflow-y-auto max-h-[400px] md:max-h-[50vh]"
-                      style={{ width: '100%', maxWidth: '500px' }}
+                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg mt-1 overflow-y-auto max-h-[400px] md:max-h-[50vh] w-full"
+                      style={{ maxWidth: '500px' }}
                       onMouseLeave={handleMenuLeave}
                     >
-                      <div className="flex">
-                        {/* Main menu column - Always visible */}
-                        <div className={`${activeSubmenu ? 'w-1/2' : 'w-full'} border-r border-gray-300 overflow-y-auto transition-all duration-200 scrollbar-hide`}>
-                          {Object.entries(menuItems).map(([skill, subskills]) => (
-                            <div
-                              key={skill}
-                              className="relative"
-                              onMouseEnter={() => handleMenuHover(skill, subskills)}
+                      {/* Menu items in a single column with submenu appearing below parent */}
+                      <div className="w-full overflow-y-auto transition-all duration-200 scrollbar-hide">
+                        {Object.entries(menuItems).map(([skill, subskills]) => (
+                          <div
+                            key={skill}
+                            className="relative"
+                            onMouseEnter={() => handleMenuHover(skill, subskills)}
+                            onMouseLeave={() => isMobile ? null : setActiveSubmenu(null)}
+                          >
+                            <button
+                              className={`w-full px-4 py-3 text-left hover:bg-gray-100 flex justify-between items-center text-black ${
+                                activeSubmenu === skill ? 'bg-gray-100' : ''
+                              }`}
+                              onClick={() => handleParentClick(skill, subskills)}
                             >
-                              <button
-                                className={`w-full px-4 py-3 text-left hover:bg-gray-100 flex justify-between items-center text-black ${
-                                  activeSubmenu === skill ? 'bg-gray-100' : ''
-                                }`}
-                                onClick={() => handleParentClick(skill, subskills)}
-                              >
-                                <span>{skill}</span>
-                                {subskills.length > 0 && (
-                                  <span className="ml-2 text-gray-500">›</span>
-                                )}
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Submenu column - Only visible when a submenu is active */}
-                        {activeSubmenu && (
-                          <div className="w-1/2 overflow-y-auto bg-gray-50 transition-all duration-200 scrollbar-hide">
-                            {menuItems[activeSubmenu]?.length > 0 ? (
-                              menuItems[activeSubmenu].map((subskill) => (
-                                <button
-                                  key={subskill}
-                                  className="w-full px-4 py-3 text-left hover:bg-gray-100 text-black"
-                                  onClick={() => handleSkillSelect(activeSubmenu, subskill)}
-                                >
-                                  {subskill}
-                                </button>
-                              ))
-                            ) : (
-                              <div className="px-4 py-3 text-gray-500">
-                                No subskills available
+                              <span>{skill}</span>
+                              {subskills.length > 0 && (
+                                <span className="ml-2 text-gray-500">
+                                  {isMobile ? '›' : '▼'}
+                                </span>
+                              )}
+                            </button>
+                            
+                            {/* Submenu directly under parent item */}
+                            {activeSubmenu === skill && subskills.length > 0 && (
+                              <div className="w-full bg-gray-50 transition-all duration-200 pl-4">
+                                {subskills.map((subskill) => (
+                                  <button
+                                    key={subskill}
+                                    className="w-full px-4 py-2 text-left hover:bg-gray-100 text-black"
+                                    onClick={() => handleSkillSelect(activeSubmenu, subskill)}
+                                  >
+                                    {subskill}
+                                  </button>
+                                ))}
                               </div>
                             )}
                           </div>
-                        )}
+                        ))}
                       </div>
                     </div>
                   )}
@@ -314,27 +287,6 @@ const ToggleSection: React.FC = () => {
             <Image
               src="/images/13.jpg"
               alt="Profile 12"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/14.jpg"
-              alt="Profile 7"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/15.jpg"
-              alt="Profile 8"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/16.jpg"
-              alt="Profile 9"
               width={120}
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
