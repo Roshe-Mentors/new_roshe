@@ -27,21 +27,23 @@ const stats = [
 const PlatformStats = () => {
   return (
     <section className="w-full py-10 flex flex-col items-center"
-    style={{ background: 'linear-gradient(90deg, #9898FA 0%, #65658D 100%)' }}
+    style={{ 
+      background: 'linear-gradient(90deg, #9898FA 0%, #65658D 100%)' 
+    }}
     >
       <h2 className="text-3xl font-bold text-white mb-8">
         A platform that delivers results
       </h2>
 
-      <div className="w-4/5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="w-4/5 max-w-3xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         {stats.map((item, idx) => (
           <div
             key={idx}
-            className="flex flex-col items-center justify-center bg-white rounded-md p-6 text-center text-black transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+            className="flex flex-col items-center justify-center bg-white rounded-md p-1.5 text-center text-black transition-transform duration-300 hover:scale-105 hover:shadow-xl aspect-square max-w-[120px] mx-auto"
           >
-            <p className="text-sm mb-1">{item.preText}</p>
-            <h3 className="text-3xl font-bold mb-1">{item.bigText}</h3>
-            <p className="text-sm">{item.postText}</p>
+            <p className="text-xs mb-0.5">{item.preText}</p>
+            <h3 className="text-3xl font-bold mb-0.5">{item.bigText}</h3>
+            <p className="text-xs">{item.postText}</p>
           </div>
         ))}
       </div>
