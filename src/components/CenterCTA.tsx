@@ -29,7 +29,7 @@ const CenterCTA = () => {
         style={{
           backgroundImage: `
             linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)),
-            url("/images/Community_image.jpg")
+            url("/images/rosheBackground.jpg")
           `,
           backgroundPosition: 'center top',
           backgroundSize: 'cover',
