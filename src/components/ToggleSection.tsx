@@ -118,6 +118,7 @@ const ToggleSection: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-center lg:items-start space-y-8 lg:space-y-0">
          {/* Left Image Grid */}
           <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto mb-8 lg:mb-0 lg:mr-8">
+            {/* First row */}
             <Image
               src="/images/1.jpg"
               alt="Profile 1"
@@ -139,27 +140,31 @@ const ToggleSection: React.FC = () => {
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
-            <Image
-              src="/images/4.jpg"
-              alt="Profile 1"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/5.jpg"
-              alt="Profile 1"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/6.jpg"
-              alt="Profile 1"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
+            
+            {/* Second row - with left padding to offset */}
+            <div className="col-span-3 pl-6 grid grid-cols-3 gap-3 md:gap-4">
+              <Image
+                src="/images/4.jpg"
+                alt="Profile 1"
+                width={120}
+                height={150}
+                className="rounded-md object-cover w-24 h-[150px]"
+              />
+              <Image
+                src="/images/5.jpg"
+                alt="Profile 1"
+                width={120}
+                height={150}
+                className="rounded-md object-cover w-24 h-[150px]"
+              />
+              <Image
+                src="/images/6.jpg"
+                alt="Profile 1"
+                width={120}
+                height={150}
+                className="rounded-md object-cover w-24 h-[150px]"
+              />
+            </div>
           </div>
 
           {/* Middle Section: Dynamic Content */}
@@ -276,6 +281,7 @@ const ToggleSection: React.FC = () => {
 
          {/* Right Image Grid */}
           <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto">
+            {/* First row */}
             <Image
               src="/images/10.jpg"
               alt="Profile 7"
@@ -297,27 +303,31 @@ const ToggleSection: React.FC = () => {
               height={150}
               className="rounded-md object-cover w-24 h-[150px]"
             />
-            <Image
-              src="/images/12.jpg"
-              alt="Profile 10"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/17.jpg"
-              alt="Profile 11"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
-            <Image
-              src="/images/13.jpg"
-              alt="Profile 12"
-              width={120}
-              height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
-            />
+            
+            {/* Second row - with left padding to offset */}
+            <div className="col-span-3 pl-6 grid grid-cols-3 gap-3 md:gap-4">
+              <Image
+                src="/images/12.jpg"
+                alt="Profile 10"
+                width={120}
+                height={150}
+                className="rounded-md object-cover w-24 h-[150px]"
+              />
+              <Image
+                src="/images/17.jpg"
+                alt="Profile 11"
+                width={120}
+                height={150}
+                className="rounded-md object-cover w-24 h-[150px]"
+              />
+              <Image
+                src="/images/13.jpg"
+                alt="Profile 12"
+                width={120}
+                height={150}
+                className="rounded-md object-cover w-24 h-[150px]"
+              />
+            </div>
           </div>
         </div>
       </div>

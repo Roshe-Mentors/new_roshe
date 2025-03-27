@@ -33,7 +33,7 @@ const PlatformStats = () => {
         A platform that delivers results
       </h2>
 
-      <div className="w-2/3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="w-4/5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {stats.map((item, idx) => (
           <div
             key={idx}
