@@ -162,23 +162,23 @@ Biography: ${formData.biography}
     <div className="w-full text-black bg-white flex items-center justify-center py-16 px-4 mt-8">
       <div className="max-w-5xl w-full flex flex-col md:flex-row justify-between items-stretch gap-8">
         {/* Left Image Section */}
-        <div className="w-full md:w-1/2 flex items-center">
+        <div className="w-full md:w-1/2 flex items-center justify-center">
           <Image
             src="/images/mentor_pic.png"
             alt="Mentor Sign Up"
             width={700}
             height={1000}
-            className="rounded-lg shadow-lg w-full h-auto object-cover"
+            className="rounded-lg shadow-lg w-[126%] h-auto object-cover"
             priority
           />
         </div>
 
         {/* Right Form Section */}
-        <div className="w-full md:w-1/2 bg-white rounded-lg p-6 flex flex-col">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Get Started Now</h2>
-          <p className="text-gray-600 mb-6">Enter your credentials to create your account</p>
+        <div className="w-full md:w-1/2 bg-white rounded-lg p-4 flex flex-col">
+          <h2 className="text-2xl font-bold text-gray-900 mb-1 text-left">Get Started Now</h2>
+          <p className="text-gray-600 mb-4 text-left text-sm">Enter your credentials to create your account</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Name Field */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -191,7 +191,7 @@ Biography: ${formData.biography}
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Full Name"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                 required
               />
             </div>
@@ -208,13 +208,13 @@ Biography: ${formData.biography}
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                 required
               />
             </div>
 
             {/* LinkedIn and DOB Fields in a row */}
-            <div className="flex flex-col sm:flex-row gap-4">  
+            <div className="flex flex-col sm:flex-row gap-3">  
               <div className="w-full sm:w-1/2">  
                 <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1">
                   LinkedIn <span className="text-red-500">*</span>
@@ -226,7 +226,7 @@ Biography: ${formData.biography}
                   value={formData.linkedin}
                   onChange={handleChange}
                   placeholder="https://linkedin.com/in/..."
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                   required
                 />
               </div>
@@ -242,10 +242,10 @@ Biography: ${formData.biography}
                   value={formData.dob}
                   onChange={handleChange}
                   placeholder="DD/MM/YYYY"
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">You must be at least 18 years old</p>
+                <p className="text-xs text-gray-500 mt-0.5">You must be at least 18 years old</p>
               </div>
             </div>
 
@@ -260,8 +260,8 @@ Biography: ${formData.biography}
                 value={formData.biography}
                 onChange={handleChange}
                 placeholder="Write a brief biography"
-                className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                rows={4}
+                className="block w-full px-3 py-1.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                rows={2}
               />
             </div>
 
@@ -278,7 +278,7 @@ Biography: ${formData.biography}
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Password"
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                   required
                 />
                 <button 
@@ -289,17 +289,17 @@ Biography: ${formData.biography}
                   {formData.showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5">
                 At least 8 characters, 1 uppercase, 1 lowercase, and 1 number
               </p>
             </div>
 
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-            {success && <p className="text-green-600 text-sm">{success}</p>}
+            {error && <p className="text-red-600 text-xs">{error}</p>}
+            {success && <p className="text-green-600 text-xs">{success}</p>}
 
             <button
               type="submit"
-              className="w-full py-3 text-white font-medium rounded-md mt-4 transition duration-300 ease-in-out transform hover:scale-105 flex justify-center items-center"
+              className="w-full py-2.5 text-white font-medium rounded-md mt-4 transition duration-300 ease-in-out transform hover:scale-105 flex justify-center items-center text-sm"
               style={{
                 background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
               }}
@@ -307,7 +307,7 @@ Biography: ${formData.biography}
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -318,8 +318,8 @@ Biography: ${formData.biography}
               )}
             </button>
 
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-600">
+            <div className="text-center mt-3">
+              <p className="text-xs text-gray-600">
                 Already have an account?{' '}
                 <a href="/signIn" className="text-blue-600 hover:text-blue-800">
                   Log in
