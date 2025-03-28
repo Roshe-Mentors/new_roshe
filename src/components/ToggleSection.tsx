@@ -29,6 +29,9 @@ const ToggleSection: React.FC = () => {
   const [selectedSkill, setSelectedSkill] = useState("");
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isHoveringSubmenu, setIsHoveringSubmenu] = useState(false);
+  const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
+  const [submenuHovered, setSubmenuHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,17 +75,33 @@ const ToggleSection: React.FC = () => {
   };
 
   const handleMenuHover = (skill: string, subskills: string[]) => {
-    // Only change submenu on hover if not on mobile and if there are subskills
     if (!isMobile && subskills.length > 0) {
       setActiveSubmenu(skill);
+      setHoveredSkill(skill);
     }
   };
 
   const handleMenuLeave = () => {
-    // On non-mobile, clear active submenu when mouse leaves
-    if (!isMobile) {
-      setActiveSubmenu(null);
+    // Only hide submenu if not currently hovering the submenu
+    if (!submenuHovered) {
+      setTimeout(() => {
+        setHoveredSkill(null);
+        setActiveSubmenu(null);
+      }, 100);
     }
+  };
+
+  const handleSubmenuEnter = () => {
+    setSubmenuHovered(true);
+  };
+
+  const handleSubmenuLeave = () => {
+    setSubmenuHovered(false);
+    setTimeout(() => {
+      if (!hoveredSkill) {
+        setActiveSubmenu(null);
+      }
+    }, 100);
   };
 
   return (
@@ -210,24 +229,26 @@ const ToggleSection: React.FC = () => {
                   
                   {isOpen && (
                     <div
-                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg mt-1 overflow-y-auto max-h-[300px] md:max-h-[40vh]"
-                      style={{ width: 'calc(4/6*100%)', maxWidth: '400px' , left: '0'}}
-                      onMouseLeave={handleMenuLeave}
+                      className="absolute z-50 bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto max-h-[300px] md:max-h-[40vh]"
+                      style={{ 
+                        width: 'calc(100% * 4 / 6)',
+                        maxWidth: '400px',
+                        left: 0,
+                        top: '100%',
+                      }}
                     >
                       {/* Menu items in a single column */}
                       <div className="w-full overflow-y-auto transition-all duration-200 scrollbar-hide">
                         {Object.entries(menuItems).map(([skill, subskills]) => (
                           <div
                             key={skill}
-                            className="relative" // This is important for absolute positioning
+                            className="relative group"
                             onMouseEnter={() => handleMenuHover(skill, subskills)}
-                            onMouseLeave={() => isMobile ? null : setActiveSubmenu(null)}
+                            onMouseLeave={handleMenuLeave}
                           >
                             <button
                               data-skill={skill}
-                              className={`w-full px-4 py-3 text-left hover:bg-gray-100 flex justify-between items-center text-black ${
-                                activeSubmenu === skill ? 'bg-gray-100' : ''
-                              }`}
+                              className={`w-full px-4 py-3 text-left hover:bg-gray-100 flex justify-between items-center text-black ${activeSubmenu === skill ? 'bg-gray-100' : ''}`}
                               onClick={() => handleParentClick(skill, subskills)}
                             >
                               <span>{skill}</span>
@@ -235,17 +256,17 @@ const ToggleSection: React.FC = () => {
                                 <span className="ml-2 text-gray-500">›</span>
                               )}
                             </button>
-
-                            {/* Improved submenu with guaranteed visibility */}
-                            {activeSubmenu === skill && subskills.length > 0 && !isMobile && (
+  
+                            {/* Submenu for desktop */}
+                            {subskills.length > 0 && !isMobile && (
                               <div
-                                className="fixed bg-white border-2 border-gray-400 shadow-xl rounded-md w-64 z-[100]"
-                                style={{
-                                  left: `calc(${dropdownRef.current?.querySelector(`[data-skill="${skill}"]`)?.getBoundingClientRect().right ?? 0}px)`,
-                                  top: `calc(${dropdownRef.current?.querySelector(`[data-skill="${skill}"]`)?.getBoundingClientRect().top}px)`,
-                                  boxShadow:
-                                    '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                className="absolute left-full top-0 ml-1 bg-white border border-gray-300 shadow-lg rounded-md w-64 z-[100]"
+                                style={{ 
+                                  display: activeSubmenu === skill ? 'block' : 'none',
+                                  pointerEvents: 'auto' 
                                 }}
+                                onMouseEnter={handleSubmenuEnter}
+                                onMouseLeave={handleSubmenuLeave}
                               >
                                 {subskills.map((subskill) => (
                                   <button
@@ -261,7 +282,7 @@ const ToggleSection: React.FC = () => {
                                 ))}
                               </div>
                             )}
-
+  
                             {/* Mobile submenu */}
                             {activeSubmenu === skill && subskills.length > 0 && isMobile && (
                               <div className="w-full bg-gray-50 transition-all duration-200 pl-4">

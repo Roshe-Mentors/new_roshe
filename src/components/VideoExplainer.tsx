@@ -19,7 +19,7 @@ const ExplainerVideo = () => {
             muted
             loop
           >
-            <source src="/images/rosheVid.mp4" type="video/mp4" />
+            <source src="/images/RosheMentorship.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
