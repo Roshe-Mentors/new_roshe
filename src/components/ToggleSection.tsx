@@ -265,7 +265,7 @@ const ToggleSection: React.FC = () => {
           </div>
 
           {/* Middle Section: Dynamic Content */}
-          <div className="text-center pt-12 lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
+          <div className="text-center pt-2 lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
             {selectedView === "mentor" ? (
               <>
                 <h2 className="text-6xl md:text-5xl text-black font-medium leading-relaxed mb-6 mt-12 md:mb-8">
