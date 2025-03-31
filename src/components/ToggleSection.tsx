@@ -290,7 +290,7 @@ const ToggleSection: React.FC = () => {
                 <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-8 md:px-0">
                   Fast-track your career with personalized 1:1 guidance from over 1000 expert mentors in our community.
                 </p>
-                <div className="relative px-4 md:px-0 flex justify-center" ref={dropdownRef}>
+                <div className="relative flex justify-center" ref={dropdownRef}>
                   <button
                     ref={buttonRef}
                     onClick={() => setIsOpen(!isOpen)}
@@ -328,7 +328,8 @@ const ToggleSection: React.FC = () => {
                       className="absolute z-40 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden"
                       style={{
                         width: buttonRef.current ? buttonRef.current.offsetWidth : "auto",
-                        left: 0,
+                        left: "50%",
+                        transform: "translateX(-50%)",
                         top: "calc(100% + 4px)",
                       }}
                     >
