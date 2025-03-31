@@ -268,10 +268,10 @@ const ToggleSection: React.FC = () => {
           <div className="text-center pt-0.2 lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-6xl md:text-5xl text-black font-medium leading-relaxed mb-6 mt-12 md:mb-8">
+                <h2 className="text-6xl md:text-5xl text-black font-medium leading-relaxed mb-4 mt-8 md:mb-6">
                   Change the world through mentorship
                 </h2>
-                <p className="text-gray-800 mb-8 md:mb-10 text-lg md:text-xl leading-relaxed px-4 md:px-0">
+                <p className="text-gray-800 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-2 md:px-0">
                   Enhance your leadership confidence, expand your <br />
                   connections, and shape your lasting impact.
                 </p>
