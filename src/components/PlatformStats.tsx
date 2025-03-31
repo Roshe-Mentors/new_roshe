@@ -9,17 +9,17 @@ const stats = [
   },
   {
     preText: "Empowered by",
-    bigText: "300",
+    bigText: "20",
     postText: "Expert mentors",
   },
   {
     preText: "Global community from",
-    bigText: "80",
+    bigText: "10",
     postText: "Countries",
   },
   {
     preText: "We have built",
-    bigText: "10k",
+    bigText: "1k",
     postText: "Connections",
   },
 ];
