@@ -70,29 +70,30 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
 
       {/* Sidebar */}
       <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
-        <button
-          onClick={() => setActiveView('groupMentorship')}
-          className={`rotate-180 writing-mode-vertical-rl transform origin-center cursor-pointer px-4 py-2 rounded transition-colors ${
-            activeView === 'groupMentorship'
-              ? 'bg-indigo-100 text-indigo-700 font-semibold'
-              : 'text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-100'
-          }`}
-          style={{ writingMode: 'vertical-rl' }}
-        >
-          Group Mentorship
-        </button>
-        <div className="flex-grow"></div>
-        <button
-          onClick={() => setActiveView('mentors')}
-          className={`rotate-180 writing-mode-vertical-rl transform origin-center cursor-pointer px-4 py-2 rounded transition-colors ${
-            activeView === 'mentors'
-              ? 'bg-indigo-100 text-indigo-700 font-semibold'
-              : 'text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-100'
-          }`}
-          style={{ writingMode: 'vertical-rl' }}
-        >
-          Mentors
-        </button>
+        <div className="flex flex-col space-y-2">
+          <button
+            onClick={() => setActiveView('groupMentorship')}
+            className={`rotate-180 writing-mode-vertical-rl transform origin-center cursor-pointer px-4 py-2 rounded transition-colors ${
+              activeView === 'groupMentorship'
+                ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                : 'text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-100'
+            }`}
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            Group Mentorship
+          </button>
+          <button
+            onClick={() => setActiveView('mentors')}
+            className={`rotate-180 writing-mode-vertical-rl transform origin-center cursor-pointer px-4 py-2 rounded transition-colors ${
+              activeView === 'mentors'
+                ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                : 'text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-100'
+            }`}
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            Mentors
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
