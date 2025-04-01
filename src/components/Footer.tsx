@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
             </p>
           </div>
 
-          {/* Right Section: Social Media Icons and Additional Links */}
+          {/* Right Section: Social Media Icons */}
           <div className="flex flex-col items-center md:items-end space-y-4 md:space-y-6">
             {/* Social Media Icons */}
             <div className="flex justify-center md:justify-end space-x-6">
@@ -93,9 +93,40 @@ const Footer: React.FC = () => {
                 <FaTiktok size={20} />
               </a>
             </div>
+          </div>
+        </div>
 
-            {/* Navigation Links (Directly under Social Media Icons) */}
-            <ul className="flex flex-row items-center md:items-end space-x-4 text-black text-sm">
+        {/* Bottom Section: Navigation Links - Split into two groups */}
+        <div className="mt-8 flex flex-col md:flex-row justify-between">
+          {/* Left Side Navigation Links */}
+          <div className="text-center md:text-left mb-4 md:mb-0">
+            <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-black text-sm">
+              <li>
+                <Link href="/mentors" className="hover:text-black transition font-bold">
+                  find mentors
+                </Link>
+              </li>
+              <li>
+                <Link href="/become-a-mentor" className="hover:text-black transition font-bold">
+                  become a mentor
+                </Link>
+              </li>
+              <li>
+                <Link href="/community" className="hover:text-black transition font-bold">
+                  community
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="hover:text-black transition font-bold">
+                  blog
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Right Side Navigation Links */}
+          <div className="text-center md:text-right">
+            <ul className="flex flex-wrap justify-center md:justify-end space-x-6 text-black text-sm">
               <li>
                 <Link href="/join" className="hover:text-black transition font-bold">
                   join roshe mentorship
@@ -115,33 +146,9 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Section: Navigation Links */}
-        <div className="mt-8 text-center md:text-left flex flex-col items-center md:items-start">
-          <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-black text-sm">
-            <li>
-              <Link href="/mentors" className="hover:text-black transition font-bold">
-                find mentors
-              </Link>
-            </li>
-            <li>
-              <Link href="/become-a-mentor" className="hover:text-black transition font-bold">
-                become a mentor
-              </Link>
-            </li>
-            <li>
-              <Link href="/community" className="hover:text-black transition font-bold">
-                community
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog" className="hover:text-black transition font-bold">
-                blog
-              </Link>
-            </li>
-          </ul>
-          <div className="text-sm text-black mt-6">
-            © Roshe Mentorship, all rights reserved.
-          </div>
+        {/* Copyright Line */}
+        <div className="text-sm text-black mt-6 text-center md:text-left">
+          © Roshe Mentorship, all rights reserved.
         </div>
       </div>
     </footer>
