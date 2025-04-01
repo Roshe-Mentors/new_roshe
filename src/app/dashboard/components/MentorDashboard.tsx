@@ -29,7 +29,7 @@ interface MentorDashboardProps {
 
 // Main Dashboard Component
 const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
-  const router = useRouter();
+  // const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
 
