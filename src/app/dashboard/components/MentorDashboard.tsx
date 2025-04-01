@@ -122,11 +122,17 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                 />
               </div>
               <div className="flex ml-4 space-x-2">
-                <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
+                <button 
+                  style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
+                >
                   <BsLightning className="mr-2" size={20} />
                   <span>Available ASAP</span>
                 </button>
-                <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
+                <button 
+                  style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
+                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
+                >
                   <BsPersonFill className="mr-2" size={20} />
                   <span>Coaching</span>
                 </button>
