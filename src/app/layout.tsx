@@ -17,19 +17,21 @@ export const metadata: Metadata = {
   description: "Change the world through mentorship",
   icons: {
     icon: [
+      '/images/roshementorship.ico',
       {
-        url: '/roshementorship.png',
+        url: '/images/roshementorship.png',
         sizes: '32x32',
-        type: 'image/ico',
+        type: 'image/png',
       },
       {
-        url: '/roshementorship.png',
+        url: '/images/roshementorship.png',
         sizes: '192x192',
         type: 'image/png',
       },
     ],
+    shortcut: '/images/roshementorship.ico',
     apple: {
-      url: "/roshementorship.png",
+      url: "/images/roshementorship.png",
       sizes: "180x180",
       type: "image/png",
     },
