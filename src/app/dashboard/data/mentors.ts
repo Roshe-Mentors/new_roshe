@@ -12,7 +12,7 @@ export const mentorsData = [
     attendance: 98,
     isAvailableASAP: true,
     providesCoaching: false,
-    imageUrl: '/mentors/1.jpg',
+    imageUrl: "/images/1.jpg",
     isTopRated: true,
   },
   {
@@ -27,7 +27,7 @@ export const mentorsData = [
     attendance: 98,
     isAvailableASAP: true,
     providesCoaching: true,
-    imageUrl: '/mentors/mentor2.jpg',
+    imageUrl: "/images/2.jpg",
     isTopRated: false,
   },
   {
@@ -42,7 +42,7 @@ export const mentorsData = [
     attendance: 98,
     isAvailableASAP: true,
     providesCoaching: true,
-    imageUrl: '/mentors/mentor3.jpg',
+    imageUrl: "/images/9.jpg",
     isTopRated: true,
   },
   {
@@ -57,7 +57,7 @@ export const mentorsData = [
     attendance: 98,
     isAvailableASAP: true,
     providesCoaching: false,
-    imageUrl: '/mentors/mentor4.jpg',
+    imageUrl: "/images/7.jpeg",
     isTopRated: true,
   },
   {
@@ -72,7 +72,7 @@ export const mentorsData = [
     attendance: 98,
     isAvailableASAP: true,
     providesCoaching: true,
-    imageUrl: '/mentors/mentor5.jpg',
+    imageUrl: "/images/4.jpg",
     isTopRated: false,
   },
 ];
