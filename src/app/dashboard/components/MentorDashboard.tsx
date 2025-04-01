@@ -70,10 +70,10 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
           </div>
           <div className="flex ml-4 space-x-2">
             <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
-            <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
               <BsLightning className="mr-2" size={20} />
               <span>Available ASAP</span>
             </button>
+            <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
               <BsPersonFill className="mr-2" size={20} />
               <span>Coaching</span>
             </button>
@@ -159,66 +159,15 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
       <div className="relative">
         <img 
           src={mentor.imageUrl} 
-          alt={`${mentor.name}`} 
-          className="w-full h-64 object-cover object-center"
+          alt={mentor.name} 
+          className="w-full h-48 object-cover"
         />
-        <div className="absolute top-2 left-2">
-          {mentor.isTopRated && (
-            <span className="bg-white text-gray-800 text-xs font-medium px-2 py-1 rounded">
-              Top rated
-            </span>
-          )}
-        </div>
-        <div className="absolute bottom-2 left-2 flex space-x-2">
-          {mentor.isAvailableASAP && (
-          {mentor.isAvailableASAP && (
-            <span className="bg-gray-800 text-white text-xs font-medium px-2 py-1 rounded flex items-center">
-              <BsLightning className="mr-1" size={14} />
-              Available ASAP
-            </span>
-          {mentor.providesCoaching && (
-            <span className="bg-yellow-200 text-gray-800 text-xs font-medium px-2 py-1 rounded flex items-center">
-              <BsPersonFill className="mr-1" size={14} />
-              Coaching
-            </span>
-          )}
-        </div>
+        {/* Add any additional JSX or badges here */}
       </div>
-
-      {/* Mentor Info */}
+      {/* Mentor Details */}
       <div className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="font-medium text-gray-900">{mentor.name}</h3>
-            <p className="text-sm text-gray-500">{mentor.location}</p>
-          </div>
-        </div>
-
-        {/* Role and Company */}
-        <div className="flex items-center mb-2">
-          <span className="mr-2">💼</span>
-          <p className="text-sm text-gray-700">{mentor.role} at {mentor.company}</p>
-        </div>
-
-        {/* Session Info */}
-        <div className="flex items-center mb-4">
-          <span className="mr-2">💬</span>
-          <p className="text-sm text-gray-700">
-            {mentor.sessions} sessions ({mentor.reviews} reviews)
-          </p>
-        </div>
-
-        {/* Experience and Attendance */}
-        <div className="flex justify-between text-sm">
-          <div>
-            <p className="text-gray-500">Experience</p>
-            <p className="font-medium">{mentor.experience} years</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Avg. Attendance</p>
-            <p className="font-medium">{mentor.attendance}%</p>
-          </div>
-        </div>
+        <h3 className="text-lg font-semibold">{mentor.name}</h3>
+        <p className="text-sm text-gray-600">{mentor.role} at {mentor.company}</p>
       </div>
     </div>
   );
