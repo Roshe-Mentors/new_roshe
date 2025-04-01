@@ -83,7 +83,7 @@ const LoginPage = () => {
 
   return (
     <div className="w-full bg-white py-12 pt-28 px-4 md:py-20 md:pt-36">
-      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-center">
         <div className="w-full lg:w-1/2 flex flex-col">
           <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">Log In</h1>
           
@@ -170,13 +170,13 @@ const LoginPage = () => {
         </div>
         
         {/* Right Image Section */}
-        <div className="hidden lg:block lg:w-1/2">
+        <div className="hidden lg:block lg:w-1/2 flex justify-center items-center">
           <Image
             src="/images/login.png" 
             alt="Login"
-            width={600}
-            height={800}
-            className="rounded-lg shadow-lg object-cover w-full h-full"
+            width={500}
+            height={650}
+            className="rounded-lg shadow-lg object-cover max-h-[80vh]"
             priority
           />
         </div>
