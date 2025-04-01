@@ -112,8 +112,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
             </div>
 
             {/* Search and Action Buttons */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="relative w-full max-w-3xl">
+            <div className="flex items-center space-x-4 mb-8">
+              <div className="relative flex-grow max-w-3xl">
                 <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
                 <input
                   type="text"
@@ -121,22 +121,20 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="flex ml-4 space-x-2">
-                <button 
-                  style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
-                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
-                >
-                  <BsLightning className="mr-2" size={20} />
-                  <span>Available ASAP</span>
-                </button>
-                <button 
-                  style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
-                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
-                >
-                  <BsPersonFill className="mr-2" size={20} />
-                  <span>Coaching</span>
-                </button>
-              </div>
+              <button 
+                style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+                className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
+              >
+                <BsLightning className="mr-2" size={20} />
+                <span>Available ASAP</span>
+              </button>
+              <button 
+                style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
+                className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
+              >
+                <BsPersonFill className="mr-2" size={20} />
+                <span>Coaching</span>
+              </button>
             </div>
 
             {/* Category Filters */}
