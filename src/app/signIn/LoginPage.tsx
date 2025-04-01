@@ -82,7 +82,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="w-full bg-white py-12 px-4 md:py-20">
+    <div className="w-full bg-white py-12 pt-20 px-4 md:py-20 md:pt-24">
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
         <div className="w-full lg:w-1/2 flex flex-col">
           <h1 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">Log In</h1>
