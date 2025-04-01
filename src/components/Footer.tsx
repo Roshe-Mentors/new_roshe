@@ -27,10 +27,10 @@ const Footer: React.FC = () => {
                 height={40}
                 className="rounded-full"
               />
-              <span className="text-xl font-montserrat text-gray-800 font-bold">Roshe Mentorship</span>
+              <span className="text-xl font-montserrat text-black font-bold">Roshe Mentorship</span>
             </Link>
-            <p className="text-center md:text-left text-sm text-gray-600">
-              To inspire powerful conversation and collaborations among members worldwide so together we can change the world with creativity.
+            <p className="text-center md:text-left text-sm text-black">
+              To inspire powerful conversation and collaborations among members <br />worldwide so together we can change the world with creativity.
             </p>
           </div>
 
@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
                 href="https://www.linkedin.com/company/roshe-mentorship/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800 transition"
+                className="text-black hover:text-black transition font-bold"
                 title="Visit Roshe Mentorship on LinkedIn"
               >
                 <FaLinkedinIn size={20} />
@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
                 href="https://www.instagram.com/roshe_mentorship/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800 transition"
+                className="text-black hover:text-black transition font-bold"
                 title="Follow Roshe Mentorship on Instagram"
               >
                 <FaInstagram size={20} />
@@ -60,7 +60,7 @@ const Footer: React.FC = () => {
                 href="https://x.com/roshementorship?s=21&t=TN5-Nr3z-NoaUxp_TbMOVA"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800 transition"
+                className="text-black hover:text-black transition font-bold"
                 title="Follow Roshe Mentorship on Twitter"
               >
                 <FaTwitter size={20} />
@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
                 href="https://www.facebook.com/share/1BCqU9R9Pc/?mibextid=LQQJ4d"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800 transition"
+                className="text-black hover:text-black transition font-bold"
                 title="Follow Roshe Mentorship on Facebook"
               >
                 <FaFacebookF size={20} />
@@ -78,7 +78,7 @@ const Footer: React.FC = () => {
                 href="https://www.youtube.com/@RosheMentorship"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800 transition"
+                className="text-black hover:text-black transition font-bold"
                 title="Subscribe to Roshe Mentorship on YouTube"
               >
                 <FaYoutube size={20} />
@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
                 href="https://www.tiktok.com/@roshementorship?is_from_webapp=1&sender_device=pc"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-gray-800 transition"
+                className="text-black hover:text-black transition font-bold"
                 title="Follow Roshe Mentorship on TikTok"
               >
                 <FaTiktok size={20} />
@@ -95,19 +95,19 @@ const Footer: React.FC = () => {
             </div>
 
             {/* Navigation Links (Directly under Social Media Icons) */}
-            <ul className="flex flex-col items-center md:items-end space-y-2 text-gray-600 text-sm">
+            <ul className="flex flex-col items-center md:items-end space-y-2 text-black text-sm">
               <li>
-                <Link href="/join" className="hover:text-gray-800 transition">
+                <Link href="/join" className="hover:text-black transition">
                   join roshe mentorship
                 </Link>
               </li>
               <li>
-                <Link href="/faqs" className="hover:text-gray-800 transition">
+                <Link href="/faqs" className="hover:text-black transition">
                   FAQs
                 </Link>
               </li>
               <li>
-                <Link href="/partnerships" className="hover:text-gray-800 transition">
+                <Link href="/partnerships" className="hover:text-black transition">
                   partnerships
                 </Link>
               </li>
@@ -117,29 +117,29 @@ const Footer: React.FC = () => {
 
         {/* Bottom Section: Navigation Links */}
         <div className="mt-8 text-center md:text-left flex flex-col items-center md:items-start">
-          <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-gray-600 text-sm">
+          <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-black text-sm">
             <li>
-              <Link href="/mentors" className="hover:text-gray-800 transition">
+              <Link href="/mentors" className="hover:text-black transition font-bold">
                 find mentors
               </Link>
             </li>
             <li>
-              <Link href="/become-a-mentor" className="hover:text-gray-800 transition">
+              <Link href="/become-a-mentor" className="hover:text-black transition font-bold">
                 become a mentor
               </Link>
             </li>
             <li>
-              <Link href="/community" className="hover:text-gray-800 transition">
+              <Link href="/community" className="hover:text-black transition font-bold">
                 community
               </Link>
             </li>
             <li>
-              <Link href="/blog" className="hover:text-gray-800 transition">
+              <Link href="/blog" className="hover:text-black transition font-bold">
                 blog
               </Link>
             </li>
           </ul>
-          <div className="text-sm text-gray-500 mt-6">
+          <div className="text-sm text-black mt-6">
             © Roshe Mentorship, all rights reserved.
           </div>
         </div>
