@@ -1,8 +1,7 @@
 // app/dashboard/components/MentorDashboard.tsx
 import React from 'react';
 import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward } from 'react-icons/fi';
-import { BiLightning } from 'react-icons/bi';
-import { BsPersonFill } from 'react-icons/bs';
+import { BsLightning, BsPersonFill } from 'react-icons/bs';
 
 // Types
 interface Mentor {
@@ -71,10 +70,10 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
           </div>
           <div className="flex ml-4 space-x-2">
             <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
-              <BiLightning className="mr-2" size={20} />
+            <button className="flex items-center bg-gray-800 text-white px-4 py-3 rounded-lg">
+              <BsLightning className="mr-2" size={20} />
               <span>Available ASAP</span>
             </button>
-            <button className="flex items-center bg-yellow-200 text-gray-800 px-4 py-3 rounded-lg">
               <BsPersonFill className="mr-2" size={20} />
               <span>Coaching</span>
             </button>
@@ -172,11 +171,11 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
         </div>
         <div className="absolute bottom-2 left-2 flex space-x-2">
           {mentor.isAvailableASAP && (
+          {mentor.isAvailableASAP && (
             <span className="bg-gray-800 text-white text-xs font-medium px-2 py-1 rounded flex items-center">
-              <BiLightning className="mr-1" size={14} />
+              <BsLightning className="mr-1" size={14} />
               Available ASAP
             </span>
-          )}
           {mentor.providesCoaching && (
             <span className="bg-yellow-200 text-gray-800 text-xs font-medium px-2 py-1 rounded flex items-center">
               <BsPersonFill className="mr-1" size={14} />
