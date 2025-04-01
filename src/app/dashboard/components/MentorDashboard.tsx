@@ -1,7 +1,7 @@
 // app/dashboard/components/MentorDashboard.tsx
 "use client"
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward } from 'react-icons/fi';
 import { BsLightning, BsPersonFill } from 'react-icons/bs';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -30,28 +30,8 @@ interface MentorDashboardProps {
 // Main Dashboard Component
 const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
-
-  useEffect(() => {
-    // Check if user is coming from signup
-    const fromSignup = searchParams.get('fromSignup');
-    if (fromSignup === 'true') {
-      setShowWelcome(true);
-      // Remove the query parameter after processing
-      const url = new URL(window.location.href);
-      url.searchParams.delete('fromSignup');
-      router.replace(url.pathname);
-
-      // Auto-hide welcome message after 5 seconds
-      const timer = setTimeout(() => {
-        setShowWelcome(false);
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams, router]);
 
   const categories = [
     'All', 'Design', '3D Animation', '2D Animation', '3D Rigging',
@@ -62,12 +42,9 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   return (
     <div className="flex min-h-screen bg-white pt-16 overflow-x-hidden">
       {/* Welcome Message */}
-      {showWelcome && (
-        <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md z-50 animate-fade-in">
-          <span className="font-bold">Welcome to your dashboard!</span>
-          <p>Your account has been successfully created.</p>
-        </div>
-      )}
+      <Suspense fallback={<div>Loading...</div>}>
+        <WelcomeMessage setShowWelcome={setShowWelcome} showWelcome={showWelcome} />
+      </Suspense>
 
       {/* Sidebar */}
       <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
@@ -174,6 +151,43 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   );
 };
 
+// Extract the welcome message to a separate component that uses useSearchParams
+const WelcomeMessage: React.FC<{
+  showWelcome: boolean;
+  setShowWelcome: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ showWelcome, setShowWelcome }) => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is coming from signup
+    const fromSignup = searchParams.get('fromSignup');
+    if (fromSignup === 'true') {
+      setShowWelcome(true);
+      // Remove the query parameter after processing
+      const url = new URL(window.location.href);
+      url.searchParams.delete('fromSignup');
+      router.replace(url.pathname);
+
+      // Auto-hide welcome message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, router, setShowWelcome]);
+
+  if (!showWelcome) return null;
+
+  return (
+    <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md z-50 animate-fade-in">
+      <span className="font-bold">Welcome to your dashboard!</span>
+      <p>Your account has been successfully created.</p>
+    </div>
+  );
+};
+
 // Sub-components
 
 interface NavItemProps {
@@ -232,16 +246,36 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
         <Image
           src={mentor.imageUrl}
           alt={mentor.name}
-          width={500} // Set appropriate width
-          height={192} // Set appropriate height for 48 units at your density
+          width={500}
+          height={192}
           className="w-full h-48 object-cover"
-/>
-        {/* Add any additional JSX or badges here */}
+        />
+        {mentor.isTopRated && (
+          <div className="absolute top-2 right-2 bg-yellow-400 text-xs text-white px-2 py-1 rounded-full font-medium">
+            Top Rated
+          </div>
+        )}
+        {mentor.isAvailableASAP && (
+          <div className="absolute bottom-2 left-2 bg-indigo-600 text-xs text-white px-2 py-1 rounded-full font-medium">
+            Available ASAP
+          </div>
+        )}
       </div>
       {/* Mentor Details */}
       <div className="p-4">
         <h3 className="text-lg font-semibold">{mentor.name}</h3>
         <p className="text-sm text-gray-600">{mentor.role} at {mentor.company}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+            {mentor.sessions} sessions
+          </span>
+          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+            {mentor.reviews} reviews
+          </span>
+          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+            {mentor.experience}+ years exp
+          </span>
+        </div>
       </div>
     </div>
   );
