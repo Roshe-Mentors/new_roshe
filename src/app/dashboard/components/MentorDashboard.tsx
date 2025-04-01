@@ -1,5 +1,6 @@
 // app/dashboard/components/MentorDashboard.tsx
 "use client"
+import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward } from 'react-icons/fi';
 import { BsLightning, BsPersonFill } from 'react-icons/bs';
@@ -228,11 +229,13 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
       {/* Mentor Image with Badges */}
       <div className="relative">
-        <img
+        <Image
           src={mentor.imageUrl}
           alt={mentor.name}
+          width={500} // Set appropriate width
+          height={192} // Set appropriate height for 48 units at your density
           className="w-full h-48 object-cover"
-        />
+/>
         {/* Add any additional JSX or badges here */}
       </div>
       {/* Mentor Details */}
