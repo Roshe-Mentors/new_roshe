@@ -140,8 +140,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
             </div>
 
             {/* Category Filters */}
-            <div className="mb-8 overflow-hidden">
-              <div className="flex space-x-4 pb-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            <div className="mb-8">
+              <div className="flex flex-wrap gap-2">
                 {categories.map((category, index) => (
                   <CategoryButton
                     key={index}
@@ -209,7 +209,7 @@ interface CategoryButtonProps {
 const CategoryButton: React.FC<CategoryButtonProps> = ({ label, active }) => {
   return (
     <button
-      className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${
         active ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
       }`}
     >
