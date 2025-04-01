@@ -1,7 +1,9 @@
 // app/dashboard/components/MentorDashboard.tsx
-import React from 'react';
+"use client"
+import React, { useEffect, useState } from 'react';
 import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward } from 'react-icons/fi';
 import { BsLightning, BsPersonFill } from 'react-icons/bs';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // Types
 interface Mentor {
@@ -26,6 +28,29 @@ interface MentorDashboardProps {
 
 // Main Dashboard Component
 const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(false);
+  
+  useEffect(() => {
+    // Check if user is coming from signup
+    const fromSignup = searchParams.get('fromSignup');
+    if (fromSignup === 'true') {
+      setShowWelcome(true);
+      // Remove the query parameter after processing
+      const url = new URL(window.location.href);
+      url.searchParams.delete('fromSignup');
+      router.replace(url.pathname);
+      
+      // Auto-hide welcome message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, router]);
+
   const categories = [
     'All', 'Design', '3D Animation', '2D Animation', '3D Rigging', 
     'Concept Art', 'Storyboard & Animatics', 'Game Animation', 
@@ -34,6 +59,14 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
 
   return (
     <div className="flex min-h-screen bg-white pt-16">
+      {/* Welcome Message */}
+      {showWelcome && (
+        <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md z-50 animate-fade-in">
+          <span className="font-bold">Welcome to your dashboard!</span>
+          <p>Your account has been successfully created.</p>
+        </div>
+      )}
+      
       {/* Sidebar */}
       <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
         <div className="writing-vertical text-gray-500 font-medium tracking-wider">
