@@ -95,19 +95,19 @@ const Footer: React.FC = () => {
             </div>
 
             {/* Navigation Links (Directly under Social Media Icons) */}
-            <ul className="flex flex-col items-center md:items-end space-y-2 text-black text-sm">
+            <ul className="flex flex-row items-center md:items-end space-x-4 text-black text-sm">
               <li>
-                <Link href="/join" className="hover:text-black transition">
+                <Link href="/join" className="hover:text-black transition font-bold">
                   join roshe mentorship
                 </Link>
               </li>
               <li>
-                <Link href="/faqs" className="hover:text-black transition">
+                <Link href="/faqs" className="hover:text-black transition font-bold">
                   FAQs
                 </Link>
               </li>
               <li>
-                <Link href="/partnerships" className="hover:text-black transition">
+                <Link href="/partnerships" className="hover:text-black transition font-bold">
                   partnerships
                 </Link>
               </li>
