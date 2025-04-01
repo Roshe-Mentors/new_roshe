@@ -33,7 +33,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white pt-16">
       {/* Sidebar */}
       <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
         <div className="writing-vertical text-gray-500 font-medium tracking-wider">
