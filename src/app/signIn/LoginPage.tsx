@@ -37,11 +37,16 @@ const LoginPage = () => {
         setError(error?.message || 'Failed to log in');
       } else {
         if (formData.rememberMe) {
+          // Store the session in localStorage if rememberMe is checked
+          localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
           console.log("User will be remembered");
         }
+        console.log("Authentication successful, redirecting to dashboard...");
+        // Redirect to dashboard
         router.push('/dashboard');
       }
-    } catch {
+    } catch (err) {
+      console.error("Login error:", err);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -50,6 +55,7 @@ const LoginPage = () => {
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     setLoading(true);
+    setError('');
 
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -65,10 +71,10 @@ const LoginPage = () => {
 
       if (error || !data) {
         setError(error?.message || 'Failed to log in with social account');
-      } else {
-        router.push('/dashboard');
       }
-    } catch {
+      // The OAuth redirect will handle navigation to dashboard after authentication
+    } catch (err) {
+      console.error("Social login error:", err);
       setError('An error occurred with social login. Please try again.');
     } finally {
       setLoading(false);
