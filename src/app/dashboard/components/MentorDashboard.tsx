@@ -251,12 +251,18 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
           className="w-full h-48 object-cover"
         />
         {mentor.isTopRated && (
-          <div className="absolute top-2 right-2 bg-yellow-400 text-xs text-white px-2 py-1 rounded-full font-medium">
+          <div 
+            style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
+            className="absolute top-2 right-2 text-xs text-white px-2 py-1 rounded-full font-medium"
+          >
             Top Rated
           </div>
         )}
         {mentor.isAvailableASAP && (
-          <div className="absolute bottom-2 left-2 bg-indigo-600 text-xs text-white px-2 py-1 rounded-full font-medium">
+          <div 
+            style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+            className="absolute bottom-2 left-2 text-xs text-white px-2 py-1 rounded-full font-medium"
+          >
             Available ASAP
           </div>
         )}
