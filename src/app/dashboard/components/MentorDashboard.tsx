@@ -59,7 +59,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-white pt-16">
+    <div className="flex min-h-screen bg-white pt-16 overflow-x-hidden">
       {/* Welcome Message */}
       {showWelcome && (
         <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md z-50 animate-fade-in">
@@ -96,12 +96,12 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-x-hidden">
         {activeView === 'mentors' ? (
           <>
             {/* Navigation */}
-            <div className="flex items-center mb-8">
-              <div className="flex space-x-2">
+            <div className="flex items-center mb-8 overflow-x-auto">
+              <div className="flex flex-wrap space-x-2">
                 <NavItem icon="home" label="Home" />
                 <NavItem icon="compass" label="Explore" active />
                 <NavItem icon="community" label="Community" />
@@ -112,8 +112,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
             </div>
 
             {/* Search and Action Buttons */}
-            <div className="flex items-center space-x-4 mb-8">
-              <div className="relative flex-grow max-w-3xl">
+            <div className="flex flex-wrap items-center gap-4 mb-8">
+              <div className="relative flex-grow max-w-3xl w-full sm:w-auto">
                 <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
                 <input
                   type="text"
@@ -121,35 +121,39 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <button 
-                style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
-                className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
-              >
-                <BsLightning className="mr-2" size={20} />
-                <span>Available ASAP</span>
-              </button>
-              <button 
-                style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
-                className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
-              >
-                <BsPersonFill className="mr-2" size={20} />
-                <span>Coaching</span>
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button 
+                  style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap"
+                >
+                  <BsLightning className="mr-2" size={20} />
+                  <span>Available ASAP</span>
+                </button>
+                <button 
+                  style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
+                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap"
+                >
+                  <BsPersonFill className="mr-2" size={20} />
+                  <span>Coaching</span>
+                </button>
+              </div>
             </div>
 
             {/* Category Filters */}
-            <div className="flex space-x-4 mb-8 overflow-x-auto pb-2">
-              {categories.map((category, index) => (
-                <CategoryButton
-                  key={index}
-                  label={category}
-                  active={category === 'All'}
-                />
-              ))}
+            <div className="mb-8 overflow-hidden">
+              <div className="flex space-x-4 pb-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                {categories.map((category, index) => (
+                  <CategoryButton
+                    key={index}
+                    label={category}
+                    active={category === 'All'}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Mentor Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {mentors.map((mentor) => (
                 <MentorCard key={mentor.id} mentor={mentor} />
               ))}
