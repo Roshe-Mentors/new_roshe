@@ -271,7 +271,7 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
       </div>
       {/* Mentor Details */}
       <div className="p-4">
-        <h3 className="text-lg font-semibold">{mentor.name}</h3>
+        <h3 className="text-lg font-semibold text-black">{mentor.name}</h3>
         <p className="text-sm text-gray-600">{mentor.role} at {mentor.company}</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">

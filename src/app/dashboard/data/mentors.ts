@@ -12,7 +12,7 @@ export const mentorsData = [
     attendance: 98,
     isAvailableASAP: true,
     providesCoaching: false,
-    imageUrl: "/images/1.jpg",
+    imageUrl: "/images/bj.jpg",
     isTopRated: true,
   },
   {
