@@ -36,7 +36,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   const categories = [
     'All', 'Design', '3D Animation', '2D Animation', '3D Rigging',
     'Concept Art', 'Storyboard & Animatics', 'Game Animation',
-    'Texturing and Lookdev', 'Lighting', 'Vfx', 'Cfx', 'Modeling', 'Film Making'
+    'Texturing and Lookdev', 'Lighting', 'Vfx', 'Cfx', 'Modeling', 'Film Making', 'Architecture'
   ];
 
   return (
