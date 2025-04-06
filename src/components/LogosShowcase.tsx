@@ -19,7 +19,7 @@ const logos = [
 
 export default function LogosShowcase() {
   return (
-    <div className="bg-white py-8 overflow-hidden">
+    <div className="bg-white pt-12 pb-8 overflow-hidden">
       <div className="container mx-auto px-4 text-center">
         <p className="text-black mb-4 text-lg md:text-xl">Proven success with 20+ top studios</p>
         <div className="relative w-full overflow-hidden">
@@ -28,12 +28,12 @@ export default function LogosShowcase() {
             {logos.map((logo, index) => (
               <Link legacyBehavior key={index} href={logo.href} passHref>
                 <a target="_blank" rel="noopener noreferrer" className="inline-block mx-4">
-                  <div className="w-[100px] sm:w-[120px] md:w-[160px] lg:w-[200px] relative">
+                  <div className="w-[70px] sm:w-[84px] md:w-[112px] lg:w-[140px] relative">
                     <Image 
                       src={logo.src}
                       alt={logo.alt}
-                      width={150}    
-                      height={75}   
+                      width={105}    
+                      height={53}   
                       className="transition-transform duration-300 transform hover:scale-105 object-contain"
                     />
                   </div>
@@ -44,12 +44,12 @@ export default function LogosShowcase() {
             {logos.map((logo, index) => (
               <Link legacyBehavior key={index + logos.length} href={logo.href} passHref>
                 <a target="_blank" rel="noopener noreferrer" className="inline-block mx-4">
-                  <div className="w-[100px] sm:w-[120px] md:w-[160px] lg:w-[200px] relative">
+                  <div className="w-[70px] sm:w-[84px] md:w-[112px] lg:w-[140px] relative">
                     <Image 
                       src={logo.src}
                       alt={logo.alt}
-                      width={150}    
-                      height={75}   
+                      width={105}    
+                      height={53}   
                       className="transition-transform duration-300 transform hover:scale-105 object-contain"
                     />
                   </div>
