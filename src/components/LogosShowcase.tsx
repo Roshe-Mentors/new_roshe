@@ -21,7 +21,7 @@ export default function LogosShowcase() {
   return (
     <div className="bg-white pt-12 pb-8 overflow-hidden">
       <div className="container mx-auto px-4 text-center">
-        <p className="text-black mb-4 text-lg md:text-xl">Proven success with 20+ top studios</p>
+        <p className="text-black mb-8 text-lg md:text-xl">Proven success with 20+ top studios</p>
         <div className="relative w-full overflow-hidden">
           <div className="flex animate-marquee-fast whitespace-nowrap min-w-full">
             {/* First set of logos */}

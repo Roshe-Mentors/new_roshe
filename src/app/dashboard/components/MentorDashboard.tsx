@@ -29,15 +29,51 @@ interface MentorDashboardProps {
 
 // Main Dashboard Component
 const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
-  // const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const categories = [
-    'All', 'Design', '3D Animation', '2D Animation', '3D Rigging',
-    'Concept Art', 'Storyboard & Animatics', 'Game Animation',
-    'Texturing and Lookdev', 'Lighting', 'Vfx', 'Cfx', 'Modeling', 'Film Making', 'Architecture'
-  ];
+  const categoriesMap: { [key: string]: string[] } = {
+    "Design": [
+      "Graphic Design",
+      "Motion Design",
+      "3D Design",
+      "Product Design",
+      "Multimedia",
+      "Interaction Design",
+      "Game Design"
+    ],
+    "3D Character Animation": [],
+    "2D Character Animation": [],
+    "3D Rigging": [],
+    "Concept Art": [
+      "Character Design",
+      "Environment Design",
+      "Prop Design",
+      "Digital Matte Painting",
+      "Background Painting",
+      "Color Script",
+      "Painting"
+    ],
+    "Storyboard & Animatics": [],
+    "Game Animation": [],
+    "Texturing and Lookdev": [],
+    "Lighting": [],
+    "Visual Effect (Vfx)": [],
+    "Character Effect (Cfx)": ["Cloth Simulation", "Hair Simulation", "Crowd Simulation"],
+    "Modeling & Sculpting": ["Character Modeling", "Environment Modeling", "Prop Modeling", "Sculpting"],
+    "Film Making": [
+      "Acting",
+      "Film Directing",
+      "Film Distribution",
+      "Cinematography",
+      "Photography",
+      "Production Design",
+      "Hair & Makeup",
+      "Film Editing"
+    ],
+    "Architecture": []
+  };
 
   return (
     <div className="flex min-h-screen bg-white pt-16 overflow-x-hidden">
@@ -121,14 +157,28 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
             {/* Category Filters */}
             <div className="mb-8">
               <div className="flex flex-wrap gap-1">
-                {categories.map((category, index) => (
+                {Object.keys(categoriesMap).map((category, index) => (
                   <CategoryButton
                     key={index}
                     label={category}
-                    active={category === 'All'}
+                    active={activeCategory === category}
+                    textSize="text-[14px]" // Reduced text size for parent list
+                    onClick={() => {
+                      if (categoriesMap[category].length > 0) {
+                        setActiveCategory(activeCategory === category ? null : category);
+                      }
+                    }}
                   />
                 ))}
               </div>
+              {/* Render child categories with border if available */}
+              {activeCategory && categoriesMap[activeCategory].length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-1 border border-gray-200 p-2 rounded">
+                  {categoriesMap[activeCategory].map((childCategory, idx) => (
+                    <CategoryButton key={idx} label={childCategory} />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Mentor Cards */}
@@ -220,12 +270,15 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active }) => {
 interface CategoryButtonProps {
   label: string;
   active?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  textSize?: string;
 }
 
-const CategoryButton: React.FC<CategoryButtonProps> = ({ label, active }) => {
+const CategoryButton: React.FC<CategoryButtonProps> = ({ label, active, onClick, textSize }) => {
   return (
     <button
-      className={`px-2 py-1 rounded-md text-xs font-normal whitespace-nowrap ${
+      onClick={onClick}
+      className={`px-2 py-1 rounded-md ${textSize ? textSize : 'text-xs'} font-normal whitespace-nowrap ${
         active ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'
       }`}
     >

@@ -47,6 +47,7 @@ const menuItems: MenuItems = {
     "Hair & Makeup",
     "Film Editing",
   ],
+  "Architecture": [],
 }
 
 const ToggleSection: React.FC = () => {
