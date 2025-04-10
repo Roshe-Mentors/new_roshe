@@ -32,6 +32,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('explore');
 
   const categoriesMap: { [key: string]: string[] } = {
     "Design": [
@@ -117,78 +118,126 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
             {/* Navigation */}
             <div className="flex items-center mb-8 overflow-x-auto">
               <div className="flex flex-wrap space-x-2">
-                <NavItem icon="home" label="Home" />
-                <NavItem icon="compass" label="Explore" active />
-                <NavItem icon="community" label="Community" />
-                <NavItem icon="calendar" label="Bookings" />
-                <NavItem icon="chat" label="Chat" />
-                <NavItem icon="achievement" label="Achievements" />
-              </div>
-            </div>
-
-            {/* Search and Action Buttons */}
-            <div className="flex flex-wrap items-center gap-4 mb-8">
-              <div className="relative flex-grow max-w-3xl w-full sm:w-auto">
-                <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search by name, role or company"
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <NavItem 
+                  icon="home" 
+                  label="Home" 
+                  active={activeNavItem === 'home'} 
+                  onClick={() => setActiveNavItem('home')}
+                />
+                <NavItem 
+                  icon="compass" 
+                  label="Explore" 
+                  active={activeNavItem === 'explore'} 
+                  onClick={() => setActiveNavItem('explore')}
+                />
+                <NavItem 
+                  icon="community" 
+                  label="Community" 
+                  active={activeNavItem === 'community'} 
+                  onClick={() => setActiveNavItem('community')}
+                />
+                <NavItem 
+                  icon="calendar" 
+                  label="Bookings" 
+                  active={activeNavItem === 'calendar'} 
+                  onClick={() => setActiveNavItem('calendar')}
+                />
+                <NavItem 
+                  icon="chat" 
+                  label="Chat" 
+                  active={activeNavItem === 'chat'} 
+                  onClick={() => setActiveNavItem('chat')}
+                />
+                <NavItem 
+                  icon="achievement" 
+                  label="Achievements" 
+                  active={activeNavItem === 'achievement'} 
+                  onClick={() => setActiveNavItem('achievement')}
                 />
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button 
-                  style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
-                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap"
-                >
-                  <BsLightning className="mr-2" size={20} />
-                  <span>Available ASAP</span>
-                </button>
-                <button 
-                  style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
-                  className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap"
-                >
-                  <BsPersonFill className="mr-2" size={20} />
-                  <span>Coaching</span>
-                </button>
-              </div>
             </div>
 
-            {/* Category Filters */}
-            <div className="mb-8">
-              <div className="flex flex-wrap gap-1">
-                {Object.keys(categoriesMap).map((category, index) => (
-                  <CategoryButton
-                    key={index}
-                    label={category}
-                    active={activeCategory === category}
-                    textSize="text-[14px]" // Reduced text size for parent list
-                    onClick={() => {
-                      if (categoriesMap[category].length > 0) {
-                        setActiveCategory(activeCategory === category ? null : category);
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-              {/* Render child categories with border if available */}
-              {activeCategory && categoriesMap[activeCategory].length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {categoriesMap[activeCategory].map((childCategory, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded p-1">
-                      <CategoryButton label={childCategory} />
+            {activeNavItem === 'explore' ? (
+              <>
+                {/* Search and Action Buttons */}
+                <div className="flex flex-wrap items-center gap-4 mb-8">
+                  <div className="relative flex-grow max-w-3xl w-full sm:w-auto">
+                    <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      placeholder="Search by name, role or company"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button 
+                      style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+                      className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap"
+                    >
+                      <BsLightning className="mr-2" size={20} />
+                      <span>Available ASAP</span>
+                    </button>
+                    <button 
+                      style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
+                      className="flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap"
+                    >
+                      <BsPersonFill className="mr-2" size={20} />
+                      <span>Coaching</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Category Filters */}
+                <div className="mb-8">
+                  <div className="flex flex-nowrap gap-1 overflow-x-auto pb-2 whitespace-nowrap">
+                    {Object.keys(categoriesMap).map((category, index) => (
+                      <CategoryButton
+                        key={index}
+                        label={category}
+                        active={activeCategory === category}
+                        textSize="text-[10px]" // Reduced text size further
+                        padding="px-1.5 py-0.5" // Reduced padding
+                        onClick={() => {
+                          if (categoriesMap[category].length > 0) {
+                            setActiveCategory(activeCategory === category ? null : category);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {/* Render child categories with border if available */}
+                  {activeCategory && categoriesMap[activeCategory].length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {categoriesMap[activeCategory].map((childCategory, idx) => (
+                        <div key={idx} className="border border-gray-200 rounded p-1">
+                          <CategoryButton label={childCategory} />
+                        </div>
+                      ))}
                     </div>
+                  )}
+                </div>
+
+                {/* Mentor Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                  {mentors.map((mentor) => (
+                    <MentorCard key={mentor.id} mentor={mentor} />
                   ))}
                 </div>
-              )}
-            </div>
-
-            {/* Mentor Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-              {mentors.map((mentor) => (
-                <MentorCard key={mentor.id} mentor={mentor} />
-              ))}
-            </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold text-gray-800 mb-2">{
+                    activeNavItem === 'home' ? 'Home' :
+                    activeNavItem === 'community' ? 'Community' :
+                    activeNavItem === 'calendar' ? 'Bookings' :
+                    activeNavItem === 'chat' ? 'Chat' :
+                    activeNavItem === 'achievement' ? 'Achievements' : ''
+                  }</h2>
+                  <p className="text-gray-600">This feature is coming soon. Stay tuned!</p>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -246,9 +295,10 @@ interface NavItemProps {
   icon: 'home' | 'compass' | 'community' | 'calendar' | 'chat' | 'achievement';
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, active }) => {
+const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }) => {
   const getIcon = () => {
     switch (icon) {
       case 'home': return <FiHome className={`mr-2 ${active ? 'text-blue-600' : 'text-gray-600'}`} size={20} />;
@@ -262,7 +312,10 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active }) => {
   };
 
   return (
-    <div className={`flex items-center px-6 py-3 rounded-lg ${active ? 'bg-blue-100' : ''}`}>
+    <div 
+      className={`flex items-center px-6 py-3 rounded-lg cursor-pointer ${active ? 'bg-blue-100' : ''}`}
+      onClick={onClick}
+    >
       {getIcon()}
       <span className={`font-medium ${active ? 'text-gray-800' : 'text-gray-600'}`}>{label}</span>
     </div>
@@ -274,13 +327,14 @@ interface CategoryButtonProps {
   active?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   textSize?: string;
+  padding?: string;
 }
 
-const CategoryButton: React.FC<CategoryButtonProps> = ({ label, active, onClick, textSize }) => {
+const CategoryButton: React.FC<CategoryButtonProps> = ({ label, active, onClick, textSize, padding }) => {
   return (
     <button
       onClick={onClick}
-      className={`px-2 py-1 rounded-md ${textSize ? textSize : 'text-xs'} font-normal whitespace-nowrap ${
+      className={`${padding || 'px-2 py-1'} rounded-md ${textSize ? textSize : 'text-xs'} font-normal whitespace-nowrap ${
         active ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'
       }`}
     >
