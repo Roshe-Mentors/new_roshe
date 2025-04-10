@@ -207,10 +207,14 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   </div>
                   {/* Render child categories with border if available */}
                   {activeCategory && categoriesMap[activeCategory].length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-nowrap gap-1 overflow-x-auto pb-1 whitespace-nowrap">
                       {categoriesMap[activeCategory].map((childCategory, idx) => (
-                        <div key={idx} className="border border-gray-200 rounded p-1">
-                          <CategoryButton label={childCategory} />
+                        <div key={idx} className="border border-gray-200 rounded">
+                          <CategoryButton 
+                            label={childCategory} 
+                            textSize="text-[9px]" 
+                            padding="px-1 py-0.5" 
+                          />
                         </div>
                       ))}
                     </div>
