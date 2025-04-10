@@ -33,6 +33,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('explore');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const categoriesMap: { [key: string]: string[] } = {
     "Design": [
@@ -75,6 +76,24 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
     ],
     "Architecture": []
   };
+
+  // Filter mentors based on search term and active category
+  const filteredMentors = mentors.filter(mentor => {
+    // Search filtering
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        mentor.name.toLowerCase().includes(searchLower) || 
+        mentor.role.toLowerCase().includes(searchLower) || 
+        mentor.company.toLowerCase().includes(searchLower);
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // Category filtering could be implemented here later
+    
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen bg-white pt-16 overflow-x-hidden">
@@ -161,13 +180,23 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
               <>
                 {/* Search and Action Buttons */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
-                  <div className="relative flex-grow max-w-3xl w-full sm:w-auto">
+                  <div className="relative flex-grow max-w-4xl w-full sm:w-auto">
                     <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
                     <input
                       type="text"
                       placeholder="Search by name, role or company"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                    {searchTerm && (
+                      <button 
+                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600"
+                        onClick={() => setSearchTerm('')}
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button 
@@ -227,9 +256,23 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
 
                 {/* Mentor Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                  {mentors.map((mentor) => (
-                    <MentorCard key={mentor.id} mentor={mentor} />
-                  ))}
+                  {filteredMentors.length > 0 ? (
+                    filteredMentors.map((mentor) => (
+                      <MentorCard key={mentor.id} mentor={mentor} />
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-10">
+                      <p className="text-gray-500 text-lg">No mentors found matching your search criteria.</p>
+                      {searchTerm && (
+                        <button 
+                          className="mt-2 text-blue-500 hover:underline"
+                          onClick={() => setSearchTerm('')}
+                        >
+                          Clear search
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
