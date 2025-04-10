@@ -198,8 +198,12 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         textSize="text-[10px]" // Reduced text size further
                         padding="px-1.5 py-0.5" // Reduced padding
                         onClick={() => {
-                          if (categoriesMap[category].length > 0) {
-                            setActiveCategory(activeCategory === category ? null : category);
+                          // If same category is clicked, toggle it off
+                          if (activeCategory === category) {
+                            setActiveCategory(null);
+                          } else {
+                            // Set new active category
+                            setActiveCategory(category);
                           }
                         }}
                       />
