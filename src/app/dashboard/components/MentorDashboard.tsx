@@ -296,15 +296,27 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   {/* Profile Header */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
                     <div className="relative h-48">
+                      {/* Banner Image */}
                       <Image
-                        src={selectedMentor?.imageUrl || "/images/mentor_pic.png"}
-                        alt={selectedMentor?.name || "Mentor Profile"}
+                        src="/images/banner.png"
+                        alt="Mentor Banner"
                         width={800}
                         height={200}
                         className="w-full h-48 object-cover"
                       />
+                      
+                      {/* Mentor Profile Picture */}
+                      <div className="absolute -bottom-12 left-6 border-4 border-white rounded-full shadow-md">
+                        <Image
+                          src={selectedMentor?.imageUrl || "/images/mentor_pic.png"}
+                          alt={selectedMentor?.name || "Mentor Profile"}
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                      </div>
                     </div>
-                    <div className="p-6">
+                    <div className="p-6 pt-16">
                       <div className="flex justify-between items-start">
                         <div>
                           <h2 className="text-2xl font-semibold text-gray-800">{selectedMentor?.name || "Mentor Name"}</h2>
