@@ -300,9 +300,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                       <Image
                         src="/images/banner.png"
                         alt="Mentor Banner"
-                        width={800}
-                        height={200}
-                        className="w-full h-48 object-cover"
+                        width={1200}
+                        height={400}
+                        className="w-full h-48 object-cover object-center"
+                        priority
+                        quality={100}
                       />
                       
                       {/* Mentor Profile Picture */}
