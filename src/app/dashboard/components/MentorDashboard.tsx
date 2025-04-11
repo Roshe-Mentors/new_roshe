@@ -298,7 +298,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     <div className="relative h-48">
                       <Image
                         src={selectedMentor?.imageUrl || "/images/mentor_pic.png"}
-                        alt="Mentor Profile"
+                        alt={selectedMentor?.name || "Mentor Profile"}
                         width={800}
                         height={200}
                         className="w-full h-48 object-cover"
@@ -307,8 +307,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     <div className="p-6">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h2 className="text-2xl font-semibold text-gray-800">{selectedMentor?.name || "Alex Johnson"}</h2>
-                          <p className="text-gray-600">{selectedMentor?.role || "Character Artist"} at {selectedMentor?.company || "DreamWorks"}</p>
+                          <h2 className="text-2xl font-semibold text-gray-800">{selectedMentor?.name || "Mentor Name"}</h2>
+                          <p className="text-gray-600">{selectedMentor?.role || "Role"} at {selectedMentor?.company || "Company"}</p>
                         </div>
                         <div className="flex space-x-3">
                           <a href="#" className="text-blue-600 hover:text-blue-800">
@@ -342,8 +342,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                       {/* Tab Content */}
                       <div className="py-4">
                         <p className="text-gray-700">
-                          Alex Johnson is a highly experienced Character Artist with 8+ years of experience at DreamWorks. 
-                          They specialize in character design, concept art, and providing career advice to aspiring artists in the industry.
+                          {selectedMentor?.name || "The mentor"} is a highly experienced {selectedMentor?.role || "professional"} with {selectedMentor?.experience || "several"}+ years of experience at {selectedMentor?.company || "their company"}. 
+                          They specialize in their field and provide valuable insights to mentees.
                         </p>
                       </div>
                     </div>
@@ -362,7 +362,12 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         Mentorship session
                       </button>
                       <button
-                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className={`px-4 py-2 rounded-lg border ${
+                          selectedMentor?.providesCoaching
+                            ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                            : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                        disabled={!selectedMentor?.providesCoaching}
                       >
                         Coaching session
                       </button>
@@ -451,9 +456,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
                           Spanish
                         </span>
-                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                          French
-                        </span>
+                        {selectedMentor?.location === 'Brazil' && (
+                          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                            Portuguese
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -467,31 +474,31 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Mentoring time</span>
-                        <span className="font-medium">120+ hours</span>
+                        <span className="font-medium">{selectedMentor?.sessions || 0}+ hours</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Attendance</span>
-                        <span className="font-medium">98%</span>
+                        <span className="font-medium">{selectedMentor?.attendance || 0}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Sessions completed</span>
-                        <span className="font-medium">85</span>
+                        <span className="font-medium">{selectedMentor?.sessions || 0}</span>
                       </div>
                     </div>
                     
                     <h4 className="text-md font-medium text-gray-800 mt-6 mb-3">Top areas of impact</h4>
                     <div className="flex flex-wrap gap-2">
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                        Character Design
+                        {selectedMentor?.role || "Professional Skills"}
                       </span>
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                        Concept Art
+                        Career Development
                       </span>
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                        Animation
+                        Portfolio Review
                       </span>
                       <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                        Career Advice
+                        Industry Insights
                       </span>
                     </div>
                   </div>
@@ -501,11 +508,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Achievements</h3>
                     <div className="space-y-4">
                       <div className="border-l-2 border-blue-500 pl-3">
-                        <h4 className="font-medium text-gray-800">100+ hours of mentoring</h4>
-                        <p className="text-sm text-gray-600">Dedicated over 100 hours to helping others grow</p>
+                        <h4 className="font-medium text-gray-800">{selectedMentor?.sessions || 0}+ hours of mentoring</h4>
+                        <p className="text-sm text-gray-600">Dedicated over {selectedMentor?.sessions || 0} hours to helping others grow</p>
                       </div>
                       <div className="border-l-2 border-blue-500 pl-3">
-                        <h4 className="font-medium text-gray-800">50+ satisfied mentees</h4>
+                        <h4 className="font-medium text-gray-800">{selectedMentor?.reviews || 0}+ satisfied mentees</h4>
                         <p className="text-sm text-gray-600">Consistently high ratings from mentees</p>
                       </div>
                     </div>
@@ -515,10 +522,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">More mentors for you</h3>
                     <div className="space-y-4">
-                      {mentors.slice(0, 3).map((mentor, index) => (
+                      {mentorsData.filter(m => m.id !== selectedMentor?.id).map((mentor, index) => (
                         <div 
                           key={index} 
                           className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                          onClick={() => setSelectedMentorId(mentor.id)}
                         >
                           <Image
                             src={mentor.imageUrl}
