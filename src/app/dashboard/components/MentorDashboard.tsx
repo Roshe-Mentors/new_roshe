@@ -5,6 +5,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import { BsLightning, BsPersonFill, BsLinkedin, BsGlobe } from 'react-icons/bs';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { mentorsData } from '../data/mentors';
 
 // Types
 interface Mentor {
@@ -34,6 +35,19 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('explore');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
+
+  // Use this to get the selected mentor from mentorsData
+  const selectedMentor = selectedMentorId
+    ? mentorsData.find(mentor => mentor.id === selectedMentorId) || mentorsData[0]
+    : mentorsData[0];
+
+  // Make sure we have a selected mentor when viewing booking page
+  useEffect(() => {
+    if (activeNavItem === 'calendar' && !selectedMentorId && mentorsData.length > 0) {
+      setSelectedMentorId(mentorsData[0].id);
+    }
+  }, [activeNavItem, selectedMentorId]);
 
   const categoriesMap: { [key: string]: string[] } = {
     "Design": [
@@ -283,7 +297,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
                     <div className="relative h-48">
                       <Image
-                        src={mentors[0]?.imageUrl || "/images/mentor_pic.png"}
+                        src={selectedMentor?.imageUrl || "/images/mentor_pic.png"}
                         alt="Mentor Profile"
                         width={800}
                         height={200}
@@ -293,8 +307,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     <div className="p-6">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h2 className="text-2xl font-semibold text-gray-800">{mentors[0]?.name || "Alex Johnson"}</h2>
-                          <p className="text-gray-600">{mentors[0]?.role || "Character Artist"} at {mentors[0]?.company || "DreamWorks"}</p>
+                          <h2 className="text-2xl font-semibold text-gray-800">{selectedMentor?.name || "Alex Johnson"}</h2>
+                          <p className="text-gray-600">{selectedMentor?.role || "Character Artist"} at {selectedMentor?.company || "DreamWorks"}</p>
                         </div>
                         <div className="flex space-x-3">
                           <a href="#" className="text-blue-600 hover:text-blue-800">
