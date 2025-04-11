@@ -2,8 +2,8 @@
 "use client"
 import Image from 'next/image';
 import React, { useEffect, useState, Suspense } from 'react';
-import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward } from 'react-icons/fi';
-import { BsLightning, BsPersonFill } from 'react-icons/bs';
+import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { BsLightning, BsPersonFill, BsLinkedin, BsGlobe } from 'react-icons/bs';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 // Types
@@ -275,13 +275,260 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   )}
                 </div>
               </>
+            ) : activeNavItem === 'calendar' ? (
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Main Booking Content - Left Column */}
+                <div className="flex-1">
+                  {/* Profile Header */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
+                    <div className="relative h-48">
+                      <Image
+                        src={mentors[0]?.imageUrl || "/images/mentor_pic.png"}
+                        alt="Mentor Profile"
+                        width={800}
+                        height={200}
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h2 className="text-2xl font-semibold text-gray-800">{mentors[0]?.name || "Alex Johnson"}</h2>
+                          <p className="text-gray-600">{mentors[0]?.role || "Character Artist"} at {mentors[0]?.company || "DreamWorks"}</p>
+                        </div>
+                        <div className="flex space-x-3">
+                          <a href="#" className="text-blue-600 hover:text-blue-800">
+                            <BsLinkedin size={24} />
+                          </a>
+                          <a href="#" className="text-gray-600 hover:text-gray-800">
+                            <BsGlobe size={24} />
+                          </a>
+                        </div>
+                      </div>
+                      
+                      {/* Tabs */}
+                      <div className="flex border-b border-gray-200 mt-6">
+                        <button
+                          className="pb-2 px-4 -mb-px border-b-2 border-blue-500 text-blue-600"
+                        >
+                          Overview
+                        </button>
+                        <button
+                          className="pb-2 px-4 -mb-px text-gray-600 hover:text-gray-800"
+                        >
+                          Reviews
+                        </button>
+                        <button
+                          className="pb-2 px-4 -mb-px text-gray-600 hover:text-gray-800"
+                        >
+                          Group Mentorship
+                        </button>
+                      </div>
+                      
+                      {/* Tab Content */}
+                      <div className="py-4">
+                        <p className="text-gray-700">
+                          Alex Johnson is a highly experienced Character Artist with 8+ years of experience at DreamWorks. 
+                          They specialize in character design, concept art, and providing career advice to aspiring artists in the industry.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Booking Calendar */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Available Sessions</h3>
+                    <p className="text-gray-600 mb-6">Book 1:1 sessions from the options based on your needs</p>
+                    
+                    {/* Session Type Toggle */}
+                    <div className="flex space-x-4 mb-6">
+                      <button
+                        className="px-4 py-2 rounded-lg border bg-blue-50 border-blue-500 text-blue-700"
+                      >
+                        Mentorship session
+                      </button>
+                      <button
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
+                        Coaching session
+                      </button>
+                    </div>
+                    
+                    {/* Calendar Dates */}
+                    <div className="relative mb-6">
+                      <div className="flex items-center">
+                        <button className="absolute left-0 bg-white p-2 rounded-full shadow-md z-10">
+                          <FiArrowLeft className="text-gray-600" />
+                        </button>
+                        <div className="flex-1 overflow-x-auto py-2 px-8">
+                          <div className="flex space-x-4">
+                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer bg-blue-50 border border-blue-200">
+                              <p className="text-gray-500 text-sm font-medium">Mon</p>
+                              <p className="text-gray-800 font-semibold">18 Jan</p>
+                              <p className="text-xs text-gray-500 mt-1">12 slots</p>
+                            </div>
+                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
+                              <p className="text-gray-500 text-sm font-medium">Wed</p>
+                              <p className="text-gray-800 font-semibold">20 Jan</p>
+                              <p className="text-xs text-gray-500 mt-1">8 slots</p>
+                            </div>
+                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
+                              <p className="text-gray-500 text-sm font-medium">Fri</p>
+                              <p className="text-gray-800 font-semibold">22 Jan</p>
+                              <p className="text-xs text-gray-500 mt-1">10 slots</p>
+                            </div>
+                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
+                              <p className="text-gray-500 text-sm font-medium">Mon</p>
+                              <p className="text-gray-800 font-semibold">25 Jan</p>
+                              <p className="text-xs text-gray-500 mt-1">12 slots</p>
+                            </div>
+                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
+                              <p className="text-gray-500 text-sm font-medium">Wed</p>
+                              <p className="text-gray-800 font-semibold">27 Jan</p>
+                              <p className="text-xs text-gray-500 mt-1">6 slots</p>
+                            </div>
+                          </div>
+                        </div>
+                        <button className="absolute right-0 bg-white p-2 rounded-full shadow-md z-10">
+                          <FiArrowRight className="text-gray-600" />
+                        </button>
+                      </div>
+                      <div className="text-right mt-2">
+                        <a href="#" className="text-blue-600 text-sm flex items-center justify-end hover:underline">
+                          View all <FiArrowRight className="ml-1" size={14} />
+                        </a>
+                      </div>
+                    </div>
+                    
+                    {/* Time Slots */}
+                    <div className="mb-6">
+                      <h4 className="text-gray-800 font-medium mb-4">Available time slots</h4>
+                      <div className="flex flex-wrap gap-3">
+                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
+                          6:00pm
+                        </button>
+                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
+                          8:00pm
+                        </button>
+                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
+                          9:00pm
+                        </button>
+                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
+                          10:00pm
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Book Button */}
+                    <button
+                      className="w-full py-3 px-4 rounded-lg text-white font-semibold bg-gray-400 cursor-not-allowed"
+                      disabled={true}
+                    >
+                      Book session for 18th Jan, 2025
+                    </button>
+                    
+                    {/* Languages */}
+                    <div className="mt-6">
+                      <p className="text-gray-700 font-medium mb-2">Fluent in</p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                          English
+                        </span>
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                          Spanish
+                        </span>
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                          French
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right Sidebar */}
+                <div className="w-full md:w-80 space-y-6">
+                  {/* Mentor Stats */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Mentor Statistics</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Mentoring time</span>
+                        <span className="font-medium">120+ hours</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Attendance</span>
+                        <span className="font-medium">98%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Sessions completed</span>
+                        <span className="font-medium">85</span>
+                      </div>
+                    </div>
+                    
+                    <h4 className="text-md font-medium text-gray-800 mt-6 mb-3">Top areas of impact</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                        Character Design
+                      </span>
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                        Concept Art
+                      </span>
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                        Animation
+                      </span>
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                        Career Advice
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Achievements */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Achievements</h3>
+                    <div className="space-y-4">
+                      <div className="border-l-2 border-blue-500 pl-3">
+                        <h4 className="font-medium text-gray-800">100+ hours of mentoring</h4>
+                        <p className="text-sm text-gray-600">Dedicated over 100 hours to helping others grow</p>
+                      </div>
+                      <div className="border-l-2 border-blue-500 pl-3">
+                        <h4 className="font-medium text-gray-800">50+ satisfied mentees</h4>
+                        <p className="text-sm text-gray-600">Consistently high ratings from mentees</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* More Mentors */}
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">More mentors for you</h3>
+                    <div className="space-y-4">
+                      {mentors.slice(0, 3).map((mentor, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                        >
+                          <Image
+                            src={mentor.imageUrl}
+                            alt={mentor.name}
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="font-medium text-gray-800">{mentor.name}</h4>
+                            <p className="text-xs text-gray-600">{mentor.role}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <h2 className="text-2xl font-semibold text-gray-800 mb-2">{
                     activeNavItem === 'home' ? 'Home' :
                     activeNavItem === 'community' ? 'Community' :
-                    activeNavItem === 'calendar' ? 'Bookings' :
                     activeNavItem === 'chat' ? 'Chat' :
                     activeNavItem === 'achievement' ? 'Achievements' : ''
                   }</h2>
