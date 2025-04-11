@@ -2,10 +2,12 @@
 "use client"
 import Image from 'next/image';
 import React, { useEffect, useState, Suspense } from 'react';
-import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { FiSearch, FiHome, FiCompass, FiUsers, FiCalendar, FiMessageCircle, FiAward, FiArrowLeft, FiArrowRight, FiCheck, FiCopy, FiExternalLink } from 'react-icons/fi';
 import { BsLightning, BsPersonFill, BsLinkedin, BsGlobe } from 'react-icons/bs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { mentorsData } from '../data/mentors';
+import axios from 'axios';
+import { useUser } from '../../../lib/auth';
 
 // Types
 interface Mentor {
@@ -30,6 +32,7 @@ interface MentorDashboardProps {
 
 // Main Dashboard Component
 const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
+  const { user } = useUser();
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -37,18 +40,22 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
 
-  // Use this to get the selected mentor from mentorsData
-  const selectedMentor = selectedMentorId
-    ? mentorsData.find(mentor => mentor.id === selectedMentorId) || mentorsData[0]
-    : mentorsData[0];
+  // New state for booking functionality
+  const [selectedDate, setSelectedDate] = useState<string>('18 Jan');
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [sessionType, setSessionType] = useState<'Mentorship' | 'Coaching'>('Mentorship');
+  const [isBooking, setIsBooking] = useState<boolean>(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
+  const [zoomMeetingInfo, setZoomMeetingInfo] = useState<{
+    meetingId: string;
+    meetingUrl: string;
+    password: string;
+    startTime: string;
+  } | null>(null);
+  const [linkCopied, setLinkCopied] = useState<boolean>(false);
 
-  // Make sure we have a selected mentor when viewing booking page
-  useEffect(() => {
-    if (activeNavItem === 'calendar' && !selectedMentorId && mentorsData.length > 0) {
-      setSelectedMentorId(mentorsData[0].id);
-    }
-  }, [activeNavItem, selectedMentorId]);
-
+  // Define categoriesMap inside the component
   const categoriesMap: { [key: string]: string[] } = {
     "Design": [
       "Graphic Design",
@@ -91,9 +98,84 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
     "Architecture": []
   };
 
+  // Use this to get the selected mentor from mentorsData
+  const selectedMentor = selectedMentorId
+    ? mentorsData.find(mentor => mentor.id === selectedMentorId) || mentorsData[0]
+    : mentorsData[0];
+
+  // Make sure we have a selected mentor when viewing booking page
+  useEffect(() => {
+    if (activeNavItem === 'calendar' && !selectedMentorId && mentorsData.length > 0) {
+      setSelectedMentorId(mentorsData[0].id);
+    }
+  }, [activeNavItem, selectedMentorId]);
+
+  // Sample dates and time slots
+  const availableDates = [
+    { day: 'Mon', date: '18 Jan', slots: 12 },
+    { day: 'Wed', date: '20 Jan', slots: 8 },
+    { day: 'Fri', date: '22 Jan', slots: 10 },
+    { day: 'Mon', date: '25 Jan', slots: 12 },
+    { day: 'Wed', date: '27 Jan', slots: 6 },
+  ];
+
+  const timeSlots = ['6:00pm', '8:00pm', '9:00pm', '10:00pm'];
+
+  // Function to handle booking a session
+  const handleBookSession = async () => {
+    if (!selectedMentor || !selectedTime || !user) {
+      setBookingError('Please select a time slot or log in to book a session');
+      return;
+    }
+
+    setIsBooking(true);
+    setBookingError(null);
+
+    try {
+      // Call the API to create a Zoom meeting and save the booking
+      const response = await axios.post('/api/bookings', {
+        mentorId: selectedMentor.id,
+        mentorName: selectedMentor.name,
+        mentorEmail: `${selectedMentor.name.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
+        userId: user.id,
+        userEmail: user.email,
+        date: selectedDate,
+        time: selectedTime,
+        sessionType: sessionType
+      });
+
+      // On success, set the meeting info
+      setZoomMeetingInfo(response.data.meeting);
+      setBookingSuccess(true);
+    } catch (error: any) {
+      console.error('Booking error:', error);
+      setBookingError(error.response?.data?.error || 'Failed to book session. Please try again.');
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
+  // Function to copy meeting link to clipboard
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+
+  // Function to reset booking form
+  const resetBookingForm = () => {
+    setSelectedTime(null);
+    setBookingSuccess(false);
+    setZoomMeetingInfo(null);
+    setBookingError(null);
+  };
+
   // Filter mentors based on search term and active category
   const filteredMentors = mentors.filter(mentor => {
-    // Search filtering
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch = 
@@ -103,9 +185,6 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
       
       if (!matchesSearch) return false;
     }
-    
-    // Category filtering could be implemented here later
-    
     return true;
   });
 
@@ -371,16 +450,18 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     {/* Session Type Toggle */}
                     <div className="flex space-x-4 mb-6">
                       <button
-                        className="px-4 py-2 rounded-lg border bg-blue-50 border-blue-500 text-blue-700"
+                        className={`px-4 py-2 rounded-lg border ${
+                          sessionType === 'Mentorship' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setSessionType('Mentorship')}
                       >
                         Mentorship session
                       </button>
                       <button
                         className={`px-4 py-2 rounded-lg border ${
-                          selectedMentor?.providesCoaching
-                            ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                            : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                          sessionType === 'Coaching' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                         }`}
+                        onClick={() => setSessionType('Coaching')}
                         disabled={!selectedMentor?.providesCoaching}
                       >
                         Coaching session
@@ -395,31 +476,19 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         </button>
                         <div className="flex-1 overflow-x-auto py-2 px-8">
                           <div className="flex space-x-4">
-                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer bg-blue-50 border border-blue-200">
-                              <p className="text-gray-500 text-sm font-medium">Mon</p>
-                              <p className="text-gray-800 font-semibold">18 Jan</p>
-                              <p className="text-xs text-gray-500 mt-1">12 slots</p>
-                            </div>
-                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
-                              <p className="text-gray-500 text-sm font-medium">Wed</p>
-                              <p className="text-gray-800 font-semibold">20 Jan</p>
-                              <p className="text-xs text-gray-500 mt-1">8 slots</p>
-                            </div>
-                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
-                              <p className="text-gray-500 text-sm font-medium">Fri</p>
-                              <p className="text-gray-800 font-semibold">22 Jan</p>
-                              <p className="text-xs text-gray-500 mt-1">10 slots</p>
-                            </div>
-                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
-                              <p className="text-gray-500 text-sm font-medium">Mon</p>
-                              <p className="text-gray-800 font-semibold">25 Jan</p>
-                              <p className="text-xs text-gray-500 mt-1">12 slots</p>
-                            </div>
-                            <div className="flex-shrink-0 text-center p-3 rounded-lg cursor-pointer hover:bg-gray-50">
-                              <p className="text-gray-500 text-sm font-medium">Wed</p>
-                              <p className="text-gray-800 font-semibold">27 Jan</p>
-                              <p className="text-xs text-gray-500 mt-1">6 slots</p>
-                            </div>
+                            {availableDates.map((date, index) => (
+                              <div
+                                key={index}
+                                className={`flex-shrink-0 text-center p-3 rounded-lg cursor-pointer ${
+                                  selectedDate === date.date ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
+                                }`}
+                                onClick={() => setSelectedDate(date.date)}
+                              >
+                                <p className="text-gray-500 text-sm font-medium">{date.day}</p>
+                                <p className="text-gray-800 font-semibold">{date.date}</p>
+                                <p className="text-xs text-gray-500 mt-1">{date.slots} slots</p>
+                              </div>
+                            ))}
                           </div>
                         </div>
                         <button className="absolute right-0 bg-white p-2 rounded-full shadow-md z-10">
@@ -437,46 +506,87 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     <div className="mb-6">
                       <h4 className="text-gray-800 font-medium mb-4">Available time slots</h4>
                       <div className="flex flex-wrap gap-3">
-                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
-                          6:00pm
-                        </button>
-                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
-                          8:00pm
-                        </button>
-                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
-                          9:00pm
-                        </button>
-                        <button className="px-4 py-2 border rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50">
-                          10:00pm
-                        </button>
+                        {timeSlots.map((time, index) => (
+                          <button
+                            key={index}
+                            className={`px-4 py-2 border rounded-lg ${
+                              selectedTime === time ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                            }`}
+                            onClick={() => setSelectedTime(time)}
+                          >
+                            {time}
+                          </button>
+                        ))}
                       </div>
                     </div>
                     
                     {/* Book Button */}
                     <button
-                      className="w-full py-3 px-4 rounded-lg text-white font-semibold bg-gray-400 cursor-not-allowed"
-                      disabled={true}
+                      className={`w-full py-3 px-4 rounded-lg text-white font-semibold ${
+                        selectedTime ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
+                      }`}
+                      onClick={handleBookSession}
+                      disabled={!selectedTime || isBooking}
                     >
-                      Book session for 18th Jan, 2025
+                      {isBooking ? 'Booking...' : `Book session for ${selectedDate}, 2025`}
                     </button>
                     
-                    {/* Languages */}
-                    <div className="mt-6">
-                      <p className="text-gray-700 font-medium mb-2">Fluent in</p>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                          English
-                        </span>
-                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                          Spanish
-                        </span>
-                        {selectedMentor?.location === 'Brazil' && (
-                          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                            Portuguese
-                          </span>
-                        )}
+                    {/* Booking Error */}
+                    {bookingError && (
+                      <div className="mt-4 text-red-500 text-sm">{bookingError}</div>
+                    )}
+
+                    {/* Booking Success */}
+                    {bookingSuccess && zoomMeetingInfo && (
+                      <div className="mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md">
+                        <h4 className="font-bold">Booking Confirmed!</h4>
+                        <p>Your session has been successfully booked.</p>
+                        <div className="mt-4">
+                          <p className="text-sm">
+                            <strong>Meeting ID:</strong> {zoomMeetingInfo.meetingId}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Start Time:</strong> {zoomMeetingInfo.startTime}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Password:</strong> {zoomMeetingInfo.password}
+                          </p>
+                          <div className="flex items-center mt-2">
+                            <a
+                              href={zoomMeetingInfo.meetingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline flex items-center"
+                            >
+                              <FiExternalLink className="mr-1" />
+                              Join Meeting
+                            </a>
+                            <button
+                              className="ml-4 text-gray-600 hover:text-gray-800 flex items-center"
+                              onClick={() => copyToClipboard(zoomMeetingInfo.meetingUrl)}
+                            >
+                              {linkCopied ? (
+                                <>
+                                  <FiCheck className="mr-1" />
+                                  Copied
+                                </>
+                              ) : (
+                                <>
+                                  <FiCopy className="mr-1" />
+                                  Copy Link
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        <button
+                          className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                          onClick={resetBookingForm}
+                        >
+                          Book another session
+                        </button>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
                 
