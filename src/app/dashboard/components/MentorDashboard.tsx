@@ -247,9 +247,10 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
       // On success, set the meeting info
       setZoomMeetingInfo(response.data.meeting);
       setBookingSuccess(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Booking error:', error);
-      setBookingError(error.response?.data?.error || 'Failed to book session. Please try again.');
+      const errorResponse = error as { response?: { data?: { error?: string } } };
+      setBookingError(errorResponse.response?.data?.error || 'Failed to book session. Please try again.');
     } finally {
       setIsBooking(false);
     }
@@ -325,8 +326,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
           id: Date.now() - i,
           sender: i % 2 === 0 ? selectedChatData?.name || 'User' : 'You',
           text: i % 2 === 0 
-            ? `Hi there! I'm ${selectedChatData?.name}. How can I help you with your project today?` 
-            : "I've been working on a new animation sequence and would love your feedback on it.",
+            ? `Hi there! I&apos;m ${selectedChatData?.name}. How can I help you with your project today?` 
+            : "I&apos;ve been working on a new animation sequence and would love your feedback on it.",
           timestamp: formattedTime,
           read: true
         });

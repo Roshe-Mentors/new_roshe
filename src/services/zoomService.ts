@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabaseClient';
 
 // Zoom API configuration
@@ -71,7 +70,7 @@ export async function createZoomMeeting(mentorName, mentorEmail, userEmail, date
     const month = monthMap[dateParts[1]];
     
     // Convert 12-hour time format to 24-hour format
-    let timeValue = time;
+    const timeValue = time;
     let hours = parseInt(timeValue.split(':')[0]);
     const isPM = timeValue.toLowerCase().includes('pm');
     
