@@ -637,7 +637,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     {/* Calendar Dates */}
                     <div className="relative mb-6">
                       <div className="flex items-center">
-                        <button className="absolute left-0 bg-white p-2 rounded-full shadow-md z-10">
+                        <button 
+                          className="absolute left-0 bg-white p-2 rounded-full shadow-md z-10"
+                          title="Previous dates"
+                          aria-label="View previous dates"
+                        >
                           <FiArrowLeft className="text-gray-600" />
                         </button>
                         <div className="flex-1 overflow-x-auto py-2 px-8">
@@ -657,7 +661,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                             ))}
                           </div>
                         </div>
-                        <button className="absolute right-0 bg-white p-2 rounded-full shadow-md z-10">
+                        <button 
+                          className="absolute right-0 bg-white p-2 rounded-full shadow-md z-10"
+                          title="Next dates"
+                          aria-label="View next dates"
+                        >
                           <FiArrowRight className="text-gray-600" />
                         </button>
                       </div>
@@ -1095,7 +1103,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   {/* Achievement Calendar */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
                     <h3 className="text-xl font-semibold text-gray-800 mb-4">Available Sessions</h3>
-                    <p className="text-gray-600 mb-6">Book a session to contribute to this mentor's achievements and your growth</p>
+                    <p className="text-gray-600 mb-6">Book a session to contribute to this mentor&apos;s achievements and your growth</p>
                     
                     {/* Session Type Toggle */}
                     <div className="flex space-x-4 mb-6">
@@ -1380,14 +1388,6 @@ const WelcomeMessage: React.FC<{
     // Check if user is coming from signup
     const fromSignup = searchParams.get('fromSignup');
     if (fromSignup === 'true') {
-      setShowWelcome(true);
-      // Remove the query parameter after processing
-      const url = new URL(window.location.href);
-      url.searchParams.delete('fromSignup');
-      router.replace(url.pathname);
-
-      // Auto-hide welcome message after 5 seconds
-      const timer = setTimeout(() => {
         setShowWelcome(false);
       }, 5000);
 
