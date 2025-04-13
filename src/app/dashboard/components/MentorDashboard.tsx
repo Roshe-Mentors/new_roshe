@@ -570,10 +570,20 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                           <p className="text-gray-600">{selectedMentor?.role || "Role"} at {selectedMentor?.company || "Company"}</p>
                         </div>
                         <div className="flex space-x-3">
-                          <a href="#" className="text-blue-600 hover:text-blue-800">
+                          <a 
+                            href="#" 
+                            className="text-blue-600 hover:text-blue-800"
+                            title="LinkedIn Profile"
+                            aria-label="View LinkedIn Profile"
+                          >
                             <BsLinkedin size={24} />
                           </a>
-                          <a href="#" className="text-gray-600 hover:text-gray-800">
+                          <a 
+                            href="#" 
+                            className="text-gray-600 hover:text-gray-800"
+                            title="Personal Website"
+                            aria-label="Visit Personal Website"
+                          >
                             <BsGlobe size={24} />
                           </a>
                         </div>
@@ -670,7 +680,12 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         </button>
                       </div>
                       <div className="text-right mt-2">
-                        <a href="#" className="text-blue-600 text-sm flex items-center justify-end hover:underline">
+                        <a 
+                          href="#" 
+                          className="text-blue-600 text-sm flex items-center justify-end hover:underline"
+                          title="View all available dates"
+                          aria-label="View all available dates"
+                        >
                           View all <FiArrowRight className="ml-1" size={14} />
                         </a>
                       </div>
@@ -1062,10 +1077,20 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                           <p className="text-gray-600">{selectedMentor?.role || "Role"} at {selectedMentor?.company || "Company"}</p>
                         </div>
                         <div className="flex space-x-3">
-                          <a href="#" className="text-blue-600 hover:text-blue-800">
+                          <a 
+                            href="#" 
+                            className="text-blue-600 hover:text-blue-800"
+                            title="LinkedIn Profile"
+                            aria-label="View LinkedIn Profile"
+                          >
                             <BsLinkedin size={24} />
                           </a>
-                          <a href="#" className="text-gray-600 hover:text-gray-800">
+                          <a 
+                            href="#" 
+                            className="text-gray-600 hover:text-gray-800"
+                            title="Personal Website"
+                            aria-label="Visit Personal Website"
+                          >
                             <BsGlobe size={24} />
                           </a>
                         </div>
@@ -1128,7 +1153,11 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     {/* Calendar Dates */}
                     <div className="relative mb-6">
                       <div className="flex items-center">
-                        <button className="absolute left-0 bg-white p-2 rounded-full shadow-md z-10">
+                        <button 
+                          className="absolute left-0 bg-white p-2 rounded-full shadow-md z-10"
+                          title="Previous dates"
+                          aria-label="View previous dates"
+                        >
                           <FiArrowLeft className="text-gray-600" />
                         </button>
                         <div className="flex-1 overflow-x-auto py-2 px-8">
@@ -1148,12 +1177,21 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                             ))}
                           </div>
                         </div>
-                        <button className="absolute right-0 bg-white p-2 rounded-full shadow-md z-10">
+                        <button 
+                          className="absolute right-0 bg-white p-2 rounded-full shadow-md z-10"
+                          title="Next dates"
+                          aria-label="View next dates"
+                        >
                           <FiArrowRight className="text-gray-600" />
                         </button>
                       </div>
                       <div className="text-right mt-2">
-                        <a href="#" className="text-blue-600 text-sm flex items-center justify-end hover:underline">
+                        <a 
+                          href="#" 
+                          className="text-blue-600 text-sm flex items-center justify-end hover:underline"
+                          title="View all available dates"
+                          aria-label="View all available dates"
+                        >
                           View all <FiArrowRight className="ml-1" size={14} />
                         </a>
                       </div>
@@ -1388,6 +1426,14 @@ const WelcomeMessage: React.FC<{
     // Check if user is coming from signup
     const fromSignup = searchParams.get('fromSignup');
     if (fromSignup === 'true') {
+      setShowWelcome(true);
+      // Remove the query parameter after processing
+      const url = new URL(window.location.href);
+      url.searchParams.delete('fromSignup');
+      router.replace(url.pathname);
+
+      // Auto-hide welcome message after 5 seconds
+      const timer = setTimeout(() => {
         setShowWelcome(false);
       }, 5000);
 
