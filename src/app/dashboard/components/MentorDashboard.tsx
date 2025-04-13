@@ -55,6 +55,106 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
   } | null>(null);
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
 
+  // Add new chat-related state variables
+  const [chatSearch, setChatSearch] = useState('');
+  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [chatMessage, setChatMessage] = useState('');
+  const [conversations, setConversations] = useState<{
+    [key: number]: {
+      messages: {
+        id: number;
+        sender: string;
+        text: string;
+        timestamp: string;
+        read: boolean;
+      }[];
+    };
+  }>({});
+
+  // Mock chat data
+  const chatList = [
+    {
+      id: 1,
+      name: 'Moses Omobolaji',
+      lastMessage: "You: Good morning management. We are...",
+      timestamp: '2w',
+      imageUrl: "/images/bj.jpg",
+      unread: 0
+    },
+    {
+      id: 2,
+      name: 'Faith Ogundare',
+      lastMessage: "Faith: That sounds good! I can help you...",
+      timestamp: '21w',
+      imageUrl: "/images/7.jpeg",
+      unread: 3
+    },
+    {
+      id: 3,
+      name: 'Chris Lee',
+      lastMessage: "You: Thank you for the feedback on my...",
+      timestamp: '11w',
+      imageUrl: "/images/chris_lee_mentor.png",
+      unread: 0
+    },
+    {
+      id: 4,
+      name: 'Jane Smith',
+      lastMessage: "Jane: The animation principles we discussed...",
+      timestamp: '1d',
+      imageUrl: "/images/woman1.jpg",
+      unread: 1
+    },
+    {
+      id: 5,
+      name: 'Michael Johnson',
+      lastMessage: "You: I've been working on the character rig...",
+      timestamp: '3h',
+      imageUrl: "/images/man1.jpg",
+      unread: 0
+    },
+    {
+      id: 6,
+      name: 'Sophie Williams',
+      lastMessage: "Sophie: Here's my availability for next week...",
+      timestamp: '1w',
+      imageUrl: "/images/woman2.jpg",
+      unread: 2
+    },
+    {
+      id: 7,
+      name: 'Robert Chen',
+      lastMessage: "You: The render is almost complete, I'll share...",
+      timestamp: '5d',
+      imageUrl: "/images/man2.jpg",
+      unread: 0
+    },
+    {
+      id: 8,
+      name: 'Anya Petrova',
+      lastMessage: "Anya: Have you tried the new sculpting tool?",
+      timestamp: '2d',
+      imageUrl: "/images/woman3.jpg",
+      unread: 0
+    },
+    {
+      id: 9,
+      name: 'Jamal Washington',
+      lastMessage: "You: I'd appreciate your feedback on my portfolio...",
+      timestamp: '6h',
+      imageUrl: "/images/man3.jpg",
+      unread: 0
+    },
+    {
+      id: 10,
+      name: 'Olivia Parker',
+      lastMessage: "Olivia: The lighting in your scene looks amazing...",
+      timestamp: '4w',
+      imageUrl: "/images/woman4.jpg",
+      unread: 5
+    }
+  ];
+
   // Define categoriesMap inside the component
   const categoriesMap: { [key: string]: string[] } = {
     "Design": [
@@ -172,6 +272,71 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
     setBookingSuccess(false);
     setZoomMeetingInfo(null);
     setBookingError(null);
+  };
+
+  // Function to handle sending a new message
+  const handleSendMessage = () => {
+    if (!chatMessage.trim() || !selectedChat) return;
+
+    const newMessageId = Date.now();
+    const formattedTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Create a copy of the current conversations
+    const updatedConversations = { ...conversations };
+    
+    // If this is a new conversation, initialize it
+    if (!updatedConversations[selectedChat]) {
+      updatedConversations[selectedChat] = { messages: [] };
+    }
+    
+    // Add the new message
+    updatedConversations[selectedChat].messages.push({
+      id: newMessageId,
+      sender: 'You',
+      text: chatMessage,
+      timestamp: formattedTime,
+      read: true
+    });
+    
+    // Update the state
+    setConversations(updatedConversations);
+    setChatMessage('');
+  };
+
+  // Function to mark messages as read when a chat is selected
+  const handleChatSelect = (chatId: number) => {
+    setSelectedChat(chatId);
+    
+    // If we don't have any conversation for this chat yet, initialize with mock data
+    if (!conversations[chatId]) {
+      const selectedChatData = chatList.find(chat => chat.id === chatId);
+      const mockMessages = [];
+      
+      // Create mock conversation with 1-5 messages
+      const messageCount = Math.floor(Math.random() * 5) + 1;
+      const today = new Date();
+      
+      for (let i = 0; i < messageCount; i++) {
+        const timeAgo = Math.floor(Math.random() * 24 * 60); // Random minutes ago (up to 24 hours)
+        const messageTime = new Date(today.getTime() - timeAgo * 60000);
+        const formattedTime = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        mockMessages.push({
+          id: Date.now() - i,
+          sender: i % 2 === 0 ? selectedChatData?.name || 'User' : 'You',
+          text: i % 2 === 0 
+            ? `Hi there! I'm ${selectedChatData?.name}. How can I help you with your project today?` 
+            : "I've been working on a new animation sequence and would love your feedback on it.",
+          timestamp: formattedTime,
+          read: true
+        });
+      }
+      
+      setConversations({
+        ...conversations,
+        [chatId]: { messages: mockMessages }
+      });
+    }
   };
 
   // Filter mentors based on search term and active category
@@ -670,122 +835,185 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                 </div>
               </div>
             ) : activeNavItem === 'chat' ? (
-              <div className="flex flex-col w-full max-w-4xl mx-auto">
-                {/* Chat Interface */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                  {/* Search Bar */}
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="relative">
-                      <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        type="text"
-                        placeholder="Search member"
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
-                      />
+              <div className="flex flex-col w-full max-w-6xl mx-auto">
+                {/* Chat Interface - Split View */}
+                <div className="flex bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                  {/* Left side - Chat List */}
+                  <div className="w-1/3 border-r border-gray-100">
+                    {/* Search Bar */}
+                    <div className="p-4 border-b border-gray-100">
+                      <div className="relative">
+                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="text"
+                          placeholder="Search member"
+                          className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                          value={chatSearch}
+                          onChange={(e) => setChatSearch(e.target.value)}
+                        />
+                        {chatSearch && (
+                          <button 
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            onClick={() => setChatSearch('')}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Member List - Scrollable Container */}
+                    <div className="h-[calc(100vh-250px)] overflow-y-auto scrollbar-hide">
+                      <style jsx global>{`
+                        /* Hide scrollbar for Chrome, Safari and Opera */
+                        .scrollbar-hide::-webkit-scrollbar {
+                          display: none;
+                        }
+                        
+                        /* Hide scrollbar for IE, Edge and Firefox */
+                        .scrollbar-hide {
+                          -ms-overflow-style: none;  /* IE and Edge */
+                          scrollbar-width: none;  /* Firefox */
+                        }
+                      `}</style>
+                      
+                      {/* Filter chat list based on search */}
+                      {chatList
+                        .filter(chat => 
+                          !chatSearch || 
+                          chat.name.toLowerCase().includes(chatSearch.toLowerCase())
+                        )
+                        .map((chat) => (
+                        <div 
+                          key={chat.id} 
+                          className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition duration-150 ${
+                            selectedChat === chat.id ? 'bg-blue-50' : ''
+                          }`}
+                          onClick={() => handleChatSelect(chat.id)}
+                        >
+                          <div className="flex items-center">
+                            {/* Profile Picture */}
+                            <div className="flex-shrink-0 relative">
+                              <Image
+                                src={chat.imageUrl}
+                                alt={chat.name}
+                                width={48}
+                                height={48}
+                                className="rounded-full object-cover w-12 h-12"
+                              />
+                              {chat.unread > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                  {chat.unread}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Text Content */}
+                            <div className="ml-4 flex-grow overflow-hidden">
+                              <h4 className={`text-gray-900 text-sm ${chat.unread > 0 ? 'font-bold' : 'font-medium'}`}>
+                                {chat.name}
+                              </h4>
+                              <p className={`text-gray-600 text-xs truncate mt-0.5 ${chat.unread > 0 ? 'font-medium' : ''}`}>
+                                {chat.lastMessage}
+                              </p>
+                            </div>
+                            
+                            {/* Timestamp */}
+                            <div className="ml-2 text-gray-400 text-xs">
+                              {chat.timestamp}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   
-                  {/* Member List - Scrollable Container */}
-                  <div className="h-[calc(100vh-250px)] overflow-y-auto">
-                    {/* Sample Chat Items - We'll map through actual data in production */}
-                    {[
-                      {
-                        id: 1,
-                        name: 'Moses Omobolaji',
-                        lastMessage: "You: Good morning management. We are...",
-                        timestamp: '2w',
-                        imageUrl: "/images/bj.jpg"
-                      },
-                      {
-                        id: 2,
-                        name: 'Faith Ogundare',
-                        lastMessage: "Faith: That sounds good! I can help you...",
-                        timestamp: '21w',
-                        imageUrl: "/images/7.jpeg"
-                      },
-                      {
-                        id: 3,
-                        name: 'Chris Lee',
-                        lastMessage: "You: Thank you for the feedback on my...",
-                        timestamp: '11w',
-                        imageUrl: "/images/chris_lee_mentor.png"
-                      },
-                      {
-                        id: 4,
-                        name: 'Jane Smith',
-                        lastMessage: "Jane: The animation principles we discussed...",
-                        timestamp: '1d',
-                        imageUrl: "/images/woman1.jpg"
-                      },
-                      {
-                        id: 5,
-                        name: 'Michael Johnson',
-                        lastMessage: "You: I've been working on the character rig...",
-                        timestamp: '3h',
-                        imageUrl: "/images/man1.jpg"
-                      },
-                      {
-                        id: 6,
-                        name: 'Sophie Williams',
-                        lastMessage: "Sophie: Here's my availability for next week...",
-                        timestamp: '1w',
-                        imageUrl: "/images/woman2.jpg"
-                      },
-                      {
-                        id: 7,
-                        name: 'Robert Chen',
-                        lastMessage: "You: The render is almost complete, I'll share...",
-                        timestamp: '5d',
-                        imageUrl: "/images/man2.jpg"
-                      },
-                      {
-                        id: 8,
-                        name: 'Anya Petrova',
-                        lastMessage: "Anya: Have you tried the new sculpting tool?",
-                        timestamp: '2d',
-                        imageUrl: "/images/woman3.jpg"
-                      },
-                      {
-                        id: 9,
-                        name: 'Jamal Washington',
-                        lastMessage: "You: I'd appreciate your feedback on my portfolio...",
-                        timestamp: '6h',
-                        imageUrl: "/images/man3.jpg"
-                      },
-                      {
-                        id: 10,
-                        name: 'Olivia Parker',
-                        lastMessage: "Olivia: The lighting in your scene looks amazing...",
-                        timestamp: '4w',
-                        imageUrl: "/images/woman4.jpg"
-                      }
-                    ].map((chat) => (
-                      <div key={chat.id} className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition duration-150">
-                        <div className="flex items-center">
-                          {/* Profile Picture */}
+                  {/* Right side - Chat Messages */}
+                  <div className="w-2/3 flex flex-col">
+                    {selectedChat && chatList.find(chat => chat.id === selectedChat) ? (
+                      <>
+                        {/* Chat Header */}
+                        <div className="p-4 border-b border-gray-100 flex items-center">
                           <div className="flex-shrink-0">
                             <Image
-                              src={chat.imageUrl}
-                              alt={chat.name}
-                              width={48}
-                              height={48}
-                              className="rounded-full object-cover w-12 h-12"
+                              src={chatList.find(chat => chat.id === selectedChat)?.imageUrl || "/images/mentor_pic.png"}
+                              alt={chatList.find(chat => chat.id === selectedChat)?.name || "Chat"}
+                              width={40}
+                              height={40}
+                              className="rounded-full object-cover w-10 h-10"
                             />
                           </div>
-                          
-                          {/* Text Content */}
-                          <div className="ml-4 flex-grow overflow-hidden">
-                            <h4 className="text-gray-900 font-medium text-sm">{chat.name}</h4>
-                            <p className="text-gray-600 text-xs truncate mt-0.5">{chat.lastMessage}</p>
-                          </div>
-                          
-                          {/* Timestamp */}
-                          <div className="ml-2 text-gray-400 text-xs">
-                            {chat.timestamp}
+                          <div className="ml-3">
+                            <h3 className="font-medium text-gray-900">
+                              {chatList.find(chat => chat.id === selectedChat)?.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {chatList.find(chat => chat.id === selectedChat)?.unread > 0 ? 'Online' : 'Last active 2h ago'}
+                            </p>
                           </div>
                         </div>
+                        
+                        {/* Messages Container */}
+                        <div className="flex-grow p-4 overflow-y-auto scrollbar-hide">
+                          {conversations[selectedChat]?.messages.map((message) => (
+                            <div key={message.id} className={`flex ${message.sender === 'You' ? 'justify-end' : 'justify-start'} mb-4`}>
+                              {message.sender !== 'You' && (
+                                <div className="flex-shrink-0 mr-2">
+                                  <Image
+                                    src={chatList.find(chat => chat.id === selectedChat)?.imageUrl || "/images/mentor_pic.png"}
+                                    alt={message.sender}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full object-cover w-8 h-8"
+                                  />
+                                </div>
+                              )}
+                              <div className={`max-w-xs px-4 py-2 rounded-lg ${message.sender === 'You' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                                <p className="text-sm">{message.text}</p>
+                                <p className="text-xs text-gray-500 mt-1 text-right">{message.timestamp}</p>
+                              </div>
+                              {message.sender === 'You' && (
+                                <div className="flex-shrink-0 ml-2">
+                                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
+                                    You
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Message Input */}
+                        <div className="p-4 border-t border-gray-100">
+                          <div className="flex items-center">
+                            <input
+                              type="text"
+                              placeholder="Type your message..."
+                              className="flex-grow px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                              value={chatMessage}
+                              onChange={(e) => setChatMessage(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                            />
+                            <button
+                              className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                              onClick={handleSendMessage}
+                            >
+                              Send
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex-grow flex items-center justify-center">
+                        <div className="text-center p-8">
+                          <FiMessageCircle className="mx-auto text-gray-300" size={48} />
+                          <h3 className="mt-4 text-lg font-medium text-gray-900">Your messages</h3>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Select a conversation or start a new chat with a mentor or mentee
+                          </p>
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>
