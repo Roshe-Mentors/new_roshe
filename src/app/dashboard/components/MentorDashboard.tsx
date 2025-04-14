@@ -440,7 +440,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
               <>
                 {/* Search and Action Buttons */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
-                  <div className="relative flex-grow max-w-4xl w-full sm:w-auto">
+                  <div className="relative flex-grow max-w-5xl w-full sm:w-auto">
                     <FiSearch className="absolute left-4 top-3.5 text-gray-400" size={20} />
                     <input
                       type="text"
