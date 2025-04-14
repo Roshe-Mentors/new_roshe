@@ -52,14 +52,21 @@ async function getZoomAccessToken() {
 }
 
 // Create a Zoom meeting
-export async function createZoomMeeting(mentorName, mentorEmail, userEmail, date, time, sessionType) {
+export async function createZoomMeeting(
+  mentorName: string, 
+  mentorEmail: string, 
+  userEmail: string, 
+  date: string, 
+  time: string, 
+  sessionType: string
+) {
   try {
     const token = await getZoomAccessToken();
     
     // Format date and time for Zoom API
     // Convert something like "18 Jan" and "6:00pm" to ISO format
     const year = new Date().getFullYear() + 1; // Using next year for 2025 dates
-    const monthMap = { 
+    const monthMap: Record<string, string> = { 
       'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 
       'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
       'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
@@ -67,7 +74,8 @@ export async function createZoomMeeting(mentorName, mentorEmail, userEmail, date
     
     const dateParts = date.split(' ');
     const day = dateParts[0].padStart(2, '0');
-    const month = monthMap[dateParts[1]];
+    const monthAbbr = dateParts[1] as keyof typeof monthMap;
+    const month = monthMap[monthAbbr] || '01'; // Default to January if month not found
     
     // Convert 12-hour time format to 24-hour format
     const timeValue = time;
@@ -148,7 +156,22 @@ export async function createZoomMeeting(mentorName, mentorEmail, userEmail, date
 }
 
 // Save booking to Supabase
-export async function saveBooking(bookingData) {
+export async function saveBooking(bookingData: {
+  mentor_id: string;
+  mentor_name?: string;
+  mentor_email?: string;
+  user_id: string;
+  user_email?: string;
+  date?: string;
+  booking_date?: string;
+  time?: string;
+  booking_time?: string;
+  session_type: string;
+  meeting_id: string;
+  meeting_url: string;
+  password?: string;
+  meeting_password?: string;
+}) {
   try {
     // Ensure field names match exactly with the Supabase table columns
     const formattedBookingData = {
@@ -180,7 +203,7 @@ export async function saveBooking(bookingData) {
 }
 
 // Check if time slot is available
-export async function checkTimeSlotAvailability(mentorId, date, time) {
+export async function checkTimeSlotAvailability(mentorId: string, date: string, time: string) {
   try {
     // Check for existing bookings with these exact values
     const { data, error } = await supabase
