@@ -972,7 +972,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                               {chatList.find(chat => chat.id === selectedChat)?.name}
                             </h3>
                             <p className="text-xs text-gray-500">
-                              {chatList.find(chat => chat.id === selectedChat)?.unread > 0 ? 'Online' : 'Last active 2h ago'}
+                              {(chatList.find(chat => chat.id === selectedChat)?.unread || 0) > 0 ? 'Online' : 'Last active 2h ago'}
                             </p>
                           </div>
                         </div>
