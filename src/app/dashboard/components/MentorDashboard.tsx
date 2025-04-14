@@ -87,7 +87,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
       lastMessage: "Faith: That sounds good! I can help you...",
       timestamp: '21w',
       imageUrl: "/images/7.jpeg",
-      unread: 3
+      unread: 0
     },
     {
       id: 3,
@@ -103,7 +103,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
       lastMessage: "Jane: The animation principles we discussed...",
       timestamp: '1d',
       imageUrl: "/images/woman1.jpg",
-      unread: 1
+      unread: 0
     },
     {
       id: 5,
@@ -316,6 +316,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
       // Create mock conversation with 1-5 messages
       const messageCount = Math.floor(Math.random() * 5) + 1;
       const today = new Date();
+      const baseTime = Date.now(); // Use as base timestamp
       
       for (let i = 0; i < messageCount; i++) {
         const timeAgo = Math.floor(Math.random() * 24 * 60); // Random minutes ago (up to 24 hours)
@@ -323,7 +324,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
         const formattedTime = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         mockMessages.push({
-          id: Date.now() - i,
+          id: baseTime - (i * 1000), // Ensure each ID is unique by offsetting by index
           sender: i % 2 === 0 ? selectedChatData?.name || 'User' : 'You',
           text: i % 2 === 0 
             ? `Hi there! I&apos;m ${selectedChatData?.name}. How can I help you with your project today?` 
