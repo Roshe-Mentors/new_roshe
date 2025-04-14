@@ -888,7 +888,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     </div>
                     
                     {/* Member List - Scrollable Container */}
-                    <div className="h-[calc(100vh-250px)] overflow-y-auto scrollbar-hide">
+                    <div className="h-[calc(100vh-250px)] overflow-y-auto scrollbar-hide" style={{ overflowY: 'auto', height: 'calc(100vh - 250px)' }}>
                       <style jsx global>{`
                         /* Hide scrollbar for Chrome, Safari and Opera */
                         .scrollbar-hide::-webkit-scrollbar {
@@ -899,6 +899,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         .scrollbar-hide {
                           -ms-overflow-style: none;  /* IE and Edge */
                           scrollbar-width: none;  /* Firefox */
+                          overflow-y: auto !important;
                         }
                       `}</style>
                       
