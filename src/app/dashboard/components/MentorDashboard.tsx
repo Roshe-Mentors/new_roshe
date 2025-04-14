@@ -479,41 +479,27 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                 </div>
 
                 {/* Category Filters */}
-                <div className="mb-8">
-                  <div className="flex flex-nowrap gap-1 overflow-x-auto pb-2 whitespace-nowrap">
-                    {Object.keys(categoriesMap).map((category, index) => (
-                      <CategoryButton
-                        key={index}
-                        label={category}
-                        active={activeCategory === category}
-                        textSize="text-[10px]" // Reduced text size further
-                        padding="px-1.5 py-0.5" // Reduced padding
-                        onClick={() => {
-                          // If same category is clicked, toggle it off
-                          if (activeCategory === category) {
-                            setActiveCategory(null);
-                          } else {
-                            // Set new active category
-                            setActiveCategory(category);
-                          }
-                        }}
-                      />
-                    ))}
+                <div className="mb-6">
+                  <div className="flex flex-wrap gap-3">
+                    <button className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium">
+                      Career
+                    </button>
+                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+                      Mental Health
+                    </button>
+                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+                      Leadership
+                    </button>
+                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+                      Animation
+                    </button>
+                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+                      3D Design
+                    </button>
+                    <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+                      Industry Insights
+                    </button>
                   </div>
-                  {/* Render child categories with border if available */}
-                  {activeCategory && categoriesMap[activeCategory].length > 0 && (
-                    <div className="mt-2 flex flex-nowrap gap-1 overflow-x-auto pb-1 whitespace-nowrap">
-                      {categoriesMap[activeCategory].map((childCategory, idx) => (
-                        <div key={idx} className="border border-gray-200 rounded">
-                          <CategoryButton 
-                            label={childCategory} 
-                            textSize="text-[9px]" 
-                            padding="px-1 py-0.5" 
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Mentor Cards */}
@@ -544,7 +530,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                 {/* Main Content Area - Left Column */}
                 <div className="flex-1">
                   {/* Top Bar with Question Input */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6 flex items-center">
+                  <div className="flex items-center mb-6">
                     <input
                       type="text"
                       placeholder="Got any questions? Feel free to ask!"
@@ -559,24 +545,24 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                   </div>
 
                   {/* Category Filters */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
+                  <div className="mb-6">
                     <div className="flex flex-wrap gap-3">
-                      <button className="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg font-medium">
+                      <button className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium">
                         Career
                       </button>
-                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg font-medium">
+                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
                         Mental Health
                       </button>
-                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg font-medium">
+                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
                         Leadership
                       </button>
-                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg font-medium">
+                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
                         Animation
                       </button>
-                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg font-medium">
+                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
                         3D Design
                       </button>
-                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 border border-gray-200 rounded-lg font-medium">
+                      <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
                         Industry Insights
                       </button>
                     </div>
@@ -589,7 +575,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                     {/* Discussion Thread Cards */}
                     <div className="space-y-6">
                       {/* Thread Card 1 */}
-                      <div className="border border-gray-100 rounded-lg p-5 hover:shadow-md transition-shadow">
+                      <div className="border border-black rounded-lg p-5 hover:shadow-md transition-shadow">
                         <h4 className="text-lg font-medium text-gray-900 mb-3">
                           How should I level up my career as a visual designer to an interaction designer, where should I start?
                         </h4>
@@ -646,7 +632,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                       </div>
 
                       {/* Thread Card 2 */}
-                      <div className="border border-gray-100 rounded-lg p-5 hover:shadow-md transition-shadow">
+                      <div className="border border-black rounded-lg p-5 hover:shadow-md transition-shadow">
                         <h4 className="text-lg font-medium text-gray-900 mb-3">
                           What&apos;s the best way to showcase my animation portfolio to attract industry attention?
                         </h4>
@@ -699,7 +685,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                       </div>
 
                       {/* Thread Card 3 */}
-                      <div className="border border-gray-100 rounded-lg p-5 hover:shadow-md transition-shadow">
+                      <div className="border border-black rounded-lg p-5 hover:shadow-md transition-shadow">
                         <h4 className="text-lg font-medium text-gray-900 mb-3">
                           How to balance full-time work with continuous learning and skill development?
                         </h4>
