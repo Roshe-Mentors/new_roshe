@@ -453,6 +453,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                       <button 
                         className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600"
                         onClick={() => setSearchTerm('')}
+                        title="Clear search"
+                        aria-label="Clear search input"
                       >
                         ×
                       </button>
@@ -527,6 +529,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                         <button 
                           className="mt-2 text-blue-500 hover:underline"
                           onClick={() => setSearchTerm('')}
+                          title="Clear search criteria"
+                          aria-label="Clear search criteria"
                         >
                           Clear search
                         </button>
@@ -644,7 +648,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                       {/* Thread Card 2 */}
                       <div className="border border-gray-100 rounded-lg p-5 hover:shadow-md transition-shadow">
                         <h4 className="text-lg font-medium text-gray-900 mb-3">
-                          What's the best way to showcase my animation portfolio to attract industry attention?
+                          What&apos;s the best way to showcase my animation portfolio to attract industry attention?
                         </h4>
                         <div className="flex items-center mb-3">
                           <div className="flex -space-x-2">
@@ -1120,6 +1124,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                             <button
                               className="ml-4 text-gray-600 hover:text-gray-800 flex items-center"
                               onClick={() => copyToClipboard(zoomMeetingInfo.meetingUrl)}
+                              title="Copy meeting link"
+                              aria-label="Copy meeting link to clipboard"
                             >
                               {linkCopied ? (
                                 <>
@@ -1246,6 +1252,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                           <button 
                             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                             onClick={() => setChatSearch('')}
+                            title="Clear search"
+                            aria-label="Clear search input"
                           >
                             ×
                           </button>
@@ -1640,6 +1648,8 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ mentors }) => {
                             <button
                               className="ml-4 text-gray-600 hover:text-gray-800 flex items-center"
                               onClick={() => copyToClipboard(zoomMeetingInfo.meetingUrl)}
+                              title="Copy meeting link"
+                              aria-label="Copy meeting link to clipboard"
                             >
                               {linkCopied ? (
                                 <>
