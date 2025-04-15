@@ -98,7 +98,13 @@ const MentorDashboard: React.FC = () => {
           />
         );
       case 'explore':
-        return <MentorExplore mentors={mentorsData} />;
+        return <MentorExplore 
+          mentors={mentorsData} 
+          onSelectMentor={(mentorId) => {
+            setSelectedMentorId(mentorId);
+            setActiveNavItem('calendar'); // Navigate to bookings when a mentor is selected
+          }}
+        />;
       case 'community':
         return <MentorCommunity />;
       case 'calendar':
