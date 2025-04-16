@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
         date: bookingData.date,
         time: bookingData.time,
         session_type: bookingData.sessionType,
-        meeting_id: meeting.meetingId,
-        meeting_url: meeting.meetingUrl,
+        meeting_id: meeting.meetingId || `default-${Date.now()}`,  // Ensure it's always a string
+        meeting_url: meeting.meetingUrl || `https://meet.google.com/default-${Date.now()}`,  // Ensure it's always a string
         // No password for Google Meet
       };
 
@@ -89,8 +89,8 @@ export async function POST(request: NextRequest) {
             date: bookingData.date,
             time: bookingData.time,
             session_type: bookingData.sessionType,
-            meeting_id: mockMeeting.meetingId,
-            meeting_url: mockMeeting.meetingUrl
+            meeting_id: mockMeeting.meetingId || `mock-fallback-${Date.now()}`,
+            meeting_url: mockMeeting.meetingUrl || `https://meet.google.com/fallback-${Date.now()}`
           };
           
           await saveBooking(fullBookingData);
