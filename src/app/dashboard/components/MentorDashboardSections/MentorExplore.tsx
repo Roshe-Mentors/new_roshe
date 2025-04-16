@@ -175,12 +175,15 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
                   className="w-full h-48 object-cover"
                 />
                 {mentor.isTopRated && (
-                  <div className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded text-gray-800">
+                  <div className="absolute top-2 left-2 bg-white bg-opacity-85 backdrop-blur-sm text-xs font-bold px-2 py-1 rounded shadow-sm text-gray-800">
                     Top Rated
                   </div>
                 )}
                 {mentor.isAvailableASAP && (
-                  <div className="absolute top-2 right-2 bg-green-500 text-xs font-bold px-2 py-1 rounded text-white">
+                  <div 
+                    className="absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded text-white"
+                    style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+                  >
                     Available ASAP
                   </div>
                 )}
