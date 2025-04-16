@@ -316,10 +316,18 @@ const MentorChat: React.FC<MentorChatProps> = ({
               {/* Message Input */}
               <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center">
-                  <button className="text-gray-500 hover:text-gray-700 mr-2">
+                  <button 
+                    className="text-gray-500 hover:text-gray-700 mr-2"
+                    aria-label="Attach file"
+                    title="Attach file"
+                  >
                     <FiPaperclip size={20} />
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700 mr-3">
+                  <button 
+                    className="text-gray-500 hover:text-gray-700 mr-3"
+                    aria-label="Insert emoji"
+                    title="Insert emoji"
+                  >
                     <FiSmile size={20} />
                   </button>
                   <input
@@ -333,6 +341,8 @@ const MentorChat: React.FC<MentorChatProps> = ({
                   <button
                     className="ml-3 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-150"
                     onClick={handleSendMessage}
+                    aria-label="Send message"
+                    title="Send message"
                   >
                     <FiSend size={20} />
                   </button>

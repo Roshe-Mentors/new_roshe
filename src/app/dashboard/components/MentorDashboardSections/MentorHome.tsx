@@ -69,6 +69,8 @@ const MentorHome: React.FC<MentorHomeProps> = ({
             <button 
               className="mt-2 text-blue-600 text-sm flex items-center hover:underline"
               onClick={() => onNavigate('calendar')}
+              aria-label="View calendar"
+              title="View calendar"
             >
               View calendar <FiArrowRight className="ml-1" size={14} />
             </button>
@@ -80,6 +82,8 @@ const MentorHome: React.FC<MentorHomeProps> = ({
             <button 
               className="mt-2 text-green-600 text-sm flex items-center hover:underline"
               onClick={() => onNavigate('community')}
+              aria-label="View discussions"
+              title="View discussions"
             >
               View discussions <FiArrowRight className="ml-1" size={14} />
             </button>
@@ -91,6 +95,8 @@ const MentorHome: React.FC<MentorHomeProps> = ({
             <button 
               className="mt-2 text-purple-600 text-sm flex items-center hover:underline"
               onClick={() => onNavigate('chat')}
+              aria-label="Check inbox"
+              title="Check inbox"
             >
               Check inbox <FiArrowRight className="ml-1" size={14} />
             </button>
@@ -117,7 +123,11 @@ const MentorHome: React.FC<MentorHomeProps> = ({
           ))}
         </div>
         
-        <button className="mt-4 text-blue-600 text-sm flex items-center hover:underline">
+        <button 
+          className="mt-4 text-blue-600 text-sm flex items-center hover:underline"
+          aria-label="View all activity"
+          title="View all activity"
+        >
           View all activity <FiArrowRight className="ml-1" size={14} />
         </button>
       </div>
@@ -129,6 +139,8 @@ const MentorHome: React.FC<MentorHomeProps> = ({
           <button 
             className="text-blue-600 text-sm flex items-center hover:underline"
             onClick={() => onNavigate('explore')}
+            aria-label="View all mentors"
+            title="View all mentors"
           >
             View all mentors <FiArrowRight className="ml-1" size={14} />
           </button>
@@ -162,7 +174,11 @@ const MentorHome: React.FC<MentorHomeProps> = ({
                     {mentor.experience}+ Years
                   </span>
                 </div>
-                <button className="w-full py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 transition text-sm">
+                <button 
+                  className="w-full py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 transition text-sm"
+                  aria-label={`View ${mentor.name}'s profile`}
+                  title={`View ${mentor.name}'s profile`}
+                >
                   View Profile
                 </button>
               </div>

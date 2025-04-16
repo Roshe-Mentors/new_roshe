@@ -158,16 +158,22 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
             <div className="flex border-b border-gray-200 mt-6">
               <button
                 className="pb-2 px-4 -mb-px border-b-2 border-blue-500 text-blue-600"
+                aria-label="Overview tab"
+                title="Overview tab"
               >
                 Overview
               </button>
               <button
                 className="pb-2 px-4 -mb-px text-gray-600 hover:text-gray-800"
+                aria-label="Reviews tab"
+                title="Reviews tab"
               >
                 Reviews
               </button>
               <button
                 className="pb-2 px-4 -mb-px text-gray-600 hover:text-gray-800"
+                aria-label="Group Mentorship tab"
+                title="Group Mentorship tab"
               >
                 Group Mentorship
               </button>

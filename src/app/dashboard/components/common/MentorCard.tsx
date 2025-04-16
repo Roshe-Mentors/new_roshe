@@ -69,6 +69,8 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
         {/* Action Button */}
         <button 
           className="w-full text-center py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition duration-200 text-sm mt-2"
+          aria-label={`View ${mentor.name}'s profile`}
+          title={`View ${mentor.name}'s profile`}
         >
           View Profile
         </button>
