@@ -285,10 +285,18 @@ const MentorCommunity: React.FC = () => {
             <div className="border-l-2 border-blue-500 pl-3 py-1">
               <h4 className="font-medium text-gray-800 text-sm">Which studios provide the best mentorship for junior artists?</h4>
               <div className="flex mt-2 space-x-2">
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="View thread about studio mentorship"
+                  title="View thread about studio mentorship"
+                >
                   View Thread
                 </button>
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="Comment on studio mentorship thread"
+                  title="Comment on studio mentorship thread"
+                >
                   Comment
                 </button>
               </div>
