@@ -88,11 +88,16 @@ const MentorDashboard: React.FC = () => {
 
   // Render the appropriate section based on active nav item
   const renderActiveSection = () => {
+    // Create a default user object that satisfies Record<string, unknown>
+    const userRecord: Record<string, unknown> = user ? 
+      { ...(user as unknown as Record<string, unknown>) } : // Cast to unknown first, then to Record<string, unknown>
+      { name: "User", image: "/images/mentor_pic.png" };
+      
     switch (activeNavItem) {
       case 'home':
         return (
           <MentorHome 
-            user={user} 
+            user={userRecord}
             mentors={mentorsData} 
             onNavigate={handleNavigate} 
           />
@@ -113,7 +118,7 @@ const MentorDashboard: React.FC = () => {
             mentors={mentorsData}
             selectedMentorId={selectedMentorId}
             setSelectedMentorId={setSelectedMentorId}
-            user={user}
+            user={userRecord} // Use userRecord instead of user
           />
         );
       case 'chat':
@@ -121,7 +126,7 @@ const MentorDashboard: React.FC = () => {
       case 'achievement':
         return (
           <MentorAchievements 
-            user={user}
+            user={userRecord} // Use userRecord instead of user
             selectedMentor={selectedMentorId ? mentorsData.find(m => m.id === selectedMentorId) : undefined}
           />
         );
