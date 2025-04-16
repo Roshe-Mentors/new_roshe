@@ -10,7 +10,7 @@ interface MentorBookingsProps {
   mentors: Mentor[];
   selectedMentorId: string | null;
   setSelectedMentorId: React.Dispatch<React.SetStateAction<string | null>>;
-  user: any; // Using any for now, should be properly typed
+  user: Record<string, unknown>; // Replacing 'any' with a more specific type
 }
 
 const MentorBookings: React.FC<MentorBookingsProps> = ({ 

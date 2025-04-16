@@ -5,7 +5,7 @@ import { FiArrowRight, FiCalendar, FiUsers, FiMessageCircle } from 'react-icons/
 import { Mentor } from '../common/types';
 
 interface MentorHomeProps {
-  user: any; // Using any for now
+  user: Record<string, unknown>; // Replacing 'any' with a more specific type
   mentors: Mentor[];
   onNavigate: (section: 'explore' | 'community' | 'calendar' | 'chat') => void;
 }

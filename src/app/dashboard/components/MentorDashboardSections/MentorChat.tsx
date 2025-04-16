@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { FiSearch, FiSend, FiPaperclip, FiSmile } from 'react-icons/fi';
-import { Chat, ChatMessage, Conversations } from '../common/types';
+import { Chat, Conversations } from '../common/types';
 
 interface MentorChatProps {
   initialChats?: Chat[];

@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     console.error('Error getting tokens:', error);
     return NextResponse.json({ 
       error: 'Failed to exchange code for tokens', 
-      details: error.message 
+      details: error instanceof Error ? error.message : String(error) 
     }, { status: 500 });
   }
 }

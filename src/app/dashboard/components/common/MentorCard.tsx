@@ -1,7 +1,7 @@
 "use client"
 import React from 'react';
 import Image from 'next/image';
-import { Mentor, MentorCardProps } from './types';
+import { MentorCardProps } from './types';
 
 export const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
   return (

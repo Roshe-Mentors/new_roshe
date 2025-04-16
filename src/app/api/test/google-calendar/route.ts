@@ -13,7 +13,7 @@ oauth2Client.setCredentials({
   refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Create Calendar API client
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });

@@ -1,11 +1,11 @@
 "use client"
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { FiAward, FiCalendar, FiUsers, FiClock, FiCheck } from 'react-icons/fi';
 import { Mentor } from '../common/types';
 
 interface MentorAchievementsProps {
-  user: any; // Using any for now
+  user: Record<string, unknown>; // Replacing 'any' with a more specific type
   selectedMentor?: Mentor;
 }
 
