@@ -5,7 +5,11 @@ import { FiAward, FiCalendar, FiUsers, FiClock, FiCheck } from 'react-icons/fi';
 import { Mentor } from '../common/types';
 
 interface MentorAchievementsProps {
-  user: Record<string, unknown>; // Replacing 'any' with a more specific type
+  user: {
+    image?: string;
+    name?: string;
+    [key: string]: unknown;
+  };
   selectedMentor?: Mentor;
 }
 

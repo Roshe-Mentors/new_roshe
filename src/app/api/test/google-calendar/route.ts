@@ -1,5 +1,5 @@
 // Test endpoint to verify Google Calendar integration
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 
@@ -52,12 +52,12 @@ export async function GET() {
         }))
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error testing Google Calendar integration:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to connect to Google Calendar API',
-      details: error.message
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
 }
