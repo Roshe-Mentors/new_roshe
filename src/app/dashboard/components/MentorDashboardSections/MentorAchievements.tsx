@@ -176,25 +176,25 @@ const MentorAchievements: React.FC<MentorAchievementsProps> = ({
           <div className="border border-gray-200 p-4 rounded-lg">
             <h4 className="font-medium text-gray-800 mb-2">Complete your profile</h4>
             <p className="text-sm text-gray-600 mb-3">Add your skills, experience, and portfolio to attract more mentees</p>
-            <button className="text-sm text-blue-600 hover:underline">Update profile</button>
+            <button className="text-sm text-blue-600 hover:underline" aria-label="Update profile" title="Update profile">Update profile</button>
           </div>
           
           <div className="border border-gray-200 p-4 rounded-lg">
             <h4 className="font-medium text-gray-800 mb-2">Schedule weekly availability</h4>
             <p className="text-sm text-gray-600 mb-3">Set consistent hours to improve your mentor rating</p>
-            <button className="text-sm text-blue-600 hover:underline">Set schedule</button>
+            <button className="text-sm text-blue-600 hover:underline" aria-label="Set schedule" title="Set schedule">Set schedule</button>
           </div>
           
           <div className="border border-gray-200 p-4 rounded-lg">
             <h4 className="font-medium text-gray-800 mb-2">Join the mentor community</h4>
             <p className="text-sm text-gray-600 mb-3">Answer questions and engage with others in your field</p>
-            <button className="text-sm text-blue-600 hover:underline">Explore community</button>
+            <button className="text-sm text-blue-600 hover:underline" aria-label="Explore community" title="Explore community">Explore community</button>
           </div>
           
           <div className="border border-gray-200 p-4 rounded-lg">
             <h4 className="font-medium text-gray-800 mb-2">Create a learning path</h4>
             <p className="text-sm text-gray-600 mb-3">Develop a structured series of sessions for mentees</p>
-            <button className="text-sm text-blue-600 hover:underline">Create path</button>
+            <button className="text-sm text-blue-600 hover:underline" aria-label="Create path" title="Create path">Create path</button>
           </div>
         </div>
       </div>

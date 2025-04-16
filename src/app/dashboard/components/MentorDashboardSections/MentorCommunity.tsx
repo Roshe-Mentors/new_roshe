@@ -26,22 +26,22 @@ const MentorCommunity: React.FC = () => {
         {/* Category Filters */}
         <div className="mb-6">
           <div className="flex flex-wrap gap-3">
-            <button className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium">
+            <button className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium" aria-label="Filter by Career" title="Filter by Career">
               Career
             </button>
-            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" aria-label="Filter by Mental Health" title="Filter by Mental Health">
               Mental Health
             </button>
-            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" aria-label="Filter by Leadership" title="Filter by Leadership">
               Leadership
             </button>
-            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" aria-label="Filter by Animation" title="Filter by Animation">
               Animation
             </button>
-            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" aria-label="Filter by 3D Design" title="Filter by 3D Design">
               3D Design
             </button>
-            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">
+            <button className="px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" aria-label="Filter by Industry Insights" title="Filter by Industry Insights">
               Industry Insights
             </button>
           </div>
@@ -91,18 +91,18 @@ const MentorCommunity: React.FC = () => {
               </p>
               <div className="flex justify-between items-center">
                 <div className="flex space-x-4">
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Like post" title="Like post">
                     <FiHeart className="mr-1" size={18} />
                     <span className="text-xs">24</span>
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="View comments" title="View comments">
                     <FiMessageCircle className="mr-1" size={18} />
                     <span className="text-xs">8</span>
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Share post" title="Share post">
                     <FiShare2 className="mr-1" size={18} />
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Bookmark post" title="Bookmark post">
                     <FiBookmark className="mr-1" size={18} />
                   </button>
                 </div>
@@ -144,18 +144,18 @@ const MentorCommunity: React.FC = () => {
               </p>
               <div className="flex justify-between items-center">
                 <div className="flex space-x-4">
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Like post" title="Like post">
                     <FiHeart className="mr-1" size={18} />
                     <span className="text-xs">42</span>
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="View comments" title="View comments">
                     <FiMessageCircle className="mr-1" size={18} />
                     <span className="text-xs">15</span>
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Share post" title="Share post">
                     <FiShare2 className="mr-1" size={18} />
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Bookmark post" title="Bookmark post">
                     <FiBookmark className="mr-1" size={18} />
                   </button>
                 </div>
@@ -194,18 +194,18 @@ const MentorCommunity: React.FC = () => {
               </p>
               <div className="flex justify-between items-center">
                 <div className="flex space-x-4">
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Like post" title="Like post">
                     <FiHeart className="mr-1" size={18} />
                     <span className="text-xs">31</span>
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="View comments" title="View comments">
                     <FiMessageCircle className="mr-1" size={18} />
                     <span className="text-xs">12</span>
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Share post" title="Share post">
                     <FiShare2 className="mr-1" size={18} />
                   </button>
-                  <button className="text-gray-500 hover:text-blue-600 flex items-center">
+                  <button className="text-gray-500 hover:text-blue-600 flex items-center" aria-label="Bookmark post" title="Bookmark post">
                     <FiBookmark className="mr-1" size={18} />
                   </button>
                 </div>
@@ -225,10 +225,18 @@ const MentorCommunity: React.FC = () => {
             <div className="border-l-2 border-blue-500 pl-3 py-1">
               <h4 className="font-medium text-gray-800 text-sm">How can I get into the animation industry?</h4>
               <div className="flex mt-2 space-x-2">
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="View thread about animation industry"
+                  title="View thread about animation industry"
+                >
                   View Thread
                 </button>
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="Comment on animation industry thread"
+                  title="Comment on animation industry thread"
+                >
                   Comment
                 </button>
               </div>
@@ -237,10 +245,18 @@ const MentorCommunity: React.FC = () => {
             <div className="border-l-2 border-blue-500 pl-3 py-1">
               <h4 className="font-medium text-gray-800 text-sm">What skills are most valuable for an aspiring 3D character artist?</h4>
               <div className="flex mt-2 space-x-2">
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="View thread about 3D character artist skills"
+                  title="View thread about 3D character artist skills"
+                >
                   View Thread
                 </button>
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="Comment on 3D character artist skills thread"
+                  title="Comment on 3D character artist skills thread"
+                >
                   Comment
                 </button>
               </div>
@@ -249,10 +265,18 @@ const MentorCommunity: React.FC = () => {
             <div className="border-l-2 border-blue-500 pl-3 py-1">
               <h4 className="font-medium text-gray-800 text-sm">How do you handle creative burnout as a professional animator?</h4>
               <div className="flex mt-2 space-x-2">
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="View thread about creative burnout"
+                  title="View thread about creative burnout"
+                >
                   View Thread
                 </button>
-                <button className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
+                <button 
+                  className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200"
+                  aria-label="Comment on creative burnout thread"
+                  title="Comment on creative burnout thread"
+                >
                   Comment
                 </button>
               </div>
