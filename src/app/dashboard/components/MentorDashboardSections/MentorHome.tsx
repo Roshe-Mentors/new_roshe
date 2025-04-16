@@ -49,14 +49,14 @@ const MentorHome: React.FC<MentorHomeProps> = ({
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
         <div className="flex items-center mb-6">
           <Image
-            src={user?.image || "/images/mentor_pic.png"}
+            src={typeof user?.image === 'string' ? user.image : "/images/mentor_pic.png"}
             alt="User"
             width={64}
             height={64}
             className="rounded-full object-cover w-16 h-16"
           />
           <div className="ml-4">
-            <h2 className="text-2xl font-semibold text-gray-800">Welcome back, {user?.name || "User"}!</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">Welcome back, {typeof user?.name === 'string' ? user.name : "User"}!</h2>
             <p className="text-gray-600">Continue where you left off</p>
           </div>
         </div>
