@@ -10,13 +10,61 @@ interface MentorExploreProps {
   onSelectMentor?: (mentorId: string) => void;
 }
 
+// Define the skill structure
+interface SkillCategory {
+  parent: string;
+  children: string[];
+}
+
+// Define all skills data
+const skillsData: SkillCategory[] = [
+  { parent: "Design", children: [
+    "Graphics Design", "Motion Design", "3D Design", "Product Design", 
+    "Multimedia Design", "Interaction Design", "Game Design", 
+    "Brand & Identity Design", "Hardware Design", "AI Design"
+  ]},
+  { parent: "3D Animation", children: [] },
+  { parent: "2D Animation", children: [] },
+  { parent: "3D Rigging", children: [] },
+  { parent: "Concept Art", children: [
+    "Visual Design", "Character Concept Art", "Envr. Concept Art", 
+    "Digital Matte Painting", "Prop Concept Art", "Background Painting", 
+    "Color Script", "Drawing", "Painting"
+  ]},
+  { parent: "Storyboard & Animatics", children: [] },
+  { parent: "Game Animation", children: [] },
+  { parent: "Texturing and Lookdev", children: [] },
+  { parent: "Modelling", children: [] },
+  { parent: "Vfx", children: [] },
+  { parent: "Cfx", children: [
+    "Cloth Simulation", "Hair Simulation", "Grooming", "Crowd Simulation"
+  ]},
+  { parent: "Modeling", children: [
+    "Character Modeling", "Environment Modelling", "Prop Modelling", "Sculpting"
+  ]},
+  { parent: "Film Making", children: [
+    "Acting", "Film Directing", "Film Distribution", "Cinematography", 
+    "Photography", "Production Design", "Hair & Makeup", "Film Editing", "Sound Design"
+  ]},
+  { parent: "Architecture", children: [] },
+];
+
 const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showOnlyAvailableASAP, setShowOnlyAvailableASAP] = useState(false);
   const [showOnlyCoaching, setShowOnlyCoaching] = useState(false);
+  const [activeParentSkill, setActiveParentSkill] = useState<string | null>(null);
+  const [activeChildSkill, setActiveChildSkill] = useState<string | null>(null);
 
-  // Filter mentors based on search term, active category, and filter toggles
+  // Get the children of the active parent skill
+  const activeChildren = activeParentSkill 
+    ? skillsData.find(skill => skill.parent === activeParentSkill)?.children || []
+    : [];
+
+  // Get the currently active skill (either parent or child)
+  const activeSkill = activeChildSkill || activeParentSkill;
+
+  // Filter mentors based on search term, active skills, and filter toggles
   const filteredMentors = mentors.filter(mentor => {
     // Filter by search term
     if (searchTerm) {
@@ -30,10 +78,10 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
       if (!matchesSearch) return false;
     }
 
-    // Filter by active category if one is selected
-    if (activeCategory) {
-      const matchesCategory = mentor.categories?.includes(activeCategory);
-      if (!matchesCategory) return false;
+    // Filter by active skill if one is selected
+    if (activeSkill) {
+      const matchesSkill = mentor.categories?.includes(activeSkill);
+      if (!matchesSkill) return false;
     }
 
     // Filter by available ASAP toggle
@@ -54,6 +102,39 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
     if (onSelectMentor) {
       onSelectMentor(mentorId);
     }
+  };
+
+  // Handle parent skill selection
+  const handleParentSkillClick = (parentSkill: string) => {
+    if (activeParentSkill === parentSkill) {
+      // If clicking the same parent skill, deselect it
+      setActiveParentSkill(null);
+      setActiveChildSkill(null);
+    } else {
+      // Select new parent skill and reset child skill
+      setActiveParentSkill(parentSkill);
+      setActiveChildSkill(null);
+    }
+  };
+
+  // Handle child skill selection
+  const handleChildSkillClick = (childSkill: string) => {
+    if (activeChildSkill === childSkill) {
+      // If clicking the same child skill, deselect it
+      setActiveChildSkill(null);
+    } else {
+      // Select new child skill
+      setActiveChildSkill(childSkill);
+    }
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setActiveParentSkill(null);
+    setActiveChildSkill(null);
+    setShowOnlyAvailableASAP(false);
+    setShowOnlyCoaching(false);
   };
 
   return (
@@ -83,22 +164,16 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
         <div className="flex flex-wrap gap-2">
           <button 
             onClick={() => setShowOnlyAvailableASAP(!showOnlyAvailableASAP)}
-            style={{ background: showOnlyAvailableASAP 
-              ? 'linear-gradient(90deg, #24242E 0%, #747494 100%)' 
-              : 'white' 
-            }}
-            className={`flex items-center ${showOnlyAvailableASAP ? 'text-white' : 'text-gray-700 border border-gray-200'} px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap`}
+            style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
+            className={`flex items-center text-white px-4 py-3 rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap`}
           >
             <BsLightning className="mr-2" size={20} />
             <span>Available ASAP</span>
           </button>
           <button 
             onClick={() => setShowOnlyCoaching(!showOnlyCoaching)}
-            style={{ background: showOnlyCoaching 
-              ? 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' 
-              : 'white' 
-            }}
-            className={`flex items-center ${showOnlyCoaching ? 'text-gray-800' : 'text-gray-700 border border-gray-200'} px-4 py-3 rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md whitespace-nowrap`}
+            style={{ background: 'linear-gradient(90deg, #F0EEB4 0%, #DBA508 100%)' }}
+            className={`flex items-center text-gray-800 px-4 py-3 rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap`}
           >
             <BsPersonFill className="mr-2" size={20} />
             <span>Coaching</span>
@@ -106,55 +181,54 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
         </div>
       </div>
 
-      {/* Category Filters */}
-      <div className="mb-6">
+      {/* Parent Skills Filters */}
+      <div className="mb-4">
+        <h3 className="text-lg font-medium text-gray-700 mb-3">Skills</h3>
         <div className="flex flex-wrap gap-3">
-          <button 
-            className={`px-4 py-2 ${activeCategory === "Career" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium`}
-            onClick={() => setActiveCategory(activeCategory === "Career" ? null : "Career")}
-          >
-            Career
-          </button>
-          <button 
-            className={`px-4 py-2 ${activeCategory === "Mental Health" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium`}
-            onClick={() => setActiveCategory(activeCategory === "Mental Health" ? null : "Mental Health")}
-          >
-            Mental Health
-          </button>
-          <button 
-            className={`px-4 py-2 ${activeCategory === "Leadership" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium`}
-            onClick={() => setActiveCategory(activeCategory === "Leadership" ? null : "Leadership")}
-          >
-            Leadership
-          </button>
-          <button 
-            className={`px-4 py-2 ${activeCategory === "Animation" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium`}
-            onClick={() => setActiveCategory(activeCategory === "Animation" ? null : "Animation")}
-          >
-            Animation
-          </button>
-          <button 
-            className={`px-4 py-2 ${activeCategory === "3D Design" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium`}
-            onClick={() => setActiveCategory(activeCategory === "3D Design" ? null : "3D Design")}
-          >
-            3D Design
-          </button>
-          <button 
-            className={`px-4 py-2 ${activeCategory === "Industry Insights" ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium`}
-            onClick={() => setActiveCategory(activeCategory === "Industry Insights" ? null : "Industry Insights")}
-          >
-            Industry Insights
-          </button>
-          {activeCategory && (
+          {skillsData.map((skill) => (
             <button 
-              className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium"
-              onClick={() => setActiveCategory(null)}
+              key={skill.parent}
+              className={`px-4 py-2 ${activeParentSkill === skill.parent ? "bg-[#9898FA4D] text-indigo-700" : "text-gray-700 hover:bg-gray-50"} rounded-lg font-medium transition-colors`}
+              onClick={() => handleParentSkillClick(skill.parent)}
+            >
+              {skill.parent}
+            </button>
+          ))}
+          {(activeParentSkill || activeChildSkill) && (
+            <button 
+              className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors"
+              onClick={() => {
+                setActiveParentSkill(null);
+                setActiveChildSkill(null);
+              }}
             >
               Clear Filter
             </button>
           )}
         </div>
       </div>
+
+      {/* Child Skills Area */}
+      {activeParentSkill && activeChildren.length > 0 && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-600 mb-3">{activeParentSkill} Skills</h4>
+          <div className="flex flex-wrap gap-2">
+            {activeChildren.map((childSkill) => (
+              <button
+                key={childSkill}
+                className={`px-3 py-1.5 text-sm border ${
+                  activeChildSkill === childSkill
+                    ? "bg-[#9898FA4D] border-indigo-200 text-indigo-700"
+                    : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                } rounded-md transition-colors`}
+                onClick={() => handleChildSkillClick(childSkill)}
+              >
+                {childSkill}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Mentor Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
@@ -249,15 +323,10 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
         ) : (
           <div className="col-span-full text-center py-10">
             <p className="text-gray-500 text-lg">No mentors found matching your search criteria.</p>
-            {(searchTerm || activeCategory || showOnlyAvailableASAP || showOnlyCoaching) && (
+            {(searchTerm || activeParentSkill || activeChildSkill || showOnlyAvailableASAP || showOnlyCoaching) && (
               <button 
                 className="mt-2 text-blue-500 hover:underline"
-                onClick={() => {
-                  setSearchTerm('');
-                  setActiveCategory(null);
-                  setShowOnlyAvailableASAP(false);
-                  setShowOnlyCoaching(false);
-                }}
+                onClick={clearAllFilters}
                 title="Clear all filters"
                 aria-label="Clear all search filters"
               >
