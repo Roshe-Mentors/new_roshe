@@ -23,7 +23,7 @@ const blogPosts = [
   {
     id: 2,
     title: "How to create stunning visual effects for your next project",
-    category: "Tutorials",
+    category: "News & Updates",
     date: "March 15, 2025",
     image: "/images/b1.jpg",
     isTopRated: true,
@@ -36,7 +36,7 @@ const blogPosts = [
   {
     id: 3,
     title: "Behind the scenes: Animation pipeline at major studios",
-    category: "Industry Insights",
+    category: "News & Updates",
     date: "March 10, 2025",
     image: "/images/b2.jpg",
     isTopRated: false,
@@ -49,7 +49,7 @@ const blogPosts = [
   {
     id: 4,
     title: "Essential skills every 3D animator needs in 2025",
-    category: "Career Advice",
+    category: "News & Updates",
     date: "March 5, 2025",
     image: "/images/b3.jpg",
     isTopRated: false,
@@ -64,7 +64,7 @@ const blogPosts = [
     id: 5,
 
     title: "Essential skills every 3D animator needs in 2025",
-    category: "Career Advice",
+    category: "News & Updates",
     date: "March 5, 2025",
     image: "/images/b4.jpg",
     isTopRated: false,
@@ -300,7 +300,7 @@ export default function BlogPage() {
                         <p className="text-xs text-gray-600">{writer.date}</p>
                       </div>
                     </div>
-                    <Link href="#" className="text-custom-purple text-xs hover:underline mt-1 md:mt-0">
+                    <Link href="#" className="text-violet-500 text-xs hover:underline mt-1 md:mt-0">
                       Read Blogs
                     </Link>
                   </div>
