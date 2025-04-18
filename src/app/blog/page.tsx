@@ -12,7 +12,7 @@ const blogPosts = [
     title: "The future of 3D Animation: Trends to watch.",
     category: "News & Updates",
     date: "March 19, 2025",
-    image: "/images/3Di.png",
+    image: "/images/3D.png",
     isTopRated: true,
     author: {
       name: "Apinke Afolabi",
@@ -29,7 +29,7 @@ const blogPosts = [
     isTopRated: true,
     author: {
       name: "Chris Lee",
-      avatar: "/images/chris_lee_mentor.png",
+      avatar: "/images/apinke.png",
       date: "March 18th, 2025"
     }
   },
@@ -54,8 +54,8 @@ const blogPosts = [
     image: "/images/b3.jpg",
     isTopRated: false,
     author: {
-      name: "Omobolaji Moses",
-      avatar: "/images/mentor_pic.png",
+      name: "Apinke Afolabi",
+      avatar: "/images/apinke.png",
       date: "March 8th, 2025"
     }
   }
@@ -71,32 +71,32 @@ const topWriters = [
   },
   {
     id: 2,
-    name: "Chris Lee",
-    avatar: "/images/chris_lee_mentor.png",
+    name: "Apinke Afolabi",
+    avatar: "/images/apinke.png",
     date: "March 18th, 2025"
   },
   {
     id: 3,
-    name: "Omobolaji Moses",
-    avatar: "/images/mentor_pic.png",
+    name: "Apinke Afolabi",
+    avatar: "/images/apinke.png",
     date: "March 15th, 2025"
   },
   {
     id: 4,
-    name: "Jane Smith",
-    avatar: "/images/woman1.jpg",
+    name: "Apinke Afolabi",
+    avatar: "/images/apinke.png",
     date: "March 10th, 2025"
   },
   {
     id: 5,
-    name: "Michael Jordan",
-    avatar: "/images/man1.jpg",
+    name: "Apinke Afolabi",
+    avatar: "/images/apinke.png",
     date: "March 5th, 2025"
   },
   {
     id: 6,
-    name: "Sarah Williams",
-    avatar: "/images/woman2.jpg",
+    name: "Apinke Afolabi",
+    avatar: "/images/apinke.png",
     date: "March 1st, 2025"
   }
 ];
