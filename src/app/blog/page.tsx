@@ -37,10 +37,10 @@ export default function BlogPage() {
         {/* Sidebar */}
         <div className="hidden md:flex flex-col w-24 border-r border-gray-200 py-8">
           <div className="flex flex-col items-center justify-center h-32 border-b border-gray-200">
-            <span className="transform -rotate-90 text-gray-500 font-medium tracking-wide">News & Update</span>
+            <span className="transform -rotate-90 text-black font-medium tracking-wide">News & Update</span>
           </div>
           <div className="flex flex-col items-center justify-center h-32">
-            <span className="transform -rotate-90 text-gray-500 font-medium tracking-wide">Videos</span>
+            <span className="transform -rotate-90 text-black font-medium tracking-wide">Videos</span>
           </div>
         </div>
 
@@ -59,7 +59,7 @@ export default function BlogPage() {
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+                  <Search className="h-5 w-5 text-black" />
                 </div>
               </div>
               <button
@@ -75,16 +75,17 @@ export default function BlogPage() {
           <div className="grid md:grid-cols-5 gap-6 mb-12">
             <div className="md:col-span-2">
               <div className="rounded-lg overflow-hidden h-full flex flex-col">
-                <div className="bg-purple-400 text-white p-6 text-center flex-1 flex items-center justify-center">
-                  <h2 className="text-2xl font-serif">The Future of 3D Animation: Trends to Watch.</h2>
+                <div className="bg-violet-400 text-white p-6 text-center w-full">
+                  <h2 className="text-2xl font-serif">The Future of 3D Animation: <br /> Trends to Watch.</h2>
                 </div>
-                <div className="flex-1">
+                <div className="w-full">
                   <Image
                     src="/images/3Di.png"
                     alt="3D Animation"
-                    width={500}
-                    height={300}
-                    className="w-full h-full object-cover"
+                    width={400}
+                    height={200}
+                    className="w-full object-cover"
+                    style={{ aspectRatio: '500/300', objectFit: 'cover' }}
                   />
                 </div>
               </div>
@@ -94,11 +95,11 @@ export default function BlogPage() {
                 <span className="text-purple-400">News & Updates</span>
                 <span className="text-gray-700"> — March 19, 2025</span>
               </div>
-              <h2 className="text-3xl font-bold mb-4">The future of 3D Animation: Trends to watch</h2>
+              <h2 className="text-3xl text-black font-bold mb-4">The future of 3D Animation: <br /> Trends to watch</h2>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
                   <Image
-                    src="/placeholder.svg?height=40&width=40"
+                    src="/images/apinke.png"
                     alt="Author"
                     width={40}
                     height={40}
@@ -106,95 +107,98 @@ export default function BlogPage() {
                   />
                 </div>
                 <div>
-                  <p className="font-medium">Apinke Afolabi</p>
+                  <p className="font-medium text-black ">Apinke Afolabi</p>
                   <p className="text-sm text-gray-600">April 4th, 2025</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Latest Blog Posts */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">Latest blog posts</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="relative">
-                    <Image
-                      src={`/placeholder.svg?height=200&width=400&text=Blog${item}`}
-                      alt={`Blog post ${item}`}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute top-2 left-2 bg-white text-xs font-medium px-2 py-1 rounded">
-                      Top rated
+          {/* Latest Blog Posts and Top Writers in a grid layout */}
+          <div className="grid md:grid-cols-4 gap-6 mb-12">
+            {/* Latest Blog Posts - reduced size to 3 columns */}
+            <div className="md:col-span-3">
+              <h2 className="text-2xl font-bold text-black mb-6">Latest blog posts</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map((item) => (
+                  <div key={item} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="relative">
+                      <Image
+                        src={"/images/3Di.png"}
+                        alt={`Blog post ${item}`}
+                        width={200}
+                        height={100}
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="absolute top-2 left-2 text-black bg-white text-xs font-medium px-2 py-1 rounded">
+                        Top rated
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="mb-2">
+                        <span className="text-custom-purple text-sm">News & Updates</span>
+                        <span className="text-gray-500 text-sm"> — March 19, 2025</span>
+                      </div>
+                      <h3 className="font-bold text-black mb-3">The future of 3D Animation: Trends to watch.</h3>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full overflow-hidden">
+                          <Image
+                            src="/images/apinke.png"
+                            alt="Author"
+                            width={32}
+                            height={32}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm text-black font-medium">Apinke Afolabi</p>
+                          <p className="text-xs text-gray-600">April 4th, 2025</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <div className="mb-2">
-                      <span className="text-purple-400 text-sm">News & Updates</span>
-                      <span className="text-gray-500 text-sm"> — March 19, 2025</span>
-                    </div>
-                    <h3 className="font-bold mb-3">The future of 3D Animation: Trends to watch.</h3>
-                    <div className="flex items-center gap-3">
+                ))}
+              </div>
+              <div className="flex justify-center mt-8">
+                <button className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                  Load more posts
+                </button>
+              </div>
+            </div>
+            
+            {/* Top Writers - moved to right column */}
+            <div className="md:col-span-1 border-l border-gray-200 pl-4">
+              <h2 className="text-2xl font-bold text-black mb-6">Top writers</h2>
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div key={item} className="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full overflow-hidden">
                         <Image
-                          src="/placeholder.svg?height=32&width=32"
-                          alt="Author"
+                          src="/images/apinke.png"
+                          alt="Writer"
                           width={32}
                           height={32}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">Apinke Afolabi</p>
+                        <p className="font-medium text-black text-sm">Apinke Afolabi</p>
                         <p className="text-xs text-gray-600">April 4th, 2025</p>
                       </div>
                     </div>
+                    <Link href="#" className="text-custom-purple text-xs hover:underline mt-1 md:mt-0">
+                      Read Blogs
+                    </Link>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-center mt-8">
-              <button className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
-                Load more posts
-              </button>
-            </div>
-          </div>
-
-          {/* Top Writers */}
-          <div className="border-l border-gray-200 pl-6 mb-12">
-            <h2 className="text-2xl font-bold mb-6">Top writers</h2>
-            <div className="space-y-6">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div key={item} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden">
-                      <Image
-                        src="/placeholder.svg?height=40&width=40"
-                        alt="Writer"
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <p className="font-medium">Apinke Afolabi</p>
-                      <p className="text-sm text-gray-600">April 4th, 2025</p>
-                    </div>
-                  </div>
-                  <Link href="#" className="text-purple-400 text-sm hover:underline">
-                    Read Blogs
-                  </Link>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Newsletter Section */}
+      {/* Newsletter Section - moved outside of main content div */}
       <div className="bg-gray-900 text-white py-12 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-4">
@@ -240,7 +244,7 @@ export default function BlogPage() {
             </div>
             <button
               type="submit"
-              className="px-6 py-2 bg-purple-400 text-white font-medium rounded-md hover:bg-purple-500 transition-colors"
+              className="px-6 py-2 bg-custom-purple text-white font-medium rounded-md hover:bg-custom-purple/90 transition-colors"
             >
               Subscribe
             </button>
