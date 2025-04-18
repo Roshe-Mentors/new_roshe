@@ -249,8 +249,8 @@ export default function BlogPage() {
                     </div>
                     <div className="p-4">
                       <div className="mb-2">
-                        <span className="text-custom-purple text-sm">{post.category}</span>
-                        <span className="text-gray-500 text-sm"> — {post.date}</span>
+                        <span className="text-violet-500 text-sm">{post.category}</span>
+                        <span className="text-gray-900 text-sm"> — {post.date}</span>
                       </div>
                       <h3 className="font-bold text-black mb-3">{post.title}</h3>
                       <div className="flex items-center gap-3">
