@@ -51,7 +51,22 @@ const blogPosts = [
     title: "Essential skills every 3D animator needs in 2025",
     category: "Career Advice",
     date: "March 5, 2025",
-    image: "/images/b2.jpg",
+    image: "/images/b3.jpg",
+    isTopRated: false,
+    author: {
+      name: "Apinke Afolabi",
+      avatar: "/images/apinke.png",
+      date: "March 8th, 2025"
+    }
+  },
+
+  {
+    id: 5,
+
+    title: "Essential skills every 3D animator needs in 2025",
+    category: "Career Advice",
+    date: "March 5, 2025",
+    image: "/images/b4.jpg",
     isTopRated: false,
     author: {
       name: "Apinke Afolabi",
