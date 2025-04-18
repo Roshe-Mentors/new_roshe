@@ -231,7 +231,7 @@ export default function BlogPage() {
             <div className="md:col-span-3">
               <h2 className="text-2xl font-bold text-black mb-6">Latest blog posts</h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {blogPosts.map((post) => (
+                {blogPosts.filter(post => post.id !== 1).map((post) => (
                   <div key={post.id} className="border border-gray-200 rounded-lg overflow-hidden">
                     <div className="relative">
                       <Image
