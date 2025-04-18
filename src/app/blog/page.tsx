@@ -5,6 +5,102 @@ import Image from "next/image"
 import { Search } from "lucide-react"
 import Link from "next/link"
 
+// Blog posts data
+const blogPosts = [
+  {
+    id: 1,
+    title: "The future of 3D Animation: Trends to watch.",
+    category: "News & Updates",
+    date: "March 19, 2025",
+    image: "/images/3Di.png",
+    isTopRated: true,
+    author: {
+      name: "Apinke Afolabi",
+      avatar: "/images/apinke.png",
+      date: "April 4th, 2025"
+    }
+  },
+  {
+    id: 2,
+    title: "How to create stunning visual effects for your next project",
+    category: "Tutorials",
+    date: "March 15, 2025",
+    image: "/images/b1.jpg",
+    isTopRated: true,
+    author: {
+      name: "Chris Lee",
+      avatar: "/images/chris_lee_mentor.png",
+      date: "March 18th, 2025"
+    }
+  },
+  {
+    id: 3,
+    title: "Behind the scenes: Animation pipeline at major studios",
+    category: "Industry Insights",
+    date: "March 10, 2025",
+    image: "/images/b2.jpg",
+    isTopRated: false,
+    author: {
+      name: "Apinke Afolabi",
+      avatar: "/images/apinke.png",
+      date: "March 12th, 2025"
+    }
+  },
+  {
+    id: 4,
+    title: "Essential skills every 3D animator needs in 2025",
+    category: "Career Advice",
+    date: "March 5, 2025",
+    image: "/images/b3.jpg",
+    isTopRated: false,
+    author: {
+      name: "Omobolaji Moses",
+      avatar: "/images/mentor_pic.png",
+      date: "March 8th, 2025"
+    }
+  }
+];
+
+// Top writers data
+const topWriters = [
+  {
+    id: 1,
+    name: "Apinke Afolabi",
+    avatar: "/images/apinke.png",
+    date: "April 4th, 2025"
+  },
+  {
+    id: 2,
+    name: "Chris Lee",
+    avatar: "/images/chris_lee_mentor.png",
+    date: "March 18th, 2025"
+  },
+  {
+    id: 3,
+    name: "Omobolaji Moses",
+    avatar: "/images/mentor_pic.png",
+    date: "March 15th, 2025"
+  },
+  {
+    id: 4,
+    name: "Jane Smith",
+    avatar: "/images/woman1.jpg",
+    date: "March 10th, 2025"
+  },
+  {
+    id: 5,
+    name: "Michael Jordan",
+    avatar: "/images/man1.jpg",
+    date: "March 5th, 2025"
+  },
+  {
+    id: 6,
+    name: "Sarah Williams",
+    avatar: "/images/woman2.jpg",
+    date: "March 1st, 2025"
+  }
+];
+
 export default function BlogPage() {
   const [email, setEmail] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
@@ -75,13 +171,13 @@ export default function BlogPage() {
           <div className="grid md:grid-cols-5 gap-6 mb-12">
             <div className="md:col-span-2">
               <div className="rounded-lg overflow-hidden h-full flex flex-col">
-                <div className="bg-violet-400 text-white p-6 text-center w-full">
-                  <h2 className="text-2xl font-serif">The Future of 3D Animation: <br /> Trends to Watch.</h2>
+                <div className="bg-custom-purple text-white p-6 text-center w-full">
+                  <h2 className="text-2xl font-serif">{blogPosts[0].title}</h2>
                 </div>
                 <div className="w-full">
                   <Image
-                    src="/images/3Di.png"
-                    alt="3D Animation"
+                    src={blogPosts[0].image}
+                    alt={blogPosts[0].title}
                     width={400}
                     height={200}
                     className="w-full object-cover"
@@ -92,23 +188,23 @@ export default function BlogPage() {
             </div>
             <div className="md:col-span-3 flex flex-col justify-center">
               <div className="mb-2">
-                <span className="text-purple-400">News & Updates</span>
-                <span className="text-gray-700"> — March 19, 2025</span>
+                <span className="text-custom-purple">{blogPosts[0].category}</span>
+                <span className="text-gray-700"> — {blogPosts[0].date}</span>
               </div>
-              <h2 className="text-3xl text-black font-bold mb-4">The future of 3D Animation: <br /> Trends to watch</h2>
+              <h2 className="text-3xl text-black font-bold mb-4">{blogPosts[0].title}</h2>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
                   <Image
-                    src="/images/apinke.png"
-                    alt="Author"
+                    src={blogPosts[0].author.avatar}
+                    alt={blogPosts[0].author.name}
                     width={40}
                     height={40}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
-                  <p className="font-medium text-black ">Apinke Afolabi</p>
-                  <p className="text-sm text-gray-600">April 4th, 2025</p>
+                  <p className="font-medium text-black">{blogPosts[0].author.name}</p>
+                  <p className="text-sm text-gray-600">{blogPosts[0].author.date}</p>
                 </div>
               </div>
             </div>
@@ -120,30 +216,32 @@ export default function BlogPage() {
             <div className="md:col-span-3">
               <h2 className="text-2xl font-bold text-black mb-6">Latest blog posts</h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className="border border-gray-200 rounded-lg overflow-hidden">
+                {blogPosts.map((post) => (
+                  <div key={post.id} className="border border-gray-200 rounded-lg overflow-hidden">
                     <div className="relative">
                       <Image
-                        src={"/images/3Di.png"}
-                        alt={`Blog post ${item}`}
+                        src={post.image}
+                        alt={`Blog post ${post.id}`}
                         width={200}
                         height={100}
                         className="w-full h-40 object-cover"
                       />
-                      <div className="absolute top-2 left-2 text-black bg-white text-xs font-medium px-2 py-1 rounded">
-                        Top rated
-                      </div>
+                      {post.isTopRated && (
+                        <div className="absolute top-2 left-2 text-black bg-white text-xs font-medium px-2 py-1 rounded">
+                          Top rated
+                        </div>
+                      )}
                     </div>
                     <div className="p-4">
                       <div className="mb-2">
-                        <span className="text-custom-purple text-sm">News & Updates</span>
-                        <span className="text-gray-500 text-sm"> — March 19, 2025</span>
+                        <span className="text-custom-purple text-sm">{post.category}</span>
+                        <span className="text-gray-500 text-sm"> — {post.date}</span>
                       </div>
-                      <h3 className="font-bold text-black mb-3">The future of 3D Animation: Trends to watch.</h3>
+                      <h3 className="font-bold text-black mb-3">{post.title}</h3>
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full overflow-hidden">
                           <Image
-                            src="/images/apinke.png"
+                            src={post.author.avatar}
                             alt="Author"
                             width={32}
                             height={32}
@@ -151,8 +249,8 @@ export default function BlogPage() {
                           />
                         </div>
                         <div>
-                          <p className="text-sm text-black font-medium">Apinke Afolabi</p>
-                          <p className="text-xs text-gray-600">April 4th, 2025</p>
+                          <p className="text-sm text-black font-medium">{post.author.name}</p>
+                          <p className="text-xs text-gray-600">{post.author.date}</p>
                         </div>
                       </div>
                     </div>
@@ -170,12 +268,12 @@ export default function BlogPage() {
             <div className="md:col-span-1 border-l border-gray-200 pl-4">
               <h2 className="text-2xl font-bold text-black mb-6">Top writers</h2>
               <div className="space-y-4">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <div key={item} className="flex flex-col md:flex-row md:items-center md:justify-between">
+                {topWriters.map((writer) => (
+                  <div key={writer.id} className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full overflow-hidden">
                         <Image
-                          src="/images/apinke.png"
+                          src={writer.avatar}
                           alt="Writer"
                           width={32}
                           height={32}
@@ -183,8 +281,8 @@ export default function BlogPage() {
                         />
                       </div>
                       <div>
-                        <p className="font-medium text-black text-sm">Apinke Afolabi</p>
-                        <p className="text-xs text-gray-600">April 4th, 2025</p>
+                        <p className="font-medium text-black text-sm">{writer.name}</p>
+                        <p className="text-xs text-gray-600">{writer.date}</p>
                       </div>
                     </div>
                     <Link href="#" className="text-custom-purple text-xs hover:underline mt-1 md:mt-0">
