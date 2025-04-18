@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="flex flex-col min-h-screen bg-white animate-pulse">
+    <div className="flex flex-col min-h-screen bg-white animate-pulse pt-16">
       {/* Sidebar and Main Content Container */}
       <div className="flex flex-grow">
         {/* Sidebar */}
