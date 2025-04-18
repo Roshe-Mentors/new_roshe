@@ -99,7 +99,9 @@ export default function Loading() {
       <div className="bg-gray-900 py-12 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-4 flex justify-center">
-            <div className="w-16 h-16 bg-gray-700 rounded-full"></div>
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gray-700 rounded-full"></div>
+            </div>
           </div>
           <div className="w-72 h-8 bg-gray-700 rounded mx-auto mb-2"></div>
           <div className="w-96 h-4 bg-gray-700 rounded mx-auto mb-2"></div>

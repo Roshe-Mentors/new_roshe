@@ -74,17 +74,19 @@ export default function BlogPage() {
           {/* Featured Article */}
           <div className="grid md:grid-cols-5 gap-6 mb-12">
             <div className="md:col-span-2">
-              <div className="rounded-lg overflow-hidden">
-                <div className="bg-purple-400 text-white p-6 text-center">
+              <div className="rounded-lg overflow-hidden h-full flex flex-col">
+                <div className="bg-purple-400 text-white p-6 text-center flex-1 flex items-center justify-center">
                   <h2 className="text-2xl font-serif">The Future of 3D Animation: Trends to Watch.</h2>
                 </div>
-                <Image
-                  src="/placeholder.svg?height=300&width=500"
-                  alt="3D Animation"
-                  width={500}
-                  height={300}
-                  className="w-full h-auto object-cover"
-                />
+                <div className="flex-1">
+                  <Image
+                    src="/images/3Di.png"
+                    alt="3D Animation"
+                    width={500}
+                    height={300}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </div>
             <div className="md:col-span-3 flex flex-col justify-center">
@@ -198,7 +200,7 @@ export default function BlogPage() {
           <div className="mb-4">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto">
               <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-                <span className="text-white text-2xl">👀</span>
+                <Image src="/images/roshementorship.png" alt="Roshe Mentorship" width={32} height={32} className="object-contain" />
               </div>
             </div>
           </div>
