@@ -173,12 +173,12 @@ export default function BlogPage() {
                   <Search className="h-5 w-5 text-black" />
                 </div>
               </div>
-              <button
-                onClick={handleSubmitArticle}
+              <Link 
+                href="/blogSubmit"
                 className="px-4 py-2 bg-gray-900 text-white font-medium rounded-md hover:bg-gray-800 transition-colors"
               >
                 Submit Article
-              </button>
+              </Link>
             </div>
           </div>
 
