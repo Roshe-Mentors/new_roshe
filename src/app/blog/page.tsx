@@ -158,7 +158,7 @@ export default function BlogPage() {
         {/* Main Content */}
         <div className="flex-grow px-4 md:px-8 py-6">
           {/* Blog Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <div className="flex flex-col md:flex-row text-black justify-between items-start md:items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4 md:mb-0">Blog</h1>
             <div className="flex w-full md:w-auto gap-4">
               <div className="relative flex-grow md:w-80">
@@ -167,9 +167,9 @@ export default function BlogPage() {
                   placeholder="Search article"
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500"
+                  className="w-full pl-10 pr-4 py-2 border text-black border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500"
                 />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute text-black inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-black" />
                 </div>
               </div>
@@ -203,7 +203,7 @@ export default function BlogPage() {
             </div>
             <div className="md:col-span-3 flex flex-col justify-center">
               <div className="mb-2">
-                <span className="text-custom-purple">{blogPosts[0].category}</span>
+                <span className="text-violet-500">{blogPosts[0].category}</span>
                 <span className="text-gray-700"> — {blogPosts[0].date}</span>
               </div>
               <h2 className="text-3xl text-black font-bold mb-4">{blogPosts[0].title}</h2>
@@ -230,16 +230,16 @@ export default function BlogPage() {
             {/* Latest Blog Posts - reduced size to 3 columns */}
             <div className="md:col-span-3">
               <h2 className="text-2xl font-bold text-black mb-6">Latest blog posts</h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-4">
                 {blogPosts.filter(post => post.id !== 1).map((post) => (
-                  <div key={post.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div key={post.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1">
                     <div className="relative">
                       <Image
                         src={post.image}
                         alt={`Blog post ${post.id}`}
-                        width={200}
-                        height={100}
-                        className="w-full h-40 object-cover"
+                        width={180}
+                        height={90}
+                        className="w-full h-36 object-cover"
                       />
                       {post.isTopRated && (
                         <div className="absolute top-2 left-2 text-black bg-white text-xs font-medium px-2 py-1 rounded">
@@ -247,24 +247,24 @@ export default function BlogPage() {
                         </div>
                       )}
                     </div>
-                    <div className="p-4">
+                    <div className="p-3">
                       <div className="mb-2">
                         <span className="text-violet-500 text-sm">{post.category}</span>
                         <span className="text-gray-900 text-sm"> — {post.date}</span>
                       </div>
-                      <h3 className="font-bold text-black mb-3">{post.title}</h3>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full overflow-hidden">
+                      <h3 className="font-bold text-black mb-2 text-sm">{post.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full overflow-hidden">
                           <Image
                             src={post.author.avatar}
                             alt="Author"
-                            width={32}
-                            height={32}
+                            width={28}
+                            height={28}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div>
-                          <p className="text-sm text-black font-medium">{post.author.name}</p>
+                          <p className="text-xs text-black font-medium">{post.author.name}</p>
                           <p className="text-xs text-gray-600">{post.author.date}</p>
                         </div>
                       </div>
