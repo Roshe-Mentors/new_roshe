@@ -53,29 +53,29 @@ export default function FAQPage() {
   ]
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 bg-white text-black">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">FAQs</h1>
-      <p className="text-gray-600 mb-8">Frequently asked questions by our community</p>
+    <div className="max-w-4xl mx-auto px-8 py-20 bg-white text-black min-h-screen">
+      <h1 className="text-5xl font-bold text-gray-900 mb-4">FAQs</h1>
+      <p className="text-lg text-gray-600 mb-12">Frequently asked questions by our community</p>
 
-      <div className="space-y-0">
+      <div className="space-y-4">
         {faqs.map((faq, index) => (
-          <div key={index} className="bg-white">
+          <div key={index} className="bg-white rounded-lg shadow-md border border-gray-100">
             <button
               onClick={() => toggleFAQ(index)}
-              className="flex items-center justify-between w-full py-5 text-left focus:outline-none bg-white"
+              className="flex items-center justify-between w-full py-6 px-6 text-left focus:outline-none bg-white rounded-lg"
             >
               <div className="flex items-center">
                 <ChevronRight
-                  className={`mr-2 h-5 w-5 text-gray-700 transition-transform ${
+                  className={`mr-4 h-5 w-5 text-gray-700 transition-transform ${
                     openIndex === index ? "transform rotate-90" : ""
                   }`}
                 />
-                <span className="text-gray-900 font-medium">{faq.question}</span>
+                <span className="text-gray-900 font-medium text-lg">{faq.question}</span>
               </div>
             </button>
             {openIndex === index && (
-              <div className="pl-7 pr-3 pb-5 bg-white">
-                <p className="text-gray-600">{faq.answer}</p>
+              <div className="pl-14 pr-6 pb-8 pt-2 bg-white">
+                <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
               </div>
             )}
             <div className="border-b border-gray-200"></div>
