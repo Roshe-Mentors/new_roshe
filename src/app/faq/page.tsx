@@ -53,29 +53,29 @@ export default function FAQPage() {
   ]
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 bg-white">
-      <h1 className="text-3xl font-bold text-black mb-2">FAQs</h1>
-      <p className="text-black mb-8">Frequently asked questions by our community</p>
+    <div className="max-w-3xl mx-auto px-4 py-12 bg-white text-black">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">FAQs</h1>
+      <p className="text-gray-600 mb-8">Frequently asked questions by our community</p>
 
       <div className="space-y-0">
         {faqs.map((faq, index) => (
-          <div key={index}>
+          <div key={index} className="bg-white">
             <button
               onClick={() => toggleFAQ(index)}
-              className="flex items-center justify-between w-full py-5 text-left focus:outline-none"
+              className="flex items-center justify-between w-full py-5 text-left focus:outline-none bg-white"
             >
               <div className="flex items-center">
                 <ChevronRight
-                  className={`mr-2 h-5 w-5 text-black transition-transform ${
+                  className={`mr-2 h-5 w-5 text-gray-700 transition-transform ${
                     openIndex === index ? "transform rotate-90" : ""
                   }`}
                 />
-                <span className="text-black font-medium">{faq.question}</span>
+                <span className="text-gray-900 font-medium">{faq.question}</span>
               </div>
             </button>
             {openIndex === index && (
-              <div className="pl-7 pr-3 pb-5">
-                <p className="text-black">{faq.answer}</p>
+              <div className="pl-7 pr-3 pb-5 bg-white">
+                <p className="text-gray-600">{faq.answer}</p>
               </div>
             )}
             <div className="border-b border-gray-200"></div>
