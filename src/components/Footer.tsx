@@ -103,17 +103,17 @@ const Footer: React.FC = () => {
           <div className="text-center md:text-left mb-4 md:mb-0">
             <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-black text-sm">
               <li>
-                <Link href="/mentors" className="hover:text-black transition font-bold">
+                <Link href="/signIn" className="hover:text-black transition font-bold">
                   find mentors
                 </Link>
               </li>
               <li>
-                <Link href="/become-a-mentor" className="hover:text-black transition font-bold">
+                <Link href="/signup/mentor" className="hover:text-black transition font-bold">
                   become a mentor
                 </Link>
               </li>
               <li>
-                <Link href="/community" className="hover:text-black transition font-bold">
+                <Link href="/" className="hover:text-black transition font-bold">
                   community
                 </Link>
               </li>
@@ -129,7 +129,7 @@ const Footer: React.FC = () => {
           <div className="text-center md:text-right">
             <ul className="flex flex-wrap justify-center md:justify-end space-x-6 text-black text-sm">
               <li>
-                <Link href="/join" className="hover:text-black transition font-bold">
+                <Link href="/signIn" className="hover:text-black transition font-bold">
                   join roshe mentorship
                 </Link>
               </li>
@@ -139,7 +139,7 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/partnerships" className="hover:text-black transition font-bold">
+                <Link href="/" className="hover:text-black transition font-bold">
                   partnerships
                 </Link>
               </li>
