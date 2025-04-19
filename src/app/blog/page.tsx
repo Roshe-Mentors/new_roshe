@@ -316,8 +316,8 @@ export default function BlogPage() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-4">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto">
-              <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
-                <Image src="/images/roshementorship.png" alt="Roshe Mentorship" width={32} height={32} className="object-contain" />
+              <div className="w-12 h-12  rounded-full flex items-center justify-center">
+                <Image src="/images/roshementorship.png" alt="Roshe Mentorship" width={40} height={40} className="object-contain" />
               </div>
             </div>
           </div>
