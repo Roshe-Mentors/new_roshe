@@ -136,10 +136,8 @@ export default function BlogPage() {
     // You could add success message or API call here
   }
 
-  const handleSubmitArticle = () => {
-    // Handle article submission logic
-    console.log("Submit article clicked")
-  }
+// This function is not needed since navigation is handled by the Link component
+// The handleSubmitArticle function was previously here but has been removed
 
   return (
     <div className="flex flex-col min-h-screen bg-white pt-16">
