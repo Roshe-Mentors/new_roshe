@@ -31,7 +31,7 @@ export default function BlogSubmitPage() {
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       {/* Left Section - Purple Background */}
-      <div className="w-full md:w-1/2 bg-gradient-to-br from-purple-500 to-indigo-600 p-8 md:p-12 text-white">
+      <div className="w-full md:w-1/2 bg-gradient-to-br from-purple-500 to-indigo-600 p-12 md:p-20 text-white">
         {/* Home Button */}
         <div className="mb-16">
           <Link
@@ -130,7 +130,7 @@ export default function BlogSubmitPage() {
       </div>
 
       {/* Right Section - Form */}
-      <div className="w-full md:w-1/2 bg-white p-8 md:p-12 flex items-center justify-center">
+      <div className="w-full md:w-1/2 bg-white p-12 md:p-20 flex items-center justify-center">
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Submit your article</h2>
 
