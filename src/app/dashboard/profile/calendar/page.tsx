@@ -43,7 +43,7 @@ export default function CalendarPage() {
 
   return (
     <div className="mt-4">
-      <div className="bg-white p-6 rounded-lg shadow max-w-md mx-auto space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow w-full max-w-3xl mx-auto space-y-6">
         <h2 className="text-xl font-semibold text-gray-800">Calendar Integration</h2>
         {record ? (
           <div className="flex items-center justify-between">

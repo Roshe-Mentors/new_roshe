@@ -36,17 +36,19 @@ export default function ExpertisePage() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {tags.map((tag) => (
-        <CategoryButton
-          key={tag.id}
-          label={tag.name}
-          active={selected.has(tag.id)}
-          onClick={() => toggleTag(tag.id)}
-          padding="px-3 py-2"
-          textSize="text-sm"
-        />
-      ))}
+    <div className="bg-white p-6 rounded-lg shadow w-11/12 md:w-4/5 lg:w-3/4 mx-auto">
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <CategoryButton
+            key={tag.id}
+            label={tag.name}
+            active={selected.has(tag.id)}
+            onClick={() => toggleTag(tag.id)}
+            padding="px-3 py-2"
+            textSize="text-sm"
+          />
+        ))}
+      </div>
     </div>
   );
 }

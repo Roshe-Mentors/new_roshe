@@ -70,7 +70,7 @@ export default function AvailabilityPage() {
 
   return (
     <div className="mt-4">
-      <div className="bg-white p-6 rounded-lg shadow max-w-lg mx-auto space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow w-11/12 md:w-4/5 lg:w-3/4 mx-auto space-y-6">
         <h2 className="text-xl font-semibold text-gray-800">Availability Slots</h2>
         {formError && <p className="text-red-500 text-sm">{formError}</p>}
         <ul className="space-y-3">

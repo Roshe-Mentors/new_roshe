@@ -80,7 +80,7 @@ export default function SocialLinksPage() {
 
   return (
     <div className="mt-4">
-      <div className="bg-white p-6 rounded-lg shadow max-w-lg mx-auto space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow w-11/12 md:w-4/5 lg:w-3/4 mx-auto space-y-6">
         <h2 className="text-xl font-semibold text-gray-800">Social Links</h2>
         <ul className="space-y-3">
           {links.map(link => (
