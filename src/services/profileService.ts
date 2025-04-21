@@ -1,17 +1,50 @@
 import { supabase } from '../lib/supabaseClient';
-import { Database } from '../utils/api'; // assuming Database type
 
-type MentorRecord = Database['public']['Tables']['mentors']['Row'];
-type TagRecord = Database['public']['Tables']['expertise_tags']['Row'];
-type ExpertiseRecord = Database['public']['Tables']['mentor_expertise']['Row'];
-type AvailabilityRecord = Database['public']['Tables']['mentor_availability']['Row'];
-type SocialLinkRecord = Database['public']['Tables']['mentor_social_links']['Row'];
-export type CalendarOAuthRecord = Database['public']['Tables']['mentor_calendar_oauth']['Row'];
+// Mentor table row
+interface MentorRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  email?: string;
+  bio?: string;
+  profile_image_url?: string;
+  created_at?: string;
+}
+
+// Availability slot row
+interface AvailabilityRecord {
+  id: string;
+  mentor_id: string;
+  start_time: string;
+  end_time: string;
+  recurrence: unknown;
+  created_at: string;
+}
+
+// Social link row
+interface SocialLinkRecord {
+  id: string;
+  mentor_id: string;
+  platform: string;
+  url: string;
+  created_at: string;
+}
+
+// Calendar OAuth row
+export interface CalendarOAuthRecord {
+  id: string;
+  mentor_id: string;
+  provider: string;
+  access_token: string;
+  refresh_token: string;
+  expires_at: string;
+  created_at: string;
+}
 
 // Expertise Tags
 export async function getExpertiseTags() {
   const { data, error } = await supabase
-    .from<TagRecord>('expertise_tags')
+    .from('expertise_tags')
     .select('*');
   if (error) throw error;
   return data;
@@ -20,7 +53,7 @@ export async function getExpertiseTags() {
 // Mentor Expertise
 export async function getMentorExpertise(mentorId: string) {
   const { data, error } = await supabase
-    .from<ExpertiseRecord>('mentor_expertise')
+    .from('mentor_expertise')
     .select('tag_id')
     .eq('mentor_id', mentorId);
   if (error) throw error;
@@ -45,7 +78,7 @@ export async function removeMentorExpertise(mentorId: string, tagId: string) {
 // Availability
 export async function getAvailability(mentorId: string) {
   const { data, error } = await supabase
-    .from<AvailabilityRecord>('mentor_availability')
+    .from('mentor_availability')
     .select('*')
     .eq('mentor_id', mentorId);
   if (error) throw error;
@@ -82,7 +115,7 @@ export async function deleteAvailability(id: string) {
 // Social Links
 export async function getSocialLinks(mentorId: string) {
   const { data, error } = await supabase
-    .from<SocialLinkRecord>('mentor_social_links')
+    .from('mentor_social_links')
     .select('*')
     .eq('mentor_id', mentorId);
   if (error) throw error;
@@ -119,7 +152,7 @@ export async function deleteSocialLink(id: string) {
 // Calendar OAuth
 export async function getCalendarOAuth(mentorId: string) {
   const { data, error } = await supabase
-    .from<CalendarOAuthRecord>('mentor_calendar_oauth')
+    .from('mentor_calendar_oauth')
     .select('*')
     .eq('mentor_id', mentorId);
   if (error) throw error;
@@ -145,9 +178,8 @@ export async function deleteCalendarOAuth(id: string) {
 
 // Core Mentor Profile
 export async function getMentorProfileByUser(userId: string) {
-  // Try to fetch existing profile
-  let { data, error } = await supabase
-    .from<MentorRecord>('mentors')
+  const { data, error } = await supabase
+    .from('mentors')
     .select('*')
     .eq('user_id', userId)
     .single();
@@ -155,7 +187,7 @@ export async function getMentorProfileByUser(userId: string) {
     console.warn('No mentor profile found, creating new one for user:', userId, error);
     // Create a new mentor record with minimal fields
     const insertRes = await supabase
-      .from<MentorRecord>('mentors')
+      .from('mentors')
       .insert({ user_id: userId, name: '' })
       .single();
     if (insertRes.error) throw insertRes.error;
@@ -167,7 +199,7 @@ export async function getMentorProfileByUser(userId: string) {
 export async function updateMentorProfile(userId: string, updates: Partial<MentorRecord>) {
   // Update profile by user_id instead of direct mentor id
   const { data, error } = await supabase
-    .from<MentorRecord>('mentors')
+    .from('mentors')
     .update(updates)
     .eq('user_id', userId)
     .single();
