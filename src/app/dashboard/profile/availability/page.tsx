@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from '../../../../lib/auth';
 import {
   getAvailability,
@@ -21,16 +21,16 @@ export default function AvailabilityPage() {
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const loadSlots = async () => {
+  const loadSlots = useCallback(async () => {
     if (user) {
       const data = await getAvailability(user.id);
       setSlots(data);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!loading && user) loadSlots();
-  }, [user, loading]);
+  }, [user, loading, loadSlots]);
 
   const handleAdd = async () => {
     if (!user) return;
@@ -87,22 +87,24 @@ export default function AvailabilityPage() {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold text-gray-800">Add New Slot</h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Start Time</label>
+            <label htmlFor="start-time" className="block text-sm font-medium text-gray-700">Start Time</label>
             <input
+              id="start-time"
               type="datetime-local"
               value={start}
               onChange={e => setStart(e.target.value)}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">End Time</label>
+            <label htmlFor="end-time" className="block text-sm font-medium text-gray-700">End Time</label>
             <input
+              id="end-time"
               type="datetime-local"
               value={end}
               onChange={e => setEnd(e.target.value)}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
           </div>
           <button
             onClick={handleAdd}

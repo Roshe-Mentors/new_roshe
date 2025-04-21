@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from '../../../../lib/auth';
 import { getCalendarOAuth, deleteCalendarOAuth } from '../../../../services/profileService';
 import { supabase } from '../../../../lib/supabaseClient';
@@ -9,16 +9,16 @@ export default function CalendarPage() {
   const [record, setRecord] = useState<any>(null);
   const [busy, setBusy] = useState(false);
 
-  const loadRecord = async () => {
+  const loadRecord = useCallback(async () => {
     if (user) {
       const rec = await getCalendarOAuth(user.id);
       setRecord(rec);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!loading && user) loadRecord();
-  }, [user, loading]);
+  }, [user, loading, loadRecord]);
 
   const handleConnect = () => {
     supabase.auth.signInWithOAuth({
