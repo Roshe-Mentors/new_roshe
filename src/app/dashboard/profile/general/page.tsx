@@ -77,7 +77,8 @@ export default function GeneralPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
+            className="w-full py-2 text-white font-medium rounded transition"
+            style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
           >
             {isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
