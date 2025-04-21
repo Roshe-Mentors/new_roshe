@@ -1,83 +1,83 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { supabase } from '../../../lib/supabaseClient';
+import { useUser } from '../../lib/auth';
+
+// schema definition for login form
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  rememberMe: z.boolean().optional(),
+});
+type LoginForm = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false,
-  });
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  // redirect logged-in users away
+  const { user, loading: userLoading } = useUser();
   const router = useRouter();
+  useEffect(() => {
+    if (!userLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, userLoading, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+  if (!userLoading && user) {
+    return <div className="w-full h-screen flex items-center justify-center">Redirecting...</div>;
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const [serverError, setServerError] = useState<string>('');
 
+  // react-hook-form setup
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '', rememberMe: false }
+  });
+
+  // submit handler calls API
+  const onSubmit = async (data: LoginForm) => {
+    setServerError('');
+  
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email, password: data.password })
       });
-
-      if (error || !data.user) {
-        setError(error?.message || 'Failed to log in');
+      const result = await res.json();
+      if (!res.ok) {
+        setServerError(result.error || 'Login failed');
       } else {
-        if (formData.rememberMe) {
-          // Store the session in localStorage if rememberMe is checked
-          localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
-          console.log("User will be remembered");
-        }
-        console.log("Authentication successful, redirecting to dashboard...");
-        // Redirect to dashboard
-        router.push('/dashboard');
+        router.replace('/dashboard');
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError('An error occurred. Please try again.');
+      console.error('Login error:', err);
+      setServerError('An unexpected error occurred.');
     } finally {
-      setLoading(false);
+      // no-op, isSubmitting covers loading state
     }
   };
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    setLoading(true);
-    setError('');
-
+    setServerError('');
     try {
+      // get OAuth URL and replace current history entry
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: provider === 'google' ? {
-            access_type: 'offline',
-            prompt: 'consent',
-          } : undefined
-        }
+        options: { redirectTo: `${window.location.origin}/dashboard` }
       });
-
-      if (error || !data) {
-        setError(error?.message || 'Failed to log in with social account');
+      if (error) {
+        setServerError(error.message);
+      } else if (data?.url) {
+        window.location.replace(data.url);
       }
-      // The OAuth redirect will handle navigation to dashboard after authentication
     } catch (err) {
-      console.error("Social login error:", err);
-      setError('An error occurred with social login. Please try again.');
-    } finally {
-      setLoading(false);
+      console.error('Social login error:', err);
+      setServerError('Social login failed. Please try again.');
     }
   };
 
@@ -124,13 +124,12 @@ const LoginPage = () => {
               </label>
               <input
                 type="email"
-                name="email"
+                {...register('email')}
                 id="email"
-                value={formData.email}
-                onChange={handleChange}
                 placeholder="you@example.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400"
               />
+              {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
             </div>
             
             {/* Password Field */}
@@ -140,27 +139,26 @@ const LoginPage = () => {
               </label>
               <input
                 type="password"
-                name="password"
+                {...register('password')}
                 id="password"
-                value={formData.password}
-                onChange={handleChange}
                 placeholder="Enter your password"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400"
               />
+              {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
             </div>
             
-            {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+            {serverError && <p className="text-red-600 text-sm mb-4">{serverError}</p>}
             
             <button
-              type="submit"
-              onClick={handleSubmit}
+              type="button"
+              onClick={() => handleSubmit(onSubmit)()}
               className="w-full py-3 text-white font-medium rounded-md hover:opacity-90"
               style={{
                 background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)'
               }}
-              disabled={loading}
+              disabled={isSubmitting}
             >
-              {loading ? 'Logging in...' : 'Log in'}
+              {isSubmitting ? 'Logging in...' : 'Log in'}
             </button>
             
             <p className="text-center mt-6 text-gray-600 text-sm">
@@ -173,7 +171,7 @@ const LoginPage = () => {
         </div>
         
         {/* Right Image Section */}
-        <div className="hidden lg:block lg:w-1/2 flex justify-center items-center">
+        <div className="hidden lg:flex lg:w-1/2 justify-center items-center">
           <Image
             src="/images/login.png" 
             alt="Login"

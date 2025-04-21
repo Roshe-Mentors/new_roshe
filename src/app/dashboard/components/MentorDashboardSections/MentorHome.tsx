@@ -1,11 +1,12 @@
 "use client"
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { FiArrowRight, FiCalendar, FiUsers, FiMessageCircle } from 'react-icons/fi';
 import { Mentor } from '../common/types';
 
 interface MentorHomeProps {
-  user: Record<string, unknown>; // Replacing 'any' with a more specific type
+  user: Record<string, unknown>; // 
   mentors: Mentor[];
   onNavigate: (section: 'explore' | 'community' | 'calendar' | 'chat') => void;
 }
@@ -58,6 +59,11 @@ const MentorHome: React.FC<MentorHomeProps> = ({
           <div className="ml-4">
             <h2 className="text-2xl font-semibold text-gray-800">Welcome back, {typeof user?.name === 'string' ? user.name : "User"}!</h2>
             <p className="text-gray-600">Continue where you left off</p>
+            <div className="mt-4">
+              <Link  legacyBehavior  href="/dashboard/profile/general">
+                <a className="text-blue-600 font-medium hover:underline">Edit Profile</a>
+              </Link>
+            </div>
           </div>
         </div>
         

@@ -25,7 +25,7 @@ export const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }
 
   return (
     <div 
-      className={`flex items-center px-6 py-3 rounded-lg cursor-pointer ${active ? 'bg-blue-100' : ''}`}
+      className={`flex items-center px-6 pt-8 pb-2 rounded-lg cursor-pointer ${active ? 'bg-blue-100' : ''}`}
       onClick={onClick}
     >
       {getIcon()}

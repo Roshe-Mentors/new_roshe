@@ -3,9 +3,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from 'next/image';
+import { useUser } from '../lib/auth';
+import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, loading } = useUser();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/signIn');
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
@@ -28,25 +38,28 @@ const Navbar: React.FC = () => {
 
         {/* Desktop Buttons */}
         <div className="hidden md:flex space-x-4">
-          <Link legacyBehavior href="/signIn">
-            <a className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
-               style={{
-                 borderColor: "#010114",
-                 borderWidth: "2px"
-               }}>
-              Log in
-            </a>
-          </Link>
-          <Link legacyBehavior href="/user">
-            <a
-              className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
-              style={{
-                background: "bg-gradient-to-r from-gray-800 to-gray-500",
-              }}
-            >
-              Get Started
-            </a>
-          </Link>
+          {!loading && user ? (
+            <>
+              <button onClick={handleLogout} className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition">
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link legacyBehavior href="/signIn">
+                <a target="_blank" rel="noopener noreferrer" className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
+                   style={{ borderColor: "#010114", borderWidth: "2px" }}>
+                  Log in
+                </a>
+              </Link>
+              <Link legacyBehavior href="/user">
+                <a target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
+                   style={{ background: "bg-gradient-to-r from-gray-800 to-gray-500" }}>
+                  Get Started
+                </a>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Hamburger Menu */}
@@ -75,12 +88,18 @@ const Navbar: React.FC = () => {
       {/* Mobile Dropdown */}
       {isMenuOpen && (
         <div className="md:hidden bg-white shadow-md">
-          <Link legacyBehavior href="/signIn">
-            <a className="block text-black px-4 py-2 border-b hover:bg-gray-100">Log in</a>
-          </Link>
-          <Link legacyBehavior href="/user">
-            <a className="block text-black px-4 py-2 hover:bg-gray-100">Get Started</a>
-          </Link>
+          {!loading && user ? (
+            <button onClick={handleLogout} className="block text-black px-4 py-2 hover:bg-gray-100 text-left w-full">Log out</button>
+          ) : (
+            <>
+              <Link legacyBehavior href="/signIn">
+                <a target="_blank" rel="noopener noreferrer" className="block text-black px-4 py-2 border-b hover:bg-gray-100">Log in</a>
+              </Link>
+              <Link legacyBehavior href="/user">
+                <a target="_blank" rel="noopener noreferrer" className="block text-black px-4 py-2 hover:bg-gray-100">Get Started</a>
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>

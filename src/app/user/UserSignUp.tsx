@@ -1,111 +1,48 @@
 "use client";
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import Image from 'next/image';
-import { signUp } from '../../../lib/auth'; // Sign-up function
-import { supabase } from '../../../lib/supabaseClient'; // Supabase client
-import { useRouter } from 'next/navigation'; // Use the Next.js router for redirection
+import { useRouter } from 'next/navigation'; // Next.js router
 
 const UserSignUp = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    linkedin: '',
-    dob: '',
-    password: '',
-    showPassword: false
+  const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState<string>('');
+  const router = useRouter();
+
+  // Zod schema for sign-up form
+  const signupSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Invalid email address'),
+    linkedin: z.string().url('Invalid URL').refine(val => val.includes('linkedin.com'), 'Must be a LinkedIn URL'),
+    dob: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Date must be DD/MM/YYYY'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+  });
+  type SignupForm = z.infer<typeof signupSchema>;
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignupForm>({
+    resolver: zodResolver(signupSchema),
   });
 
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState<string>(''); // Success message state
-  const router = useRouter(); // Initialize Next.js router for redirection
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const togglePasswordVisibility = () => {
-    setFormData((prev) => ({
-      ...prev,
-      showPassword: !prev.showPassword,
-    }));
-  };
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateLinkedIn = (linkedin: string): boolean => {
-    const linkedinRegex = /^https:\/\/(www\.)?linkedin\.com\/.*$/;
-    return linkedinRegex.test(linkedin);
-  };
-
-  const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.dob || !formData.password) {
-      return 'Please fill in all fields.';
-    }
-
-    if (!validateEmail(formData.email)) {
-      return 'Please enter a valid email address.';
-    }
-
-    if (!validateLinkedIn(formData.linkedin)) {
-      return 'Please enter a valid LinkedIn URL.';
-    }
-
-    if (formData.dob.length !== 10 || !formData.dob.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      return 'Please enter a valid date of birth in DD/MM/YYYY format.';
-    }
-
-    return '';
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-    } else {
-      setError('');
-      setLoading(true); // Set loading to true when form is submitted
-
-      // Call Supabase sign-up function
-      const { user, error } = await signUp(formData.email, formData.password);
-
-      if (error || !user) {
-        setError(error || 'Failed to create user');
-        setLoading(false);
+  // submit handler calls our API
+  const onSubmit = async (data: SignupForm) => {
+    setServerError('');
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setServerError(result.error || 'Registration failed');
       } else {
-        // After successful sign-up, insert additional user profile data into the 'users' table
-        const { data, error: insertError } = await supabase
-          .from('users')
-          .insert([
-            {
-              user_id: user.id,
-              name: formData.name,
-              linkedin: formData.linkedin,
-              dob: formData.dob,
-            }
-          ]);
-
-        if (insertError) {
-          setError(insertError.message);
-        } else {
-          console.log('User data inserted:', data);
-          setSuccessMessage('Sign-up successful! Please check your email for verification.');
-          // Redirect to dashboard or homepage after successful sign-up
-          setTimeout(() => {
-            router.push('/dashboard'); // Redirect to the user dashboard
-          }, 2000); // Wait for 2 seconds before redirecting
-        }
+        router.push('/signIn');
       }
-
-      setLoading(false); // Set loading to false once the request is complete
+    } catch (err) {
+      console.error('Registration error:', err);
+      setServerError('An unexpected error occurred.');
     }
   };
 
@@ -117,21 +54,18 @@ const UserSignUp = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Get Started Now</h2>
           <p className="text-gray-600 mb-6">Enter your credentials to create your account</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                 Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="name"
-                id="name"
-                value={formData.name}
-                onChange={handleChange}
+                {...register('name')}
                 placeholder="Full Name"
                 className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                required
               />
+              {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
             </div>
 
             <div>
@@ -140,14 +74,11 @@ const UserSignUp = () => {
               </label>
               <input
                 type="email"
-                name="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
+                {...register('email')}
                 placeholder="you@example.com"
                 className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                required
               />
+              {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -157,14 +88,11 @@ const UserSignUp = () => {
                 </label>
                 <input
                   type="url"
-                  name="linkedin"
-                  id="linkedin"
-                  value={formData.linkedin}
-                  onChange={handleChange}
+                  {...register('linkedin')}
                   placeholder="https://linkedin.com/in/..."
                   className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
                 />
+                {errors.linkedin && <p className="text-red-600 text-sm mt-1">{errors.linkedin.message}</p>}
               </div>
 
               <div className="w-full sm:w-1/2">
@@ -173,14 +101,11 @@ const UserSignUp = () => {
                 </label>
                 <input
                   type="text"
-                  name="dob"
-                  id="dob"
-                  value={formData.dob}
-                  onChange={handleChange}
+                  {...register('dob')}
                   placeholder="DD/MM/YYYY"
                   className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
                 />
+                {errors.dob && <p className="text-red-600 text-sm mt-1">{errors.dob.message}</p>}
               </div>
             </div>
 
@@ -190,27 +115,23 @@ const UserSignUp = () => {
               </label>
               <div className="relative">
                 <input
-                  type={formData.showPassword ? "text" : "password"}
-                  name="password"
-                  id="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  type={showPassword ? "text" : "password"}
+                  {...register('password')}
                   placeholder="Password"
                   className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
                 />
                 <button 
                   type="button" 
-                  onClick={togglePasswordVisibility}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
                 >
-                  {formData.showPassword ? "Hide" : "Show"}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
+              {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
             </div>
 
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-            {successMessage && <p className="text-green-600 text-sm">{successMessage}</p>}
+            {serverError && <p className="text-red-600 text-sm">{serverError}</p>}
 
             <button
               type="submit"
@@ -218,9 +139,9 @@ const UserSignUp = () => {
               style={{
                 background: 'linear-gradient(90.15deg, #24242E 0.13%, #747494 99.87%)',
               }}
-              disabled={loading}
+              disabled={isSubmitting}
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
