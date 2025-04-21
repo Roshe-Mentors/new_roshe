@@ -51,7 +51,7 @@ const menuItems: MenuItems = {
 }
 
 const ToggleSection: React.FC = () => {
-  const [selectedView, setSelectedView] = useState<"mentor" | "mentee">("mentor")
+  const [selectedView, setSelectedView] = useState<"mentor" | "mentee">("mentee")
   const [isOpen, setIsOpen] = useState(false)
   const [selectedSkill, setSelectedSkill] = useState("")
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null)
