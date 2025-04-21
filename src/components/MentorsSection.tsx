@@ -48,7 +48,7 @@ const mentors: Mentor[] = [
     name: 'Name Surname',
     location: 'Portugal',
     role: 'Matte Painter at DNEG',
-    sessionsAndReviews: '100 sessions (30 reviews)',
+    sessionsAndReviews: '1 sessions (5 reviews)',
     experience: '7 years',
     attendance: '98%',
     topRated: true,
