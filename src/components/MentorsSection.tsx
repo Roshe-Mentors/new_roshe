@@ -19,16 +19,16 @@ interface Mentor {
 const mentors: Mentor[] = [
   {
     id: 1,
-    name: 'Name Surname',
-    location: 'Brazil',
-    role: 'Character Animator at Meta',
+    name: 'Omobolaji Moses',
+    location: 'United Kingdom',
+    role: 'Animator at VFX',
     sessionsAndReviews: '100 sessions (30 reviews)',
-    experience: '7 years',
+    experience: ' years',
     attendance: '98%',
     topRated: true,
     availableASAP: true,
     coaching: false,
-    image: "/images/1.jpg", 
+    image: "/images/bj.jpg", 
   },
   {
     id: 2,
