@@ -13,7 +13,6 @@ export default function ExpertisePage() {
   const { user, loading } = useUser();
   const [tags, setTags] = useState<{ id: string; name: string }[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!loading && user) {
@@ -24,18 +23,13 @@ export default function ExpertisePage() {
 
   const toggleTag = async (tagId: string) => {
     if (!user) return;
-    setBusyIds((b) => new Set(b).add(tagId));
     const isActive = selected.has(tagId);
-    try {
-      if (isActive) {
-        await removeMentorExpertise(user.id, tagId);
-        setSelected((s) => { const n = new Set(s); n.delete(tagId); return n; });
-      } else {
-        await addMentorExpertise(user.id, tagId);
-        setSelected((s) => new Set(s).add(tagId));
-      }
-    } finally {
-      setBusyIds((b) => { const n = new Set(b); n.delete(tagId); return n; });
+    if (isActive) {
+      await removeMentorExpertise(user.id, tagId);
+      setSelected((s) => { const n = new Set(s); n.delete(tagId); return n; });
+    } else {
+      await addMentorExpertise(user.id, tagId);
+      setSelected((s) => new Set(s).add(tagId));
     }
   };
 

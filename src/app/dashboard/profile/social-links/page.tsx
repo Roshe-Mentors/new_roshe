@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from '../../../../lib/auth';
 import {
   getSocialLinks,
@@ -22,16 +22,16 @@ export default function SocialLinksPage() {
   const [urlError, setUrlError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const loadLinks = async () => {
+  const loadLinks = useCallback(async () => {
     if (user) {
       const data = await getSocialLinks(user.id);
       setLinks(data);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (!loading && user) loadLinks();
-  }, [user, loading]);
+    if (!loading) loadLinks();
+  }, [loading, loadLinks]);
 
   const handleAdd = async () => {
     if (!user) return;
