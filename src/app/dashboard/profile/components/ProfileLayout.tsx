@@ -7,9 +7,9 @@ const navItems = [
   { icon: 'home', label: 'General', segment: 'general' },
   { icon: 'compass', label: 'Expertise', segment: 'expertise' },
   { icon: 'calendar', label: 'Availability', segment: 'availability' },
-  { icon: 'users', label: 'Social Links', segment: 'social-links' },
+  { icon: 'community', label: 'Social Links', segment: 'social-links' },
   { icon: 'achievement', label: 'Calendar', segment: 'calendar' },
-];
+] as const;
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const segments = useSelectedLayoutSegments();

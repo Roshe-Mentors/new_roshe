@@ -6,7 +6,7 @@ type TagRecord = Database['public']['Tables']['expertise_tags']['Row'];
 type ExpertiseRecord = Database['public']['Tables']['mentor_expertise']['Row'];
 type AvailabilityRecord = Database['public']['Tables']['mentor_availability']['Row'];
 type SocialLinkRecord = Database['public']['Tables']['mentor_social_links']['Row'];
-type CalendarOAuthRecord = Database['public']['Tables']['mentor_calendar_oauth']['Row'];
+export type CalendarOAuthRecord = Database['public']['Tables']['mentor_calendar_oauth']['Row'];
 
 // Expertise Tags
 export async function getExpertiseTags() {

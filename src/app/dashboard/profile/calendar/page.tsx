@@ -2,11 +2,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from '../../../../lib/auth';
 import { getCalendarOAuth, deleteCalendarOAuth } from '../../../../services/profileService';
+import type { CalendarOAuthRecord } from '../../../../services/profileService';
 import { supabase } from '../../../../lib/supabaseClient';
 
 export default function CalendarPage() {
   const { user, loading } = useUser();
-  const [record, setRecord] = useState<any>(null);
+  const [record, setRecord] = useState<CalendarOAuthRecord | null>(null);
   const [busy, setBusy] = useState(false);
 
   const loadRecord = useCallback(async () => {
