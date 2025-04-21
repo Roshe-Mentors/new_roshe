@@ -48,7 +48,7 @@ export default function GeneralPage() {
 
   return (
     <div className="mt-4">
-      <div className="bg-white p-6 rounded-lg shadow w-11/12 md:w-4/5 lg:w-3/4 mx-auto">
+      <div className="bg-white p-6 rounded-lg shadow w-full">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Name</label>

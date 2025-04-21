@@ -36,7 +36,7 @@ export default function ExpertisePage() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow w-11/12 md:w-4/5 lg:w-3/4 mx-auto">
+    <div className="bg-white p-6 rounded-lg shadow w-full max-w-screen-lg mx-auto space-y-6">
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <CategoryButton
