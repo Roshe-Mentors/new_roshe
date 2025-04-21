@@ -31,7 +31,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
           ))}
         </nav>
       </aside>
-      <section className="flex-1 p-6 pt-16 bg-gray-50">
+      <section className="flex-1 p-6 pt-16 bg-gray-50 flex flex-col justify-center items-center">
         {children}
       </section>
     </div>
