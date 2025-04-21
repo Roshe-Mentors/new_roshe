@@ -20,6 +20,14 @@ const LoginPage = () => {
   // redirect logged-in users away
   const { user, loading: userLoading } = useUser();
   const router = useRouter();
+
+  // Hooks must be called unconditionally at top
+  const [serverError, setServerError] = useState<string>('');
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '', rememberMe: false }
+  });
+
   useEffect(() => {
     if (!userLoading && user) {
       router.replace('/dashboard');
@@ -29,14 +37,6 @@ const LoginPage = () => {
   if (!userLoading && user) {
     return <div className="w-full h-screen flex items-center justify-center">Redirecting...</div>;
   }
-
-  const [serverError, setServerError] = useState<string>('');
-
-  // react-hook-form setup
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', rememberMe: false }
-  });
 
   // submit handler calls API
   const onSubmit = async (data: LoginForm) => {
