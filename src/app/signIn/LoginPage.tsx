@@ -22,9 +22,6 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // derive OAuth redirect URL from env or current origin
-  const OAUTH_REDIRECT_URL = process.env.NEXT_PUBLIC_REDIRECT_URL || `${window.location.origin}/dashboard`;
-
   // Hooks must be called unconditionally at top
   const [serverError, setServerError] = useState<string>('');
   useEffect(() => {
@@ -73,10 +70,11 @@ const LoginPage = () => {
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     setServerError('');
     try {
-      // get OAuth URL and replace current history entry
+      // compute redirect URL in client click
+      const redirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || `${window.location.origin}/dashboard`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: OAUTH_REDIRECT_URL }
+        options: { redirectTo }
       });
       if (error) {
         setServerError(error.message);
