@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,9 +20,17 @@ const LoginPage = () => {
   // redirect logged-in users away
   const { user, loading: userLoading } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // derive OAuth redirect URL from env or current origin
+  const OAUTH_REDIRECT_URL = process.env.NEXT_PUBLIC_REDIRECT_URL || `${window.location.origin}/dashboard`;
 
   // Hooks must be called unconditionally at top
   const [serverError, setServerError] = useState<string>('');
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (err) setServerError(err);
+  }, [searchParams]);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', rememberMe: false }
@@ -68,7 +76,7 @@ const LoginPage = () => {
       // get OAuth URL and replace current history entry
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/dashboard` }
+        options: { redirectTo: OAUTH_REDIRECT_URL }
       });
       if (error) {
         setServerError(error.message);
