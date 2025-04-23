@@ -69,25 +69,25 @@ export async function POST(request: NextRequest) {
     };
     // Insert into correct table based on role
     if (role === 'mentee') {
-      const { data: menteeProfile, error: menteeError } = await withRetry(
+      const menteeResult = await withRetry(
         () => supabase.from('mentees')
-          .insert(menteeData)
-          .execute(),
+          .insert(menteeData) as unknown as Promise<{ data: any; error: any }>,
         2,
         1000
       );
+      const menteeError = menteeResult.error;
       if (menteeError) {
         console.error('Mentee profile insert error:', menteeError);
         return NextResponse.json({ error: menteeError.message }, { status: 500 });
       }
     } else {
-      const { data: profileData, error: profileError } = await withRetry(
+      const profileResult = await withRetry(
         () => supabase.from('mentors')
-          .insert(mentorData)
-          .execute(),
+          .insert(mentorData) as unknown as Promise<{ data: any; error: any }>,
         2,
         1000
       );
+      const profileError = profileResult.error;
       if (profileError) {
         console.error('Profile insert error:', profileError);
         return NextResponse.json({ error: profileError.message }, { status: 500 });
