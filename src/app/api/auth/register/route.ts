@@ -59,19 +59,39 @@ export async function POST(request: NextRequest) {
       date_of_birth: isoDob,
       role
     };
-    
-    // Insert profile with retry logic
-    const profileResult = await withRetry(
-      () => supabase.from('mentors')
-        .insert(mentorData)
-        .then(response => response),
-      2,
-      1000
-    );
-    const profileError = profileResult.error;
-    if (profileError) {
-      console.error('Profile insert error:', profileError);
-      return NextResponse.json({ error: profileError.message }, { status: 500 });
+    const menteeData = {
+      user_id: data.user.id,
+      name,
+      email,
+      linkedin_url: linkedin,
+      date_of_birth: isoDob,
+      role
+    };
+    // Insert into correct table based on role
+    if (role === 'mentee') {
+      const { data: menteeProfile, error: menteeError } = await withRetry(
+        () => supabase.from('mentees')
+          .insert(menteeData)
+          .execute(),
+        2,
+        1000
+      );
+      if (menteeError) {
+        console.error('Mentee profile insert error:', menteeError);
+        return NextResponse.json({ error: menteeError.message }, { status: 500 });
+      }
+    } else {
+      const { data: profileData, error: profileError } = await withRetry(
+        () => supabase.from('mentors')
+          .insert(mentorData)
+          .execute(),
+        2,
+        1000
+      );
+      if (profileError) {
+        console.error('Profile insert error:', profileError);
+        return NextResponse.json({ error: profileError.message }, { status: 500 });
+      }
     }
     
     console.log('Registration complete for:', email);
