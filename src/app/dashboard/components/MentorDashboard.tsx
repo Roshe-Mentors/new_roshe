@@ -84,14 +84,29 @@ const MentorDashboard: React.FC = () => {
   }, [activeNavItem, selectedMentorId]);
 
   // Function to navigate between sections from the home screen
+  const handleNavigate = (section: 'explore' | 'community' | 'calendar' | 'chat') => {
+    switch (section) {
+      case 'explore':
+        setActiveNavItem('explore');
+        break;
+      case 'community':
+        setActiveNavItem('community');
+        break;
+      case 'calendar':
+        setActiveNavItem('calendar');
+        break;
+      case 'chat':
+        setActiveNavItem('chat');
+        break;
+    }
   };
 
   // Render the appropriate section based on active nav item
   const renderActiveSection = () => {
     // Create a default user object that satisfies Record<string, unknown>
     const userRecord: Record<string, unknown> = user ? 
-      { ...(user as unknown as Record<string, unknown>) } : // Cast to unknown first, then to Record<string, unknown>
-      { name: "User", image: "/images/mentor_pic.png" };
+      { ...(user as unknown as Record<string, unknown>), role: userRole } : 
+      { name: "User", image: "/images/mentor_pic.png", role: userRole };
       
     switch (activeNavItem) {
       case 'home':
@@ -100,6 +115,7 @@ const MentorDashboard: React.FC = () => {
             user={userRecord}
             mentors={mentorsData} 
             onNavigate={handleNavigate} 
+            userRole={userRole}
           />
         );
       case 'explore':
@@ -136,6 +152,7 @@ const MentorDashboard: React.FC = () => {
             user={userRecord}
             mentors={mentorsData}
             onNavigate={handleNavigate}
+            userRole={userRole}
           />
         );
     }
@@ -147,6 +164,13 @@ const MentorDashboard: React.FC = () => {
       <Suspense fallback={<div>Loading...</div>}>
         <WelcomeMessage setShowWelcome={setShowWelcome} showWelcome={showWelcome} />
       </Suspense>
+
+      {/* Conditionally render dashboard header based on role */}
+      {userRole && (
+        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs py-1 px-4 text-center z-50">
+          {userRole === 'mentor' ? 'Mentor Dashboard' : 'Mentee Dashboard'}
+        </div>
+      )}
 
       {/* Sidebar */}
       <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
