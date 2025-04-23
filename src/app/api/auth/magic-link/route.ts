@@ -20,5 +20,7 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: error.status || 500 });
   }
-  return NextResponse.json({ link: data.action_link });
+  // Extract the link from properties.action_link
+  const actionLink = data?.properties?.action_link;
+  return NextResponse.json({ link: actionLink });
 }
