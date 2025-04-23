@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
-  const { name, email, password, linkedin, dob } = await request.json();
+  const { name, email, password, linkedin, dob, role = 'mentee' } = await request.json();
 
   // Sign up user
   const { data, error } = await supabase.auth.signUp({ email, password });
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const [day, month, year] = dob.split('/');
   const isoDob = `${year}-${month}-${day}`;
 
-  // Insert mentor profile data instead of users table
+  // Insert mentor profile data with role
   const { error: profileError } = await supabase
     .from('mentors')
     .insert({
@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
       name,
       email,
       linkedin_url: linkedin,
-      date_of_birth: isoDob
+      date_of_birth: isoDob,
+      role // User role: 'mentor' or 'mentee' (default)
     });
   if (profileError) {
     return NextResponse.json({ error: profileError.message }, { status: 500 });

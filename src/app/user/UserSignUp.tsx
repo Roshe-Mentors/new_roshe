@@ -103,7 +103,7 @@ const UserSignUp = () => {
                 {errors.linkedin && <p className="text-red-600 text-sm mt-1">{errors.linkedin.message}</p>}
               </div>
 
-              <div className="w-full sm:w-1/2"></div>
+              <div className="w-full sm:w-1/2">
                 <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
                   Date of Birth <span className="text-red-500">*</span>
                 </label>

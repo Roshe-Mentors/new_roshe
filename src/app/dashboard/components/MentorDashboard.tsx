@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
 import { mentorsData } from '../data/mentors';
+import { getUserRole, UserRole } from '../../../lib/user';
 
 // Import shared components
 import { NavItem } from './common/DashboardComponents';
@@ -60,6 +61,20 @@ const MentorDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
   const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('home');
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
+  // Fetch user role when component mounts
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user?.id) {
+        const role = await getUserRole(user.id);
+        setUserRole(role);
+        console.log('User role:', role);
+      }
+    };
+    
+    fetchUserRole();
+  }, [user]);
 
   // Make sure we have a selected mentor when viewing booking page
   useEffect(() => {
@@ -69,21 +84,6 @@ const MentorDashboard: React.FC = () => {
   }, [activeNavItem, selectedMentorId]);
 
   // Function to navigate between sections from the home screen
-  const handleNavigate = (section: 'explore' | 'community' | 'calendar' | 'chat') => {
-    switch (section) {
-      case 'explore':
-        setActiveNavItem('explore');
-        break;
-      case 'community':
-        setActiveNavItem('community');
-        break;
-      case 'calendar':
-        setActiveNavItem('calendar');
-        break;
-      case 'chat':
-        setActiveNavItem('chat');
-        break;
-    }
   };
 
   // Render the appropriate section based on active nav item
