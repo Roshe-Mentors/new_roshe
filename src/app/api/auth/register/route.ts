@@ -10,10 +10,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Sign-up failed' }, { status: 400 });
   }
 
-  // Insert user profile data
+  // Parse DOB "DD/MM/YYYY" to ISO date string
+  const [day, month, year] = dob.split('/');
+  const isoDob = `${year}-${month}-${day}`;
+
+  // Insert mentor profile data instead of users table
   const { error: profileError } = await supabase
-    .from('users')
-    .insert({ user_id: data.user.id, name, linkedin, dob });
+    .from('mentors')
+    .insert({
+      user_id: data.user.id,
+      name,
+      email,
+      linkedin_url: linkedin,
+      date_of_birth: isoDob
+    });
   if (profileError) {
     return NextResponse.json({ error: profileError.message }, { status: 500 });
   }
