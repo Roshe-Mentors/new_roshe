@@ -61,12 +61,14 @@ export async function POST(request: NextRequest) {
     };
     
     // Insert profile with retry logic
-    const { error: profileError } = await withRetry(
-      () => supabase.from('mentors').insert(mentorData),
+    const profileResult = await withRetry(
+      () => supabase.from('mentors')
+        .insert(mentorData)
+        .then(response => response),
       2,
       1000
     );
-      
+    const profileError = profileResult.error;
     if (profileError) {
       console.error('Profile insert error:', profileError);
       return NextResponse.json({ error: profileError.message }, { status: 500 });
