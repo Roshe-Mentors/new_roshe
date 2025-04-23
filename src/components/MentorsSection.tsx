@@ -1,11 +1,13 @@
 // components/MentorsSection.tsx
 import React from 'react';
 import Image from 'next/image';
+import ReactCountryFlag from 'react-country-flag';
 
 interface Mentor {
   id: number;
   name: string;
   location: string;
+  countryCode: string;
   role: string;
   sessionsAndReviews: string;
   experience: string;
@@ -21,6 +23,7 @@ const mentors: Mentor[] = [
     id: 1,
     name: 'Omobolaji Moses',
     location: 'United Kingdom',
+    countryCode: 'GB',
     role: 'Animation Director at New Age',
     sessionsAndReviews: '100 sessions (30 reviews)',
     experience: ' years',
@@ -28,12 +31,13 @@ const mentors: Mentor[] = [
     topRated: true,
     availableASAP: false,
     coaching: true,
-    image: "/images/bj.jpg", 
+    image: "/images/bj.jpg",
   },
   {
     id: 2,
     name: 'Name Surname',
     location: 'California',
+    countryCode: 'US',
     role: 'Character Animator at Pixar Animation Studios',
     sessionsAndReviews: '100 sessions (30 reviews)',
     experience: '7 years',
@@ -47,6 +51,7 @@ const mentors: Mentor[] = [
     id: 3,
     name: 'Name Surname',
     location: 'Portugal',
+    countryCode: 'PT',
     role: 'Matte Painter at DNEG',
     sessionsAndReviews: '1 sessions (5 reviews)',
     experience: '7 years',
@@ -60,6 +65,7 @@ const mentors: Mentor[] = [
     id: 4,
     name: 'Name Surname',
     location: 'London',
+    countryCode: 'GB',
     role: 'Character Modeler at MPC',
     sessionsAndReviews: '100 sessions (30 reviews)',
     experience: '5 years',
@@ -73,6 +79,7 @@ const mentors: Mentor[] = [
     id: 5,
     name: 'Name Surname',
     location: 'Italy',
+    countryCode: 'IT',
     role: 'Prop Modeler at Disney',
     sessionsAndReviews: '100 sessions (30 reviews)',
     experience: '10 years',
@@ -155,8 +162,14 @@ const MentorsSection = () => {
             <div className="p-4 text-gray-900">
               <div className="mb-3">
                 <h3 className="text-lg font-bold flex items-baseline">
-                  {mentor.name}{' '}
-                  <span className="text-xs text-gray-500 ml-1">({mentor.location})</span>
+                  {mentor.name}
+                  <ReactCountryFlag
+                    countryCode={mentor.countryCode}
+                    svg
+                    style={{ width: '1em', height: '1em' }}
+                    className="ml-1"
+                    title={mentor.location}
+                  />
                 </h3>
               </div>
               
