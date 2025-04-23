@@ -4,17 +4,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiArrowRight, FiCalendar, FiUsers, FiMessageCircle } from 'react-icons/fi';
 import { Mentor } from '../common/types';
+import { UserRole } from '../../../../lib/user';
 
 interface MentorHomeProps {
-  user: Record<string, unknown>; // 
+  user: Record<string, unknown>;
   mentors: Mentor[];
   onNavigate: (section: 'explore' | 'community' | 'calendar' | 'chat') => void;
+  userRole: UserRole | null;
 }
 
 const MentorHome: React.FC<MentorHomeProps> = ({ 
   user,
   mentors, 
-  onNavigate
+  onNavigate,
+  userRole
 }) => {
   // Featured mentors (just take the first 3 for demo)
   const featuredMentors = mentors.slice(0, 3);
@@ -44,6 +47,32 @@ const MentorHome: React.FC<MentorHomeProps> = ({
     }
   ];
 
+  // Different content based on user role
+  const renderRoleSpecificContent = () => {
+    if (userRole === 'mentor') {
+      return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          <h3 className="text-xl font-semibold text-black mb-4">Mentor Statistics</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-medium text-black">Sessions Completed</h3>
+              <p className="text-2xl font-bold text-black">12</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-medium text-black">Active Mentees</h3>
+              <p className="text-2xl font-bold text-black">5</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <h3 className="font-medium text-black">Rating</h3>
+              <p className="text-2xl font-bold text-black">4.8 <span className="text-sm font-normal">/5</span></p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Welcome Section */}
@@ -57,21 +86,31 @@ const MentorHome: React.FC<MentorHomeProps> = ({
             className="rounded-full object-cover w-16 h-16"
           />
           <div className="ml-4">
-            <h2 className="text-2xl font-semibold text-gray-800">Welcome back, {typeof user?.name === 'string' ? user.name : "User"}!</h2>
-            <p className="text-gray-600">Continue where you left off</p>
+            <h2 className="text-2xl font-semibold text-black">
+              Welcome back, {typeof user?.name === 'string' ? user.name : "User"}!
+              {userRole && <span className="ml-2 text-sm bg-blue-100 text-blue-800 py-1 px-2 rounded-full">
+                {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+              </span>}
+            </h2>
+            <p className="text-gray-600 mb-6">Continue where you left off</p>
             <div className="mt-4">
-              <Link  legacyBehavior  href="/dashboard/profile/general">
+              <Link legacyBehavior href="/dashboard/profile/general">
                 <a className="text-blue-600 font-medium hover:underline">Edit Profile</a>
               </Link>
             </div>
           </div>
         </div>
         
-        {/* Quick Stats */}
+        {/* Role-specific content */}
+        {renderRoleSpecificContent()}
+        
+        {/* Quick Stats - Shown to both but with role-specific text */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-800">Next Session</h3>
-            <p className="text-sm text-gray-600">Tomorrow, 3:00 PM</p>
+            <h3 className="font-medium text-black">
+              {userRole === 'mentor' ? 'Your Next Session' : 'Next Session'}
+            </h3>
+            <p className="text-sm text-black">Tomorrow, 3:00 PM</p>
             <button 
               className="mt-2 text-blue-600 text-sm flex items-center hover:underline"
               onClick={() => onNavigate('calendar')}
@@ -83,8 +122,12 @@ const MentorHome: React.FC<MentorHomeProps> = ({
           </div>
           
           <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-800">Community Activity</h3>
-            <p className="text-sm text-gray-600">3 new replies to your posts</p>
+            <h3 className="font-medium text-black">Community Activity</h3>
+            <p className="text-sm text-black">
+              {userRole === 'mentor' 
+                ? '3 new questions from mentees' 
+                : '3 new replies to your posts'}
+            </p>
             <button 
               className="mt-2 text-green-600 text-sm flex items-center hover:underline"
               onClick={() => onNavigate('community')}
@@ -96,8 +139,12 @@ const MentorHome: React.FC<MentorHomeProps> = ({
           </div>
           
           <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-800">Messages</h3>
-            <p className="text-sm text-gray-600">5 unread messages</p>
+            <h3 className="font-medium text-black">Messages</h3>
+            <p className="text-sm text-black">
+              {userRole === 'mentor' 
+                ? '5 unread messages from mentees' 
+                : '5 unread messages'}
+            </p>
             <button 
               className="mt-2 text-purple-600 text-sm flex items-center hover:underline"
               onClick={() => onNavigate('chat')}
@@ -138,60 +185,95 @@ const MentorHome: React.FC<MentorHomeProps> = ({
         </button>
       </div>
       
-      {/* Featured Mentors */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">Featured Mentors</h3>
-          <button 
-            className="text-blue-600 text-sm flex items-center hover:underline"
-            onClick={() => onNavigate('explore')}
-            aria-label="View all mentors"
-            title="View all mentors"
-          >
-            View all mentors <FiArrowRight className="ml-1" size={14} />
-          </button>
+      {/* Featured Mentors - Only show to mentees */}
+      {userRole !== 'mentor' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-semibold text-black">Featured Mentors</h3>
+            <button 
+              className="text-blue-600 text-sm flex items-center hover:underline"
+              onClick={() => onNavigate('explore')}
+              aria-label="View all mentors"
+              title="View all mentors"
+            >
+              View all mentors <FiArrowRight className="ml-1" size={14} />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {featuredMentors.map((mentor, index) => (
+              <div key={index} className="flex flex-col border border-gray-200 rounded-lg overflow-hidden hover:shadow-sm transition-shadow">
+                <div className="relative h-40">
+                  <Image
+                    src={mentor.imageUrl}
+                    alt={mentor.name}
+                    width={300}
+                    height={160}
+                    className="w-full h-40 object-cover"
+                  />
+                  {mentor.isTopRated && (
+                    <div className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded text-gray-800">
+                      Top Rated
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h4 className="font-medium text-gray-800">{mentor.name}</h4>
+                  <p className="text-sm text-gray-600 mb-2">{mentor.role} at {mentor.company}</p>
+                  <div className="flex space-x-2 mb-3">
+                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                      {mentor.sessions} Sessions
+                    </span>
+                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                      {mentor.experience}+ Years
+                    </span>
+                  </div>
+                  <button 
+                    className="w-full py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 transition text-sm"
+                    aria-label={`View ${mentor.name}'s profile`}
+                    title={`View ${mentor.name}'s profile`}
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredMentors.map((mentor, index) => (
-            <div key={index} className="flex flex-col border border-gray-200 rounded-lg overflow-hidden hover:shadow-sm transition-shadow">
-              <div className="relative h-40">
+      )}
+      
+      {/* Mentor-specific content */}
+      {userRole === 'mentor' && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+          <h3 className="text-xl font-semibold text-black mb-6">Your Mentees</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {mentors.slice(0, 3).map((mentor, index) => (
+              <div key={index} className="flex items-center p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
                 <Image
                   src={mentor.imageUrl}
-                  alt={mentor.name}
-                  width={300}
-                  height={160}
-                  className="w-full h-40 object-cover"
+                  alt="Mentee"
+                  width={50}
+                  height={50}
+                  className="rounded-full object-cover w-12 h-12"
                 />
-                {mentor.isTopRated && (
-                  <div className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded text-gray-800">
-                    Top Rated
-                  </div>
-                )}
-              </div>
-              <div className="p-4">
-                <h4 className="font-medium text-gray-800">{mentor.name}</h4>
-                <p className="text-sm text-gray-600 mb-2">{mentor.role} at {mentor.company}</p>
-                <div className="flex space-x-2 mb-3">
-                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                    {mentor.sessions} Sessions
-                  </span>
-                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                    {mentor.experience}+ Years
-                  </span>
+                <div className="ml-3">
+                  <h4 className="font-medium text-black">{mentor.name}</h4>
+                  <p className="text-sm text-gray-700">Next session: Tomorrow</p>
                 </div>
-                <button 
-                  className="w-full py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 transition text-sm"
-                  aria-label={`View ${mentor.name}'s profile`}
-                  title={`View ${mentor.name}'s profile`}
-                >
-                  View Profile
-                </button>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          
+          <button 
+            className="mt-4 text-blue-600 text-sm flex items-center hover:underline"
+            aria-label="View all mentees"
+            title="View all mentees"
+          >
+            View all mentees <FiArrowRight className="ml-1" size={14} />
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 };

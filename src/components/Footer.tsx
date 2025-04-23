@@ -139,9 +139,9 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/" className="hover:text-black transition font-bold">
+                <a href="mailto:roshementorship@gmail.com" className="hover:text-black transition font-bold">
                   partnerships
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
