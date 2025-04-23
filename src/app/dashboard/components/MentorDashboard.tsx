@@ -58,7 +58,7 @@ const MentorDashboard: React.FC = () => {
   const { user } = useUser();
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
-  const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('explore');
+  const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('home');
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
 
   // Make sure we have a selected mentor when viewing booking page
@@ -131,7 +131,13 @@ const MentorDashboard: React.FC = () => {
           />
         );
       default:
-        return <MentorExplore mentors={mentorsData} />;
+        return (
+          <MentorHome
+            user={userRecord}
+            mentors={mentorsData}
+            onNavigate={handleNavigate}
+          />
+        );
     }
   };
 
