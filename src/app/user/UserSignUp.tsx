@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation'; // Next.js router
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +40,11 @@ const UserSignUp = () => {
       if (!res.ok) {
         setServerError(result.error || 'Registration failed');
       } else {
-        router.push('/signIn');
+        toast.success('Account created successfully! Please log in to continue.', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        setTimeout(() => router.push('/signIn'), 3000);
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -48,6 +54,8 @@ const UserSignUp = () => {
 
   return (
     <div className="w-full text-black bg-white flex items-center justify-center py-32 px-4">
+      {/* Toast Container */}
+      <ToastContainer />
       <div className="max-w-5xl w-full flex flex-col md:flex-row justify-between items-stretch gap-8">
         {/* Left Form Section */}
         <div className="w-full md:w-1/2 bg-white p-6 flex flex-col justify-center">
@@ -95,7 +103,7 @@ const UserSignUp = () => {
                 {errors.linkedin && <p className="text-red-600 text-sm mt-1">{errors.linkedin.message}</p>}
               </div>
 
-              <div className="w-full sm:w-1/2">
+              <div className="w-full sm:w-1/2"></div>
                 <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
                   Date of Birth <span className="text-red-500">*</span>
                 </label>
