@@ -78,3 +78,50 @@ export async function fetchMentorById(id: string): Promise<Mentor | null> {
     return null;
   }
 }
+
+/**
+ * Fetch booked sessions for a mentee by user ID
+ * @param userId The user ID of the mentee
+ * @returns Array of session objects (with mentor info)
+ */
+export async function fetchBookedSessionsByUser(userId: string): Promise<any[]> {
+  try {
+    // Adjust table/column names as needed
+    const { data, error } = await supabase
+      .from('sessions')
+      .select(`*, mentor:mentor_id(*)`)
+      .eq('user_id', userId)
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching booked sessions:', error);
+      return [];
+    }
+
+    // Map sessions to include mentor info for display
+    return data.map((session: any, idx: number) => ({
+      id: session.id,
+      uniqueId: `${session.id}-${idx}`,
+      name: session.mentor?.name || 'Mentor',
+      location: session.mentor?.location || '',
+      role: session.mentor?.role || '',
+      company: session.mentor?.company || '',
+      sessions: session.mentor?.sessions_completed || 0,
+      reviews: session.mentor?.reviews_count || 0,
+      experience: session.mentor?.years_experience || 0,
+      attendance: session.mentor?.attendance_rate || 98,
+      isAvailableASAP: session.mentor?.is_available_asap || false,
+      providesCoaching: session.mentor?.provides_coaching || false,
+      imageUrl: session.mentor?.profile_image_url || '/images/mentor_pic.png',
+      isTopRated: session.mentor?.is_top_rated || false,
+      categories: session.mentor?.categories || [],
+      sessionDate: session.date,
+      sessionTime: session.time,
+      sessionType: session.session_type,
+      meetingUrl: session.meeting_url,
+    }));
+  } catch (err) {
+    console.error('Unexpected error when fetching booked sessions:', err);
+    return [];
+  }
+}

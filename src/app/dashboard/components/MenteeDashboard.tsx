@@ -1,10 +1,9 @@
 "use client"
 import React, { useEffect, useState, Suspense } from 'react';
-// eslint-disable-next-line @next/next/no-img-element
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
-// import { getUserRole, UserRole } from '../../../lib/user';
-import { fetchAllMentors } from '../../../lib/mentors';
+import { fetchAllMentors, fetchBookedSessionsByUser } from '../../../lib/mentors';
 import { Mentor } from './common/types';
 
 // Import mentee dashboard sections
@@ -67,26 +66,23 @@ const MenteeDashboard: React.FC = () => {
   
   // Function to fetch user's booked sessions - memoized to avoid dependency warnings
   const fetchUserBookedSessions = React.useCallback(async () => {
-    // Here you would normally fetch actual booked sessions from Supabase
-    // For development, we'll create mock booked sessions (a subset of all mentors)
     if (isDevelopmentMode && mentors.length > 0) {
       // Simulate the user having booked sessions with only 1-2 mentors max
       const bookedMentorsData = mentors.slice(0, Math.min(2, mentors.length));
       setBookedSessions(bookedMentorsData);
-    } else {
+    } else if (user && user.id) {
       try {
-        // In production, you would fetch actual booked sessions here
-        // e.g., const data = await fetchUserSessions(user.id);
-        // setBookedSessions(data); 
-        
-        // For now, simulate no booked sessions
-        setBookedSessions([]);
+        // Fetch real booked sessions from Supabase
+        const sessions = await fetchBookedSessionsByUser(user.id);
+        setBookedSessions(sessions);
       } catch (error) {
         console.error('Error loading booked sessions:', error);
         setBookedSessions([]);
       }
+    } else {
+      setBookedSessions([]);
     }
-  }, [isDevelopmentMode, mentors]);
+  }, [isDevelopmentMode, mentors, user]);
 
   const fetchMentorsWithUniqueIds = React.useCallback(async () => {
     setIsLoading(true);
@@ -246,7 +242,7 @@ const MenteeDashboard: React.FC = () => {
                     bookedSessions.slice(0, visibleMentorCount).map(mentor => (
                       <div key={mentor.uniqueId || `mentor-${mentor.id}`} className="flex items-center space-x-4 mb-4">
                         <div className="w-16 h-16 rounded-full overflow-hidden">
-                          <img src={mentor.imageUrl} alt={mentor.name} className="w-full h-full object-cover" />
+                          <Image src={mentor.imageUrl} alt={mentor.name} width={64} height={64} className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <h4 className="text-lg font-semibold text-gray-800">{mentor.name}</h4>
@@ -311,9 +307,11 @@ const MenteeDashboard: React.FC = () => {
               <div className="p-6">
                 <div className="flex items-center space-x-4 mb-6">
                   <div className="bg-gray-200 w-20 h-20 rounded-full overflow-hidden">
-                    <img 
+                    <Image 
                       src={userRecord.image as string || "/images/mentor_pic.png"} 
                       alt="Profile"
+                      width={80}
+                      height={80}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -510,8 +508,8 @@ const MenteeDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Main Content - Added pt-8 for more top padding */}
-      <div className="flex-1 md:ml-64 p-6 pt-8 pb-40">
+      {/* Main Content - Increased pt-8 to pt-16 for more top padding */}
+      <div className="flex-1 md:ml-64 p-6 pt-16 pb-40">
         {renderContent()}
       </div>
     </div>

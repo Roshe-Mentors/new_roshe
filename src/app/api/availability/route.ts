@@ -49,8 +49,12 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ availability: data });
-  } catch (error: any) {
-    console.error('Unexpected error in availability API:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Unexpected error in availability API:', error);
+    } else {
+      console.error('Unexpected non-Error thrown in availability API:', error);
+    }
     return NextResponse.json(
       { error: 'Failed to fetch availability' },
       { status: 500 }
@@ -92,8 +96,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    console.error('Unexpected error in availability API:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Unexpected error in availability API:', error);
+    } else {
+      console.error('Unexpected non-Error thrown in availability API:', error);
+    }
     return NextResponse.json(
       { error: 'Failed to create availability slots' },
       { status: 500 }
@@ -134,8 +142,12 @@ export async function PUT(request: Request) {
     }
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    console.error('Unexpected error in availability API:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Unexpected error in availability API:', error);
+    } else {
+      console.error('Unexpected non-Error thrown in availability API:', error);
+    }
     return NextResponse.json(
       { error: 'Failed to update availability slot' },
       { status: 500 }

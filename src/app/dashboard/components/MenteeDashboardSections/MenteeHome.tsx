@@ -1,5 +1,6 @@
 "use client"
 import React from 'react';
+import Image from 'next/image';
 import { Mentor } from '../common/types';
 
 interface MenteeHomeProps {
@@ -141,9 +142,11 @@ const MenteeHome: React.FC<MenteeHomeProps> = ({ user, mentors, onNavigate }) =>
               }}
             >
               <div className="flex items-center space-x-3 mb-2">
-                <img 
+                <Image 
                   src={mentor.imageUrl} 
                   alt={mentor.name} 
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-full object-cover border border-gray-200"
                 />
                 <div>

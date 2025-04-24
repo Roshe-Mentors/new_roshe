@@ -1,7 +1,8 @@
 // filepath: c:\Users\USER\OneDrive\Desktop\roshe\new_roshe\src\services\googleMeetService.ts
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { supabase, createAdminClient, createClient } from '../../lib/supabaseClient';
+import { createAdminClient } from '../../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 
 // Google API configuration
 const oauth2Client = new OAuth2Client(
@@ -13,6 +14,10 @@ const oauth2Client = new OAuth2Client(
 oauth2Client.setCredentials({
   refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
+
+// Add Supabase env variables
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
 
 /**
  * Create a Google Meet meeting through Google Calendar API
@@ -182,14 +187,17 @@ export async function saveBooking({
     }
 
     // Create meeting link if not provided
-    let finalMeetingLink = meeting_link;
+    let finalMeetingLink = meeting_link ?? '';
     if (!finalMeetingLink) {
-      const meetingResult = await createMeeting({
+      const meetingResult = await createGoogleMeetMeeting(
+        mentor_id, // You may want to pass mentor name/email if available
+        '', // mentorEmail placeholder
+        user_id, // userEmail placeholder
         date,
         time,
-        duration,
-      });
-      finalMeetingLink = meetingResult.meetingLink;
+        'Mentorship' // or sessionType if available
+      );
+      finalMeetingLink = meetingResult?.meetingUrl || '';
     }
 
     const supabaseAdmin = createAdminClient();
@@ -252,7 +260,7 @@ export async function saveBooking({
  */
 export async function checkTimeSlotAvailability(slot_id: string) {
   try {
-    const supabase = createClient();
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // Check if the slot exists and is available
     const { data, error } = await supabase
@@ -289,7 +297,7 @@ export async function checkTimeSlotAvailability(slot_id: string) {
  */
 export async function checkTimeSlotByDateTime(mentor_id: string, date: string, time: string) {
   try {
-    const supabase = createClient();
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // Check if there's any booking for this mentor at this time
     const { data, error } = await supabase

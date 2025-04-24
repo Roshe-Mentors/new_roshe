@@ -17,11 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if time slot is available
-    const { available } = await checkTimeSlotAvailability(
-      bookingData.mentorId,
-      bookingData.date,
-      bookingData.time
-    );
+    const { available } = await checkTimeSlotAvailability(bookingData.slotId);
 
     if (!available) {
       return NextResponse.json(
