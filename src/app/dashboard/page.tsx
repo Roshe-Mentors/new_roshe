@@ -51,29 +51,28 @@ export default function DashboardPage() {
   // Fetch user role when user data is available
   useEffect(() => {
     const fetchRole = async () => {
-      if (!userLoading && user?.id) {
-        try {
-          const role = await getUserRole(user.id);
-          setUserRole(role);
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-        } finally {
+      if (!userLoading) {
+        if (user?.id) {
+          try {
+            const role = await getUserRole(user.id);
+            setUserRole(role);
+          } catch (error) {
+            console.error('Error fetching user role:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        } else if (isDevelopmentMode && bypassAuth) {
+          // In development mode with bypass enabled, we've already set the role
+          // No need to do anything here, just make sure we don't redirect
           setIsLoading(false);
+        } else if (!bypassAuth) {
+          // No user, not bypassing auth, redirect to sign in
+          router.replace('/signIn');
         }
-      } else if (!userLoading && !user && !bypassAuth) {
-        // No user and not bypassing auth, redirect to sign in
-        router.replace('/signIn');
       }
     };
 
     fetchRole();
-  }, [userLoading, user, router, bypassAuth]);
-
-  // Redirect to login if not authenticated and not in development bypass mode
-  useEffect(() => {
-    if (!userLoading && !user && !bypassAuth && !isDevelopmentMode) {
-      router.replace('/signIn');
-    }
   }, [userLoading, user, router, bypassAuth, isDevelopmentMode]);
 
   // Show loading state while checking authentication and user role

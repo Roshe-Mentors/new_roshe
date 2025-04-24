@@ -1,8 +1,9 @@
 "use client"
 import React, { useEffect, useState, Suspense } from 'react';
+// eslint-disable-next-line @next/next/no-img-element
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
-import { getUserRole, UserRole } from '../../../lib/user';
+// import { getUserRole, UserRole } from '../../../lib/user';
 import { fetchAllMentors } from '../../../lib/mentors';
 import { Mentor } from './common/types';
 
@@ -53,17 +54,41 @@ const MenteeDashboard: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'bookings' | 'chat' | 'profile'>('home');
   const [mentors, setMentors] = useState<Mentor[]>([]);
-  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
   const [visibleMentorCount, setVisibleMentorCount] = useState(3); // Initially show 3 mentors in My Sessions
+  // Track booked sessions separately from all mentors
+  const [bookedSessions, setBookedSessions] = useState<Mentor[]>([]);
 
   // Function to show more mentors in the My Sessions view
   const handleViewMore = () => {
     setVisibleMentorCount(prev => prev + 3); // Show 3 more mentors each time
   };
+  
+  // Function to fetch user's booked sessions - memoized to avoid dependency warnings
+  const fetchUserBookedSessions = React.useCallback(async () => {
+    // Here you would normally fetch actual booked sessions from Supabase
+    // For development, we'll create mock booked sessions (a subset of all mentors)
+    if (isDevelopmentMode && mentors.length > 0) {
+      // Simulate the user having booked sessions with only 1-2 mentors max
+      const bookedMentorsData = mentors.slice(0, Math.min(2, mentors.length));
+      setBookedSessions(bookedMentorsData);
+    } else {
+      try {
+        // In production, you would fetch actual booked sessions here
+        // e.g., const data = await fetchUserSessions(user.id);
+        // setBookedSessions(data); 
+        
+        // For now, simulate no booked sessions
+        setBookedSessions([]);
+      } catch (error) {
+        console.error('Error loading booked sessions:', error);
+        setBookedSessions([]);
+      }
+    }
+  }, [isDevelopmentMode, mentors]);
 
-  const fetchMentorsWithUniqueIds = async () => {
+  const fetchMentorsWithUniqueIds = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await fetchAllMentors();
@@ -122,29 +147,23 @@ const MenteeDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isDevelopmentMode]);
   
   // Fetch mentors from Supabase
   useEffect(() => {
     fetchMentorsWithUniqueIds();
-  }, [isDevelopmentMode]);
+  }, [isDevelopmentMode, fetchMentorsWithUniqueIds]);
 
-  // Make sure we have a selected mentor when viewing bookings page
+  // Fetch user's booked sessions
   useEffect(() => {
-    if (activeNavItem === 'bookings' && !selectedMentorId && mentors.length > 0) {
-      setSelectedMentorId(mentors[0].id);
+    if (!isLoading && mentors.length > 0) {
+      fetchUserBookedSessions();
     }
-  }, [activeNavItem, selectedMentorId, mentors]);
+  }, [mentors, isLoading, fetchUserBookedSessions]);
 
   // Function to navigate between sections from the home screen
   const handleNavigate = (section: 'explore' | 'community' | 'bookings' | 'chat') => {
     setActiveNavItem(section);
-  };
-
-  // Handle mentor selection
-  const handleSelectMentor = (mentorId: string) => {
-    setSelectedMentorId(mentorId);
-    setActiveNavItem('bookings');
   };
 
   // Render content based on active nav item
@@ -193,7 +212,6 @@ const MenteeDashboard: React.FC = () => {
         return (
           <MenteeExplore
             mentors={mentors}
-            onSelectMentor={handleSelectMentor}
           />
         );
       case 'community':
@@ -218,99 +236,46 @@ const MenteeDashboard: React.FC = () => {
             <p className="text-gray-600 mb-6">
               Manage your mentor sessions and bookings.
             </p>
-            
-            {selectedMentorId ? (
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
+            <div className="space-y-6">
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div className="p-4 border-b border-gray-200 bg-gray-50">
-                  <h3 className="font-medium text-gray-800">Book a Session</h3>
+                  <h3 className="font-medium text-gray-800">Upcoming Sessions</h3>
                 </div>
                 <div className="p-6">
-                  {mentors.filter(m => m.id === selectedMentorId).map(mentor => (
-                    <div key={mentor.uniqueId} className="flex flex-col md:flex-row gap-6">
-                      <div className="w-full md:w-1/3">
-                        <img 
-                          src={mentor.imageUrl}
-                          alt={mentor.name}
-                          className="rounded-lg w-full object-cover max-h-60"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-800">{mentor.name}</h3>
-                        <p className="text-gray-600">{mentor.role} at {mentor.company}</p>
-                        <p className="text-sm text-gray-500 mb-4">{mentor.location}</p>
-                        
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Experience</p>
-                            <p className="font-semibold text-gray-800">{mentor.experience} years</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Sessions</p>
-                            <p className="font-semibold text-gray-800">{mentor.sessions}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Reviews</p>
-                            <p className="font-semibold text-gray-800">{mentor.reviews}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Attendance</p>
-                            <p className="font-semibold text-gray-800">{mentor.attendance}%</p>
-                          </div>
-                        </div>
-                        
-                        <button className="w-full md:w-auto bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 transition-colors">
-                          Schedule a Session
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="p-4 border-b border-gray-200 bg-gray-50">
-                    <h3 className="font-medium text-gray-800">Upcoming Sessions</h3>
-                  </div>
-                  <div className="p-6">
-                    {mentors.slice(0, visibleMentorCount).map(mentor => (
-                      <div key={mentor.uniqueId} className="flex items-center space-x-4 mb-4">
+                  {bookedSessions.length > 0 ? (
+                    bookedSessions.slice(0, visibleMentorCount).map(mentor => (
+                      <div key={mentor.uniqueId || `mentor-${mentor.id}`} className="flex items-center space-x-4 mb-4">
                         <div className="w-16 h-16 rounded-full overflow-hidden">
-                          <img 
-                            src={mentor.imageUrl}
-                            alt={mentor.name}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={mentor.imageUrl} alt={mentor.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <h4 className="text-lg font-semibold text-gray-800">{mentor.name}</h4>
                           <p className="text-sm text-gray-500">{mentor.role} at {mentor.company}</p>
                         </div>
                       </div>
-                    ))}
-                    {visibleMentorCount < mentors.length && (
-                      <button 
-                        className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                        onClick={handleViewMore}
-                      >
-                        View More
-                      </button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="p-4 border-b border-gray-200 bg-gray-50">
-                    <h3 className="font-medium text-gray-800">Past Sessions</h3>
-                  </div>
-                  <div className="p-6 text-center">
-                    <p className="text-gray-600">
-                      You haven&apos;t completed any mentor sessions yet.
-                    </p>
-                  </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">You haven&apos;t booked any sessions yet.</p>
+                      <button onClick={() => handleNavigate('explore')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">Find a Mentor</button>
+                    </div>
+                  )}
+                  {bookedSessions.length > visibleMentorCount && (
+                    <div className="text-center mt-4">
+                      <button onClick={handleViewMore} className="px-4 py-2 bg-white border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors">View More Sessions</button>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-200 bg-gray-50">
+                  <h3 className="font-medium text-gray-800">Past Sessions</h3>
+                </div>
+                <div className="p-6 text-center">
+                  <p className="text-gray-600">You haven&apos;t completed any mentor sessions yet.</p>
+                </div>
+              </div>
+            </div>
           </div>
         );
       case 'chat':
@@ -435,7 +400,7 @@ const MenteeDashboard: React.FC = () => {
           </button>
           
           <button 
-            onClick={() => setActiveNavItem('bookings')}
+            onClick={() => handleNavigate('bookings')}
             className={`flex items-center space-x-3 w-full px-3 py-2 rounded-lg transition-colors ${
               activeNavItem === 'bookings' 
                 ? 'bg-indigo-50 text-indigo-700' 
@@ -515,7 +480,7 @@ const MenteeDashboard: React.FC = () => {
         </button>
         
         <button 
-          onClick={() => setActiveNavItem('bookings')}
+          onClick={() => handleNavigate('bookings')}
           className={`flex flex-col items-center justify-center p-2 ${activeNavItem === 'bookings' ? 'text-indigo-600' : 'text-gray-600'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

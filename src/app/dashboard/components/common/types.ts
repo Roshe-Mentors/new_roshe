@@ -14,6 +14,7 @@ export interface Mentor {
   imageUrl: string;
   isTopRated: boolean;
   categories?: string[];
+  uniqueId?: string; // Added uniqueId for distinguishing mentors in lists
 }
 
 export interface NavItemProps {

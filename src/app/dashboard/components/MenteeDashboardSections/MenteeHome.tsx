@@ -23,7 +23,7 @@ const MenteeHome: React.FC<MenteeHomeProps> = ({ user, mentors, onNavigate }) =>
       <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-xl shadow-sm mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Welcome, {user?.name || 'there'}!</h2>
+            <h2 className="text-2xl font-bold mb-2">Welcome, {String(user?.name) || 'there'}!</h2>
             <p className="opacity-90">Ready to continue your learning journey today?</p>
           </div>
           <button 
