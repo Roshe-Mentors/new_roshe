@@ -39,7 +39,7 @@ export default function DashboardPage() {
       if (shouldBypass) {
         // Default to mentee dashboard in development mode
         // You can change this to 'mentor' to test the mentor view
-        setUserRole('mentee');
+        setUserRole('mentor');
         setIsLoading(false);
       }
     }

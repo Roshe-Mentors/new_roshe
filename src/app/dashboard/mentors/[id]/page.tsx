@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchMentorById } from '../../../lib/mentors';
-
+import { fetchMentorById, Mentor } from '../../../../lib/mentors';
 interface Slot {
   slot_id: string;
   start_time: string;
@@ -11,7 +10,7 @@ interface Slot {
 const MentorProfilePage = ({ params }: { params: { id: string } }) => {
   const mentorId = params.id;
   const router = useRouter();
-  const [mentor, setMentor] = useState<any>(null);
+  const [mentor, setMentor] = useState<Mentor | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState<string | null>(null);
@@ -26,7 +25,7 @@ const MentorProfilePage = ({ params }: { params: { id: string } }) => {
         const res = await fetch(`/api/mentors/${mentorId}/availability`);
         const data = await res.json();
         setSlots(data.slots || []);
-      } catch (err) {
+      } catch {
         setError('Failed to load mentor or availability.');
       } finally {
         setLoading(false);
@@ -47,7 +46,7 @@ const MentorProfilePage = ({ params }: { params: { id: string } }) => {
       if (!res.ok) throw new Error('Booking failed');
       // On success, redirect to My Sessions
       router.push('/dashboard/bookings');
-    } catch (err) {
+    } catch {
       setError('Booking failed. Please try again.');
     } finally {
       setBooking(null);
