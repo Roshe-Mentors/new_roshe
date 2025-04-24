@@ -13,6 +13,8 @@ export default function DashboardPage() {
   const [bypassAuth, setBypassAuth] = useState(false);
   const [userRole, setUserRole] = useState<'mentor' | 'mentee' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, loading: userLoading } = useUser();
+  const router = useRouter();
   
   // Set Supabase session from URL hash if present
   useEffect(() => {
@@ -38,15 +40,14 @@ export default function DashboardPage() {
       
       if (shouldBypass) {
         // Default to mentee dashboard in development mode
-        // You can change this to 'mentor' to test the mentor view
-        setUserRole('mentor');
+        setUserRole('mentee');
         setIsLoading(false);
+      } else {
+        // User declined the bypass, redirect to sign in
+        router.replace('/signIn');
       }
     }
-  }, [isDevelopmentMode, bypassAuth]);
-
-  const { user, loading: userLoading } = useUser();
-  const router = useRouter();
+  }, [isDevelopmentMode, bypassAuth, router]);
 
   // Fetch user role when user data is available
   useEffect(() => {

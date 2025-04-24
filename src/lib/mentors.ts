@@ -2,6 +2,52 @@ import { supabase } from './supabaseClient';
 import { Mentor } from '../app/dashboard/components/common/types';
 
 /**
+ * Interface for raw mentor data from the database
+ */
+interface MentorRecord {
+  id: string;
+  user_id?: string;
+  name?: string;
+  location?: string;
+  specialization?: string;
+  role?: string;
+  company?: string;
+  sessions_completed?: number;
+  reviews_count?: number;
+  years_experience?: number;
+  attendance_rate?: number;
+  is_available_asap?: boolean;
+  provides_coaching?: boolean;
+  profile_image_url?: string;
+  is_top_rated?: boolean;
+  categories?: string[];
+}
+
+/**
+ * Interface for raw session data from the database
+ */
+interface SessionRecord {
+  id: string;
+  user_id: string;
+  mentor_id: string;
+  date: string;
+  time: string;
+  session_type: string;
+  meeting_url?: string;
+  mentor?: MentorRecord;
+}
+
+/**
+ * Interface for session data with mentor information
+ */
+interface SessionWithMentor extends Mentor {
+  sessionDate: string;
+  sessionTime: string;
+  sessionType: string;
+  meetingUrl?: string;
+}
+
+/**
  * Fetch all mentors from the Supabase database
  * @returns Array of mentor objects
  */
@@ -17,7 +63,7 @@ export async function fetchAllMentors(): Promise<Mentor[]> {
     }
 
     // Map the database fields to the Mentor interface
-    return data.map((mentor: any) => ({
+    return data.map((mentor: MentorRecord) => ({
       id: mentor.user_id || mentor.id,
       name: mentor.name || 'Anonymous',
       location: mentor.location || 'Unknown',
@@ -84,7 +130,7 @@ export async function fetchMentorById(id: string): Promise<Mentor | null> {
  * @param userId The user ID of the mentee
  * @returns Array of session objects (with mentor info)
  */
-export async function fetchBookedSessionsByUser(userId: string): Promise<any[]> {
+export async function fetchBookedSessionsByUser(userId: string): Promise<SessionWithMentor[]> {
   try {
     // Adjust table/column names as needed
     const { data, error } = await supabase
@@ -99,7 +145,7 @@ export async function fetchBookedSessionsByUser(userId: string): Promise<any[]> 
     }
 
     // Map sessions to include mentor info for display
-    return data.map((session: any, idx: number) => ({
+    return data.map((session: SessionRecord, idx: number) => ({
       id: session.id,
       uniqueId: `${session.id}-${idx}`,
       name: session.mentor?.name || 'Mentor',
