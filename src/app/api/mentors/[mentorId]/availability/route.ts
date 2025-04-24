@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, type RequestEvent } from 'next/server';
 import { supabase } from '../../../../../lib/supabaseClient';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { mentorId: string } }
+  { params }: RequestEvent
 ) {
-  const { mentorId } = params;
-  
+  const mentorId = params.mentorId;
+
   // Get current time to filter out past slots
   const now = new Date().toISOString();
-  
+
   const { data, error } = await supabase
     .from('availability')
     .select('id, start_time, end_time')
     .eq('mentor_id', mentorId)
-    .eq('status', 'available') // Changed from 'free' to 'available' to match our schema
-    .gt('start_time', now) // Only return future slots
+    .eq('status', 'available')
+    .gt('start_time', now)
     .order('start_time', { ascending: true });
 
   if (error) {
