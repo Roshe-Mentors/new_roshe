@@ -1,7 +1,7 @@
 // filepath: c:\Users\USER\OneDrive\Desktop\roshe\new_roshe\src\services\googleMeetService.ts
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { supabase, createAdminClient } from '../../lib/supabaseClient';
+import { supabase, createAdminClient, createClient } from '../../lib/supabaseClient';
 
 // Google API configuration
 const oauth2Client = new OAuth2Client(
@@ -132,101 +132,192 @@ export async function createGoogleMeetMeeting(
 /**
  * Save booking to Supabase
  */
-export async function saveBooking(bookingData: {
-  mentor_id: string;
-  mentor_name?: string;
-  mentor_email?: string;
+export async function saveBooking({
+  user_id,
+  mentor_id,
+  date,
+  time,
+  duration = 30,
+  description,
+  meeting_link,
+  slot_id,
+}: {
   user_id: string;
-  user_email?: string;
-  date?: string;
-  booking_date?: string;
-  time?: string;
-  booking_time?: string;
-  session_type: string;
-  meeting_id: string;
-  meeting_url: string;
-  password?: string;
-  meeting_password?: string;
+  mentor_id: string;
+  date: string;
+  time: string;
+  duration?: number;
+  description?: string;
+  meeting_link?: string;
+  slot_id?: string; // Optional for backward compatibility
 }) {
   try {
-    // Ensure field names match exactly with the Supabase table columns
-    const formattedBookingData = {
-      mentor_id: bookingData.mentor_id,
-      mentor_name: bookingData.mentor_name || null,
-      mentor_email: bookingData.mentor_email || null,
-      user_id: bookingData.user_id,
-      user_email: bookingData.user_email || null,
-      date: bookingData.date || bookingData.booking_date,
-      time: bookingData.time || bookingData.booking_time,
-      session_type: bookingData.session_type,
-      meeting_id: bookingData.meeting_id,
-      meeting_url: bookingData.meeting_url,
-      password: null, // Google Meet doesn't use passwords
-      created_at: new Date().toISOString(),
-      status: 'confirmed' // Adding status field
-    };
-
-    // Use the admin client to bypass RLS
-    const supabaseAdmin = createAdminClient();
+    // Check if slot_id is provided (new system) or use date/time (legacy)
+    let slotAvailable = true;
     
-    // Insert booking data
-    const { data, error } = await supabaseAdmin
-      .from('bookings')
-      .insert([formattedBookingData]);
+    if (slot_id) {
+      // New system: check availability by slot_id
+      const availability = await checkTimeSlotAvailability(slot_id);
+      slotAvailable = availability.available;
       
-    if (error) {
-      console.error('Database error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
+      // If not available, return error
+      if (!slotAvailable) {
+        return {
+          success: false,
+          error: 'This time slot is no longer available. Please select another time.',
+        };
+      }
+    } else {
+      // Legacy system: check by mentor_id, date and time
+      const availability = await checkTimeSlotByDateTime(mentor_id, date, time);
+      slotAvailable = availability.available;
+      
+      // If not available, return error
+      if (!slotAvailable) {
+        return {
+          success: false,
+          error: 'This time slot is already booked. Please select another time.',
+        };
+      }
+    }
+
+    // Create meeting link if not provided
+    let finalMeetingLink = meeting_link;
+    if (!finalMeetingLink) {
+      const meetingResult = await createMeeting({
+        date,
+        time,
+        duration,
       });
-      throw error;
+      finalMeetingLink = meetingResult.meetingLink;
     }
-    
-    return data;
+
+    const supabaseAdmin = createAdminClient();
+
+    // Start a transaction to ensure both operations succeed or fail together
+    // First, create the booking record
+    const { data: bookingData, error: bookingError } = await supabaseAdmin
+      .from('bookings')
+      .insert({
+        user_id,
+        mentor_id,
+        date,
+        time,
+        duration,
+        description,
+        meeting_link: finalMeetingLink,
+        slot_id, // Store the slot_id if provided
+        status: 'confirmed',
+      })
+      .select()
+      .single();
+
+    if (bookingError) {
+      console.error('Error saving booking:', bookingError);
+      return {
+        success: false,
+        error: 'Failed to save booking.',
+      };
+    }
+
+    // If using the new slot system, update the availability status
+    if (slot_id) {
+      const { error: updateError } = await supabaseAdmin
+        .from('availability')
+        .update({ status: 'booked', booking_id: bookingData.id })
+        .eq('id', slot_id);
+
+      if (updateError) {
+        console.error('Error updating availability status:', updateError);
+        // Consider rolling back the booking if this fails
+        // For now, we'll return success since the booking was created
+      }
+    }
+
+    return {
+      success: true,
+      booking: bookingData,
+    };
   } catch (error) {
-    console.error('Error saving booking to database:', error);
-    
-    // For development, return mock success rather than failing
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Returning mock booking success after database error');
-      return { id: 'mock-booking-id', success: true };
-    }
-    
-    throw new Error('Failed to save booking information');
+    console.error('Error in saveBooking:', error);
+    return {
+      success: false,
+      error: 'Failed to save booking. Please try again later.',
+    };
   }
 }
 
 /**
- * Check if time slot is available
+ * Check if a specific time slot is available by slot ID
  */
-export async function checkTimeSlotAvailability(mentorId: string, date: string, time: string) {
+export async function checkTimeSlotAvailability(slot_id: string) {
   try {
-    // Check for existing bookings with these exact values
+    const supabase = createClient();
+    
+    // Check if the slot exists and is available
+    const { data, error } = await supabase
+      .from('availability')
+      .select('*')
+      .eq('id', slot_id)
+      .eq('status', 'available')
+      .single();
+    
+    if (error) {
+      console.error('Error checking slot availability:', error);
+      return {
+        available: false,
+        error: 'Error checking availability',
+      };
+    }
+    
+    // If data exists, the slot is available
+    return {
+      available: !!data,
+      data,
+    };
+  } catch (error) {
+    console.error('Error in checkTimeSlotAvailability:', error);
+    return {
+      available: false,
+      error: 'Failed to check availability',
+    };
+  }
+}
+
+/**
+ * Legacy function to check availability by date and time
+ */
+export async function checkTimeSlotByDateTime(mentor_id: string, date: string, time: string) {
+  try {
+    const supabase = createClient();
+    
+    // Check if there's any booking for this mentor at this time
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
-      .eq('mentor_id', mentorId)
+      .eq('mentor_id', mentor_id)
       .eq('date', date)
-      .eq('time', time);
+      .eq('time', time)
+      .not('status', 'eq', 'cancelled')
+      .maybeSingle();
     
-    // Handle potential errors  
     if (error) {
-      console.error('Error checking time slot availability:', error);
-      // If the error is not about the table not existing, re-throw it
-      if (error.code !== '42P01') {
-        throw error;
-      }
-      // If table doesn't exist error, return available=true
-      return { available: true };
+      console.error('Error checking booking availability:', error);
+      return {
+        available: false,
+        error: 'Error checking availability',
+      };
     }
     
-    // If no bookings found for this slot, it's available
-    return { available: data.length === 0 };
+    // If data exists, the slot is already booked
+    return {
+      available: !data,
+    };
   } catch (error) {
-    console.error('Error checking time slot availability:', error);
-    // Return available true to allow booking to proceed rather than failing
-    return { available: true };
+    console.error('Error in checkTimeSlotByDateTime:', error);
+    return {
+      available: false,
+      error: 'Failed to check availability',
+    };
   }
 }

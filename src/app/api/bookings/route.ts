@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const bookingData = await request.json();
     
     // Validate required fields
-    const requiredFields = ['mentorId', 'userId', 'date', 'time', 'sessionType'];
+    const requiredFields = ['mentorId', 'userId', 'date', 'time', 'sessionType', 'slotId'];
     for (const field of requiredFields) {
       if (!bookingData[field]) {
         return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
 
       // Prepare booking data for database
       const fullBookingData = {
+        slot_id: bookingData.slotId,
         mentor_id: bookingData.mentorId,
         mentor_name: bookingData.mentorName,
         mentor_email: bookingData.mentorEmail,
@@ -60,8 +61,18 @@ export async function POST(request: NextRequest) {
         // No password for Google Meet
       };
 
-      // Save to database
+      // Save to database and then update slot status
       const bookingResult = await saveBooking(fullBookingData);
+      // Mark the availability slot as booked
+      try {
+        const supabaseAdmin = (await import('../../../lib/supabaseClient')).createAdminClient();
+        await supabaseAdmin
+          .from('availability')
+          .update({ status: 'booked' })
+          .eq('id', bookingData.slotId);
+      } catch (slotError) {
+        console.error('Failed to mark slot as booked:', slotError);
+      }
 
       // Return success response with meeting details
       return NextResponse.json({
@@ -88,6 +99,7 @@ export async function POST(request: NextRequest) {
         // Attempt to save the mock booking to database
         try {
           const fullBookingData = {
+            slot_id: bookingData.slotId,
             mentor_id: bookingData.mentorId,
             mentor_name: bookingData.mentorName || 'Mock Mentor',
             mentor_email: bookingData.mentorEmail || 'mentor@example.com',
@@ -101,6 +113,16 @@ export async function POST(request: NextRequest) {
           };
           
           await saveBooking(fullBookingData);
+          // Mark the availability slot as booked
+          try {
+            const supabaseAdmin = (await import('../../../lib/supabaseClient')).createAdminClient();
+            await supabaseAdmin
+              .from('availability')
+              .update({ status: 'booked' })
+              .eq('id', bookingData.slotId);
+          } catch (slotError) {
+            console.error('Failed to mark slot as booked:', slotError);
+          }
         } catch (dbError) {
           console.error('Failed to save mock booking to database:', dbError);
           // Continue even if database save fails

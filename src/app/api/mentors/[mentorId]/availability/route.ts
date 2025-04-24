@@ -6,11 +6,16 @@ export async function GET(
   { params }: { params: { mentorId: string } }
 ) {
   const { mentorId } = params;
+  
+  // Get current time to filter out past slots
+  const now = new Date().toISOString();
+  
   const { data, error } = await supabase
     .from('availability')
     .select('id, start_time, end_time')
     .eq('mentor_id', mentorId)
-    .eq('status', 'free')
+    .eq('status', 'available') // Changed from 'free' to 'available' to match our schema
+    .gt('start_time', now) // Only return future slots
     .order('start_time', { ascending: true });
 
   if (error) {
