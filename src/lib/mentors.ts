@@ -1,0 +1,80 @@
+import { supabase } from './supabaseClient';
+import { Mentor } from '../app/dashboard/components/common/types';
+
+/**
+ * Fetch all mentors from the Supabase database
+ * @returns Array of mentor objects
+ */
+export async function fetchAllMentors(): Promise<Mentor[]> {
+  try {
+    const { data, error } = await supabase
+      .from('mentors')
+      .select('*');
+    
+    if (error) {
+      console.error('Error fetching mentors:', error);
+      return [];
+    }
+
+    // Map the database fields to the Mentor interface
+    return data.map((mentor: any) => ({
+      id: mentor.user_id || mentor.id,
+      name: mentor.name || 'Anonymous',
+      location: mentor.location || 'Unknown',
+      role: mentor.specialization || mentor.role || 'Mentor',
+      company: mentor.company || 'Independent',
+      sessions: mentor.sessions_completed || 0,
+      reviews: mentor.reviews_count || 0,
+      experience: mentor.years_experience || 0,
+      attendance: mentor.attendance_rate || 98,
+      isAvailableASAP: mentor.is_available_asap || false,
+      providesCoaching: mentor.provides_coaching || false,
+      imageUrl: mentor.profile_image_url || "/images/mentor_pic.png", // Default image
+      isTopRated: mentor.is_top_rated || false,
+      categories: mentor.categories || [],
+    }));
+  } catch (err) {
+    console.error('Unexpected error when fetching mentors:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetch a mentor by their user ID
+ * @param id The user ID of the mentor
+ * @returns Mentor object or null if not found
+ */
+export async function fetchMentorById(id: string): Promise<Mentor | null> {
+  try {
+    const { data, error } = await supabase
+      .from('mentors')
+      .select('*')
+      .eq('user_id', id)
+      .single();
+    
+    if (error || !data) {
+      console.error('Error fetching mentor:', error);
+      return null;
+    }
+
+    return {
+      id: data.user_id || data.id,
+      name: data.name || 'Anonymous',
+      location: data.location || 'Unknown',
+      role: data.specialization || data.role || 'Mentor',
+      company: data.company || 'Independent',
+      sessions: data.sessions_completed || 0,
+      reviews: data.reviews_count || 0,
+      experience: data.years_experience || 0,
+      attendance: data.attendance_rate || 98,
+      isAvailableASAP: data.is_available_asap || false,
+      providesCoaching: data.provides_coaching || false,
+      imageUrl: data.profile_image_url || "/images/mentor_pic.png", // Default image
+      isTopRated: data.is_top_rated || false,
+      categories: data.categories || [],
+    };
+  } catch (err) {
+    console.error('Unexpected error when fetching mentor by ID:', err);
+    return null;
+  }
+}

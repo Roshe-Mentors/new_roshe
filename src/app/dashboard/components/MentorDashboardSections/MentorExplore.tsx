@@ -231,9 +231,9 @@ const MentorExplore: React.FC<MentorExploreProps> = ({ mentors, onSelectMentor }
       {/* Mentor Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
         {filteredMentors.length > 0 ? (
-          filteredMentors.map((mentor) => (
+          filteredMentors.map((mentor, index) => (
             <div 
-              key={mentor.id} 
+              key={`mentor-${mentor.id}-${index}`} 
               className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200 cursor-pointer"
               onClick={() => handleSelectMentor(mentor.id)}
             >

@@ -13,7 +13,7 @@ import {
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-white border-t border-gray-200 py-12">
+    <footer className="bg-white border-t border-gray-200 py-12 relative z-20">
       <div className="container mx-auto px-6">
         {/* Logo Section */}
         <div className="flex justify-center md:justify-start mb-6">

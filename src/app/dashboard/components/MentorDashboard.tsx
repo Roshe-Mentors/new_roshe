@@ -3,8 +3,9 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
-import { mentorsData } from '../data/mentors';
 import { getUserRole, UserRole } from '../../../lib/user';
+import { fetchAllMentors } from '../../../../lib/mentors';
+import { Mentor } from './common/types';
 
 // Import shared components
 import { NavItem } from './common/DashboardComponents';
@@ -62,26 +63,100 @@ const MentorDashboard: React.FC = () => {
   const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('home');
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const isDevelopmentMode = process.env.NODE_ENV === 'development';
+
+  // Fetch mentors from Supabase
+  useEffect(() => {
+    const loadMentors = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchAllMentors();
+        console.log('Fetched mentors data:', data);
+        setMentors(data.length > 0 ? data : []); 
+      } catch (error) {
+        console.error('Error loading mentors:', error);
+        // In development mode, if there's an error or no data, create some mock data for testing
+        if (isDevelopmentMode) {
+          console.log('Using mock data for development');
+          setMentors([
+            {
+              id: 'dev-1',
+              name: 'Development Mentor 1',
+              location: 'Test Location',
+              role: 'Test Role',
+              company: 'Test Company',
+              sessions: 10,
+              reviews: 5,
+              experience: 3,
+              attendance: 95,
+              isAvailableASAP: true,
+              providesCoaching: true,
+              imageUrl: '/images/mentor_pic.png',
+              isTopRated: true,
+              categories: ['3D', 'Animation']
+            },
+            {
+              id: 'dev-2',
+              name: 'Development Mentor 2',
+              location: 'Test Location 2',
+              role: 'Test Role 2',
+              company: 'Test Company 2',
+              sessions: 20,
+              reviews: 15,
+              experience: 5,
+              attendance: 98,
+              isAvailableASAP: false,
+              providesCoaching: true,
+              imageUrl: '/images/bj.jpg',
+              isTopRated: false,
+              categories: ['Modeling', 'Rigging']
+            }
+          ]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadMentors();
+  }, [isDevelopmentMode]);
 
   // Fetch user role when component mounts
   useEffect(() => {
     const fetchUserRole = async () => {
+      // For development mode without a user, set a default role
+      if (!user?.id && isDevelopmentMode) {
+        console.log('Setting default user role for development');
+        setUserRole('mentee');
+        return;
+      }
+
       if (user?.id) {
-        const role = await getUserRole(user.id);
-        setUserRole(role);
-        console.log('User role:', role);
+        try {
+          const role = await getUserRole(user.id);
+          setUserRole(role);
+          console.log('User role:', role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+          if (isDevelopmentMode) {
+            // Default fallback for development
+            setUserRole('mentee');
+          }
+        }
       }
     };
     
     fetchUserRole();
-  }, [user]);
+  }, [user, isDevelopmentMode]);
 
   // Make sure we have a selected mentor when viewing booking page
   useEffect(() => {
-    if (activeNavItem === 'calendar' && !selectedMentorId && mentorsData.length > 0) {
-      setSelectedMentorId(mentorsData[0].id);
+    if (activeNavItem === 'calendar' && !selectedMentorId && mentors.length > 0) {
+      setSelectedMentorId(mentors[0].id);
     }
-  }, [activeNavItem, selectedMentorId]);
+  }, [activeNavItem, selectedMentorId, mentors]);
 
   // Function to navigate between sections from the home screen
   const handleNavigate = (section: 'explore' | 'community' | 'calendar' | 'chat') => {
@@ -106,21 +181,47 @@ const MentorDashboard: React.FC = () => {
     // Create a default user object that satisfies Record<string, unknown>
     const userRecord: Record<string, unknown> = user ? 
       { ...(user as unknown as Record<string, unknown>), role: userRole } : 
-      { name: "User", image: "/images/mentor_pic.png", role: userRole };
+      { 
+        name: "Development User", 
+        image: "/images/mentor_pic.png", 
+        role: userRole,
+        id: "dev-user-id",
+        email: "dev@example.com"
+      };
       
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-pulse flex space-x-4">
+            <div className="rounded-full bg-slate-200 h-10 w-10"></div>
+            <div className="flex-1 space-y-6 py-1">
+              <div className="h-2 bg-slate-200 rounded"></div>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="h-2 bg-slate-200 rounded col-span-2"></div>
+                  <div className="h-2 bg-slate-200 rounded col-span-1"></div>
+                </div>
+                <div className="h-2 bg-slate-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeNavItem) {
       case 'home':
         return (
           <MentorHome 
             user={userRecord}
-            mentors={mentorsData} 
+            mentors={mentors} 
             onNavigate={handleNavigate} 
             userRole={userRole}
           />
         );
       case 'explore':
         return <MentorExplore 
-          mentors={mentorsData} 
+          mentors={mentors} 
           onSelectMentor={(mentorId) => {
             setSelectedMentorId(mentorId);
             setActiveNavItem('calendar'); // Navigate to bookings when a mentor is selected
@@ -131,7 +232,7 @@ const MentorDashboard: React.FC = () => {
       case 'calendar':
         return (
           <MentorBookings
-            mentors={mentorsData}
+            mentors={mentors}
             selectedMentorId={selectedMentorId}
             setSelectedMentorId={setSelectedMentorId}
             user={userRecord} // Use userRecord instead of user
@@ -143,14 +244,14 @@ const MentorDashboard: React.FC = () => {
         return (
           <MentorAchievements 
             user={userRecord} // Use userRecord instead of user
-            selectedMentor={selectedMentorId ? mentorsData.find(m => m.id === selectedMentorId) : undefined}
+            selectedMentor={selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : undefined}
           />
         );
       default:
         return (
           <MentorHome
             user={userRecord}
-            mentors={mentorsData}
+            mentors={mentors}
             onNavigate={handleNavigate}
             userRole={userRole}
           />

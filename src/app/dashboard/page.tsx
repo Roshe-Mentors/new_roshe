@@ -1,11 +1,19 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MentorDashboard from './components/MentorDashboard';
+import MenteeDashboard from './components/MenteeDashboard';
 import { useUser } from '../../lib/auth';
+import { getUserRole } from '../../lib/user';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function DashboardPage() {
+  // Development mode flag - set to true to bypass authentication in local development
+  const isDevelopmentMode = process.env.NODE_ENV === 'development';
+  const [bypassAuth, setBypassAuth] = useState(false);
+  const [userRole, setUserRole] = useState<'mentor' | 'mentee' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
   // Set Supabase session from URL hash if present
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
@@ -20,24 +28,67 @@ export default function DashboardPage() {
         });
       }
     }
-  }, []);
 
-  const { user, loading } = useUser();
+    // For development, allow bypassing authentication after confirming
+    if (isDevelopmentMode && !bypassAuth) {
+      const shouldBypass = window.confirm(
+        'You are not logged in. Would you like to bypass authentication to view the dashboard? (Development mode only)'
+      );
+      setBypassAuth(shouldBypass);
+      
+      if (shouldBypass) {
+        // Default to mentee dashboard in development mode
+        // You can change this to 'mentor' to test the mentor view
+        setUserRole('mentee');
+        setIsLoading(false);
+      }
+    }
+  }, [isDevelopmentMode, bypassAuth]);
+
+  const { user, loading: userLoading } = useUser();
   const router = useRouter();
 
+  // Fetch user role when user data is available
   useEffect(() => {
-    if (!loading && !user) {
+    const fetchRole = async () => {
+      if (!userLoading && user?.id) {
+        try {
+          const role = await getUserRole(user.id);
+          setUserRole(role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else if (!userLoading && !user && !bypassAuth) {
+        // No user and not bypassing auth, redirect to sign in
+        router.replace('/signIn');
+      }
+    };
+
+    fetchRole();
+  }, [userLoading, user, router, bypassAuth]);
+
+  // Redirect to login if not authenticated and not in development bypass mode
+  useEffect(() => {
+    if (!userLoading && !user && !bypassAuth && !isDevelopmentMode) {
       router.replace('/signIn');
     }
-  }, [loading, user, router]);
+  }, [userLoading, user, router, bypassAuth, isDevelopmentMode]);
 
-  if (loading || !user) {
+  // Show loading state while checking authentication and user role
+  if ((userLoading || isLoading) && !(isDevelopmentMode && bypassAuth)) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  // Render the appropriate dashboard based on user role
   return (
     <main className="min-h-screen">
-      <MentorDashboard />
+      {userRole === 'mentor' ? (
+        <MentorDashboard />
+      ) : (
+        <MenteeDashboard />
+      )}
     </main>
   );
 }
