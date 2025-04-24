@@ -15,6 +15,7 @@ export interface Mentor {
   isTopRated: boolean;
   categories?: string[];
   uniqueId?: string; // Added uniqueId for distinguishing mentors in lists
+  email?: string;  // Add email field for mentor contact
 }
 
 export interface NavItemProps {

@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse, type RequestEvent } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../../lib/supabaseClient';
 
 export async function GET(
   request: NextRequest,
-  { params }: RequestEvent
+  context: { params: { mentorId: string } }
 ) {
-  const mentorId = params.mentorId;
+  const { mentorId } = context.params;
 
   // Get current time to filter out past slots
   const now = new Date().toISOString();
