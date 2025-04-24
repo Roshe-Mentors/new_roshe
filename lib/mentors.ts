@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { Mentor } from '../src/app/dashboard/components/common/types';
 
 /**
- * Interface for mentor data from the database
+ * Interface for raw mentor data from the database
  */
 interface MentorRecord {
   id: string;
@@ -21,6 +21,32 @@ interface MentorRecord {
   profile_image_url?: string;
   is_top_rated?: boolean;
   categories?: string[];
+  email?: string;
+}
+
+/**
+ * Interface for raw session data from the database
+ */
+interface SessionRecord {
+  id: string;
+  user_id: string;
+  mentor_id: string;
+  date: string;
+  time: string;
+  session_type: string;
+  meeting_url?: string;
+  mentor?: MentorRecord;
+}
+
+/**
+ * Interface for session data with mentor information
+ */
+interface SessionWithMentor extends Mentor {
+  sessionDate: string;
+  sessionTime: string;
+  sessionType: string;
+  meetingUrl?: string;
+  uniqueId?: string;
 }
 
 /**
@@ -98,5 +124,52 @@ export async function fetchMentorById(id: string): Promise<Mentor | null> {
   } catch (err) {
     console.error('Unexpected error when fetching mentor by ID:', err);
     return null;
+  }
+}
+
+/**
+ * Fetch booked sessions for a mentee by user ID
+ * @param userId The user ID of the mentee
+ * @returns Array of session objects (with mentor info)
+ */
+export async function fetchBookedSessionsByUser(userId: string): Promise<SessionWithMentor[]> {
+  try {
+    // Adjust table/column names as needed
+    const { data, error } = await supabase
+      .from('sessions')
+      .select(`*, mentor:mentor_id(*)`)
+      .eq('user_id', userId)
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching booked sessions:', error);
+      return [];
+    }
+
+    // Map sessions to include mentor info for display
+    return data.map((session: SessionRecord, idx: number) => ({
+      id: session.id,
+      uniqueId: `${session.id}-${idx}`,
+      name: session.mentor?.name || 'Mentor',
+      location: session.mentor?.location || '',
+      role: session.mentor?.role || '',
+      company: session.mentor?.company || '',
+      sessions: session.mentor?.sessions_completed || 0,
+      reviews: session.mentor?.reviews_count || 0,
+      experience: session.mentor?.years_experience || 0,
+      attendance: session.mentor?.attendance_rate || 98,
+      isAvailableASAP: session.mentor?.is_available_asap || false,
+      providesCoaching: session.mentor?.provides_coaching || false,
+      imageUrl: session.mentor?.profile_image_url || '/images/mentor_pic.png',
+      isTopRated: session.mentor?.is_top_rated || false,
+      categories: session.mentor?.categories || [],
+      sessionDate: session.date,
+      sessionTime: session.time,
+      sessionType: session.session_type,
+      meetingUrl: session.meeting_url,
+    }));
+  } catch (err) {
+    console.error('Unexpected error when fetching booked sessions:', err);
+    return [];
   }
 }
