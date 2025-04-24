@@ -56,6 +56,12 @@ const MenteeDashboard: React.FC = () => {
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
+  const [visibleMentorCount, setVisibleMentorCount] = useState(3); // Initially show 3 mentors in My Sessions
+
+  // Function to show more mentors in the My Sessions view
+  const handleViewMore = () => {
+    setVisibleMentorCount(prev => prev + 3); // Show 3 more mentors each time
+  };
 
   const fetchMentorsWithUniqueIds = async () => {
     setIsLoading(true);
@@ -266,16 +272,30 @@ const MenteeDashboard: React.FC = () => {
                   <div className="p-4 border-b border-gray-200 bg-gray-50">
                     <h3 className="font-medium text-gray-800">Upcoming Sessions</h3>
                   </div>
-                  <div className="p-6 text-center">
-                    <p className="text-gray-600">
-                      You don&apos;t have any upcoming sessions scheduled.
-                    </p>
-                    <button 
-                      className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                      onClick={() => setActiveNavItem('explore')}
-                    >
-                      Book a Session
-                    </button>
+                  <div className="p-6">
+                    {mentors.slice(0, visibleMentorCount).map(mentor => (
+                      <div key={mentor.uniqueId} className="flex items-center space-x-4 mb-4">
+                        <div className="w-16 h-16 rounded-full overflow-hidden">
+                          <img 
+                            src={mentor.imageUrl}
+                            alt={mentor.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-semibold text-gray-800">{mentor.name}</h4>
+                          <p className="text-sm text-gray-500">{mentor.role} at {mentor.company}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {visibleMentorCount < mentors.length && (
+                      <button 
+                        className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        onClick={handleViewMore}
+                      >
+                        View More
+                      </button>
+                    )}
                   </div>
                 </div>
                 
@@ -372,7 +392,7 @@ const MenteeDashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden pt-0">
+    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Welcome Message */}
       <Suspense fallback={<div>Loading...</div>}>
         <WelcomeMessage setShowWelcome={setShowWelcome} showWelcome={showWelcome} />
@@ -525,8 +545,8 @@ const MenteeDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 md:ml-64 p-6 pt-6 pb-40">
+      {/* Main Content - Added pt-8 for more top padding */}
+      <div className="flex-1 md:ml-64 p-6 pt-8 pb-40">
         {renderContent()}
       </div>
     </div>
