@@ -326,9 +326,9 @@ const MenteeDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="border-b border-gray-200 pb-4">
                     <h4 className="text-sm font-medium text-gray-500 mb-2">ACCOUNT INFORMATION</h4>
-                    <button className="text-indigo-600 hover:text-indigo-800 text-sm">
+                    <a href="/dashboard/profile/general" className="text-indigo-600 hover:text-indigo-800 text-sm inline-block">
                       Edit profile information
-                    </button>
+                    </a>
                   </div>
                   
                   <div className="border-b border-gray-200 pb-4">
