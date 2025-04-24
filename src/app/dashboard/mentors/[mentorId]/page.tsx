@@ -1,14 +1,14 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '../../../../lib/auth';
 import { fetchMentorById } from '../../../../lib/mentors';
 import { Mentor } from '../../components/common/types';
 
 interface Slot { id: string; start_time: string; end_time: string; }
 
-const MentorDetailPage: React.FC<{ params: { mentorId: string } }> = ({ params }) => {
-  const { mentorId } = params;
+export default function MentorDetailPage() {
+  const { mentorId } = useParams() as { mentorId: string };
   const router = useRouter();
   const { user } = useUser();
 
@@ -82,6 +82,4 @@ const MentorDetailPage: React.FC<{ params: { mentorId: string } }> = ({ params }
       )}
     </div>
   );
-};
-
-export default MentorDetailPage;
+}
