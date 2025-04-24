@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '../../../../lib/auth';
 import { fetchMentorById } from '../../../../lib/mentors';
+import { Mentor } from '../../components/common/types';
 
 interface Slot { id: string; start_time: string; end_time: string; }
 
@@ -11,7 +12,7 @@ const MentorDetailPage: React.FC<{ params: { mentorId: string } }> = ({ params }
   const router = useRouter();
   const { user } = useUser();
 
-  const [mentor, setMentor] = useState<any>(null);
+  const [mentor, setMentor] = useState<Mentor | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
@@ -35,8 +36,8 @@ const MentorDetailPage: React.FC<{ params: { mentorId: string } }> = ({ params }
       slotId: slot.id,
       mentorId,
       userId: user.id,
-      mentorName: mentor.name,
-      mentorEmail: mentor.email,
+      mentorName: mentor?.name,
+      mentorEmail: mentor?.email,
       userEmail: user.email,
       date: new Date(slot.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       time: new Date(slot.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),

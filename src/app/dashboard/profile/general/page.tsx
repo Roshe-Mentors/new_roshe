@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useUser } from '../../../../lib/auth';
 import { getMentorProfileByUser, updateMentorProfile } from '../../../../services/profileService';
 import { getUserRole } from '../../../../lib/user';
@@ -22,7 +23,7 @@ export default function GeneralPage() {
   const { user, loading: userLoading } = useUser();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const { register, handleSubmit, reset, setValue, watch, formState: { isSubmitting, errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, watch, formState: { isSubmitting, errors } } = useForm<FormData>({
     criteriaMode: 'all'
   });
 
@@ -207,14 +208,22 @@ export default function GeneralPage() {
             {watch('profile_image_url') && (
               <div className="mt-2">
                 <p className="text-sm text-gray-600 mb-1">Preview:</p>
-                <img 
-                  src={watch('profile_image_url')} 
-                  alt="Profile preview" 
-                  className="w-20 h-20 object-cover rounded-full border border-gray-300"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/images/mentor_pic.png";
-                  }}
-                />
+                <div className="relative w-20 h-20 rounded-full border border-gray-300 overflow-hidden">
+                  <Image 
+                    src={watch('profile_image_url')} 
+                    alt="Profile preview" 
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      // TypeScript doesn't like direct src setting on Image component
+                      // Instead we'll use a fallback URL pattern
+                      const imgElement = e.target as HTMLImageElement;
+                      if (imgElement.src !== "/images/mentor_pic.png") {
+                        imgElement.src = "/images/mentor_pic.png";
+                      }
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>

@@ -2,6 +2,28 @@ import { supabase } from './supabaseClient';
 import { Mentor } from '../src/app/dashboard/components/common/types';
 
 /**
+ * Interface for mentor data from the database
+ */
+interface MentorRecord {
+  id: string;
+  user_id?: string;
+  name?: string;
+  location?: string;
+  specialization?: string;
+  role?: string;
+  company?: string;
+  sessions_completed?: number;
+  reviews_count?: number;
+  years_experience?: number;
+  attendance_rate?: number;
+  is_available_asap?: boolean;
+  provides_coaching?: boolean;
+  profile_image_url?: string;
+  is_top_rated?: boolean;
+  categories?: string[];
+}
+
+/**
  * Fetch all mentors from the Supabase database
  * @returns Array of mentor objects
  */
@@ -17,7 +39,7 @@ export async function fetchAllMentors(): Promise<Mentor[]> {
     }
 
     // Map the database fields to the Mentor interface
-    return data.map((mentor: any) => ({
+    return data.map((mentor: MentorRecord) => ({
       id: mentor.user_id || mentor.id,
       name: mentor.name || 'Anonymous',
       location: mentor.location || 'Unknown',
