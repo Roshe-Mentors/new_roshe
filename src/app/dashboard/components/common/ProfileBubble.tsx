@@ -9,7 +9,7 @@ interface ProfileBubbleProps {
   userRole: UserRole | null;
 }
 
-const ProfileBubble: React.FC<ProfileBubbleProps> = ({ user, userRole }) => {
+const ProfileBubble: React.FC<ProfileBubbleProps> = ({ user }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
 import { getUserRole, UserRole } from '../../../lib/user';
-import { fetchAllMentors, fetchMentorById } from '../../../lib/mentors';
+import { fetchMentorById } from '../../../lib/mentors';
 import { Mentor } from './common/types';
 import BaseDashboard from './common/BaseDashboard';
 
@@ -140,16 +140,16 @@ const MentorDashboard: React.FC = () => {
     switch (activeNavItem) {
       case 'home':
         return (
-          <MentorHome 
+          <MentorHome
             user={userRecord}
-            mentor={mentor}
-            onNavigate={handleNavigate} 
+            mentors={mentor ? [mentor] : []}
+            onNavigate={handleNavigate}
             userRole={userRole}
           />
         );
       case 'explore':
-        return <MentorExplore 
-          mentors={[mentor].filter(Boolean)} 
+        return <MentorExplore
+          mentors={mentor ? [mentor] : []}
           onSelectMentor={(mentorId) => {
             setSelectedMentorId(mentorId);
             setActiveNavItem('calendar'); // Navigate to bookings when a mentor is selected
@@ -160,7 +160,7 @@ const MentorDashboard: React.FC = () => {
       case 'calendar':
         return (
           <MentorBookings
-            mentors={[mentor].filter(Boolean)}
+            mentors={mentor ? [mentor] : []}
             selectedMentorId={selectedMentorId}
             setSelectedMentorId={setSelectedMentorId}
             user={userRecord}
@@ -170,16 +170,16 @@ const MentorDashboard: React.FC = () => {
         return <MentorChat />;
       case 'achievement':
         return (
-          <MentorAchievements 
+          <MentorAchievements
             user={userRecord}
-            selectedMentor={selectedMentorId ? mentor : undefined}
+            selectedMentor={mentor || undefined}
           />
         );
       default:
         return (
           <MentorHome
             user={userRecord}
-            mentor={mentor}
+            mentors={mentor ? [mentor] : []}
             onNavigate={handleNavigate}
             userRole={userRole}
           />
