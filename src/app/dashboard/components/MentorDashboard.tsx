@@ -1,14 +1,12 @@
 // app/dashboard/components/MentorDashboard.tsx
 "use client"
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
 import { getUserRole, UserRole } from '../../../lib/user';
-import { fetchAllMentors } from '../../../../lib/mentors';
+import { fetchAllMentors } from '../../../lib/mentors';
 import { Mentor } from './common/types';
-
-// Import shared components
-import { NavItem } from './common/DashboardComponents';
+import BaseDashboard from './common/BaseDashboard';
 
 // Import section components
 import MentorHome from './MentorDashboardSections/MentorHome';
@@ -18,14 +16,21 @@ import MentorBookings from './MentorDashboardSections/MentorBookings';
 import MentorChat from './MentorDashboardSections/MentorChat';
 import MentorAchievements from './MentorDashboardSections/MentorAchievements';
 
-// Welcome message component
-const WelcomeMessage: React.FC<{
-  showWelcome: boolean;
-  setShowWelcome: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ showWelcome, setShowWelcome }) => {
+// Main Dashboard Component
+const MentorDashboard: React.FC = () => {
+  const { user } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
+  const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('home');
+  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const isDevelopmentMode = process.env.NODE_ENV === 'development';
 
+  // Check for welcome message display
   useEffect(() => {
     // Check if user is coming from signup
     const fromSignup = searchParams.get('fromSignup');
@@ -43,29 +48,7 @@ const WelcomeMessage: React.FC<{
 
       return () => clearTimeout(timer);
     }
-  }, [searchParams, router, setShowWelcome]);
-
-  if (!showWelcome) return null;
-
-  return (
-    <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md z-50 animate-fade-in">
-      <span className="font-bold">Welcome to your dashboard!</span>
-      <p>Your account has been successfully created.</p>
-    </div>
-  );
-};
-
-// Main Dashboard Component
-const MentorDashboard: React.FC = () => {
-  const { user } = useUser();
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [activeView, setActiveView] = useState<'mentors' | 'groupMentorship'>('mentors');
-  const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('home');
-  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [mentors, setMentors] = useState<Mentor[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const isDevelopmentMode = process.env.NODE_ENV === 'development';
+  }, [searchParams, router]);
 
   // Fetch mentors from Supabase
   useEffect(() => {
@@ -129,7 +112,7 @@ const MentorDashboard: React.FC = () => {
       // For development mode without a user, set a default role
       if (!user?.id && isDevelopmentMode) {
         console.log('Setting default user role for development');
-        setUserRole('mentee');
+        setUserRole('mentor');
         return;
       }
 
@@ -142,7 +125,7 @@ const MentorDashboard: React.FC = () => {
           console.error('Error fetching user role:', error);
           if (isDevelopmentMode) {
             // Default fallback for development
-            setUserRole('mentee');
+            setUserRole('mentor');
           }
         }
       }
@@ -189,26 +172,6 @@ const MentorDashboard: React.FC = () => {
         email: "dev@example.com"
       };
       
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse flex space-x-4">
-            <div className="rounded-full bg-slate-200 h-10 w-10"></div>
-            <div className="flex-1 space-y-6 py-1">
-              <div className="h-2 bg-slate-200 rounded"></div>
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="h-2 bg-slate-200 rounded col-span-2"></div>
-                  <div className="h-2 bg-slate-200 rounded col-span-1"></div>
-                </div>
-                <div className="h-2 bg-slate-200 rounded"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     switch (activeNavItem) {
       case 'home':
         return (
@@ -235,7 +198,7 @@ const MentorDashboard: React.FC = () => {
             mentors={mentors}
             selectedMentorId={selectedMentorId}
             setSelectedMentorId={setSelectedMentorId}
-            user={userRecord} // Use userRecord instead of user
+            user={userRecord}
           />
         );
       case 'chat':
@@ -243,7 +206,7 @@ const MentorDashboard: React.FC = () => {
       case 'achievement':
         return (
           <MentorAchievements 
-            user={userRecord} // Use userRecord instead of user
+            user={userRecord}
             selectedMentor={selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : undefined}
           />
         );
@@ -259,114 +222,26 @@ const MentorDashboard: React.FC = () => {
     }
   };
 
+  // Use the base dashboard component with our specific logic
   return (
-    <div className="flex min-h-screen bg-white pt-16 overflow-x-hidden">
-      {/* Welcome Message */}
-      <Suspense fallback={<div>Loading...</div>}>
-        <WelcomeMessage setShowWelcome={setShowWelcome} showWelcome={showWelcome} />
-      </Suspense>
-
-      {/* Conditionally render dashboard header based on role */}
-      {userRole && (
-        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs py-1 px-4 text-center z-50">
-          {userRole === 'mentor' ? 'Mentor Dashboard' : 'Mentee Dashboard'}
-        </div>
-      )}
-
-      {/* Sidebar */}
-      <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
-        <div className="flex flex-col space-y-2">
-          <button
-            onClick={() => setActiveView('groupMentorship')}
-            className={`rotate-180 writing-mode-vertical-rl transform origin-center cursor-pointer px-4 py-2 rounded transition-colors ${
-              activeView === 'groupMentorship'
-                ? 'bg-indigo-100 text-indigo-700 font-semibold'
-                : 'text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-100'
-            }`}
-            style={{ writingMode: 'vertical-rl' }}
-          >
-            Group Mentorship
-          </button>
-          <button
-            onClick={() => setActiveView('mentors')}
-            className={`rotate-180 writing-mode-vertical-rl transform origin-center cursor-pointer px-4 py-2 rounded transition-colors ${
-              activeView === 'mentors'
-                ? 'bg-indigo-100 text-indigo-700 font-semibold'
-                : 'text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-100'
-            }`}
-            style={{ writingMode: 'vertical-rl' }}
-          >
-            Mentors
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-6 overflow-x-hidden">
-        {activeView === 'mentors' ? (
-          <>
-            {/* Navigation */}
-            <div className="flex items-center mb-8 overflow-x-auto">
-              <div className="flex flex-wrap space-x-2">
-                <NavItem 
-                  icon="home" 
-                  label="Home" 
-                  active={activeNavItem === 'home'} 
-                  onClick={() => setActiveNavItem('home')}
-                />
-                <NavItem 
-                  icon="compass" 
-                  label="Explore" 
-                  active={activeNavItem === 'explore'} 
-                  onClick={() => setActiveNavItem('explore')}
-                />
-                <NavItem 
-                  icon="community" 
-                  label="Community" 
-                  active={activeNavItem === 'community'} 
-                  onClick={() => setActiveNavItem('community')}
-                />
-                <NavItem 
-                  icon="calendar" 
-                  label="Bookings" 
-                  active={activeNavItem === 'calendar'} 
-                  onClick={() => setActiveNavItem('calendar')}
-                />
-                <NavItem 
-                  icon="chat" 
-                  label="Chat" 
-                  active={activeNavItem === 'chat'} 
-                  onClick={() => setActiveNavItem('chat')}
-                />
-                <NavItem 
-                  icon="achievement" 
-                  label="Achievements" 
-                  active={activeNavItem === 'achievement'} 
-                  onClick={() => setActiveNavItem('achievement')}
-                />
-              </div>
-            </div>
-
-            {/* Render the active section */}
-            {renderActiveSection()}
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center p-10">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Group Mentorship</h2>
-            <p className="text-gray-600 mb-6 text-center max-w-2xl">
-              Group mentorship is coming soon! Join interactive sessions with industry professionals and peers.
-              Learn together, share experiences, and build connections in a collaborative environment.
-            </p>
-            <button
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-              onClick={() => setActiveView('mentors')}
-            >
-              Back to Individual Mentorship
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    <BaseDashboard
+      user={user ? { ...(user as unknown as Record<string, unknown>) } : {
+        name: "Guest User", 
+        image: "/images/mentor_pic.png", 
+        role: userRole,
+        id: "guest-user-id",
+        email: "guest@example.com"
+      }}
+      userRole={userRole}
+      showWelcome={showWelcome}
+      setShowWelcome={setShowWelcome}
+      activeView={activeView}
+      setActiveView={setActiveView}
+      activeNavItem={activeNavItem}
+      setActiveNavItem={setActiveNavItem}
+      renderActiveSection={renderActiveSection}
+      isLoading={isLoading}
+    />
   );
 };
 

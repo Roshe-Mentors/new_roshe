@@ -92,7 +92,7 @@ const UserSignUp = () => {
                 id="name"
                 type="text"
                 aria-label="Full Name"
-                aria-invalid={!!errors.name}
+                aria-invalid={errors.name ? true : false}
                 {...register('name')}
                 placeholder="Full Name"
                 className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -108,7 +108,7 @@ const UserSignUp = () => {
                 id="email"
                 type="email"
                 aria-label="Email Address"
-                aria-invalid={!!errors.email}
+                aria-invalid={errors.email ? true : false}
                 {...register('email')}
                 placeholder="you@example.com"
                 className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -125,7 +125,7 @@ const UserSignUp = () => {
                   id="linkedin"
                   type="url"
                   aria-label="LinkedIn URL"
-                  aria-invalid={!!errors.linkedin}
+                  aria-invalid={errors.linkedin ? true : false}
                   {...register('linkedin')}
                   placeholder="https://linkedin.com/in/..."
                   className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -141,7 +141,7 @@ const UserSignUp = () => {
                   id="dob"
                   type="date"
                   aria-label="Date of Birth"
-                  aria-invalid={!!errors.dob}
+                  aria-invalid={errors.dob ? true : false}
                   {...register('dob')}
                   className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   max="2025-04-25"
@@ -159,7 +159,7 @@ const UserSignUp = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   aria-label="Password"
-                  aria-invalid={!!errors.password}
+                  aria-invalid={errors.password ? true : false}
                   {...register('password', {
                     onChange: (e) => setPasswordStrength(checkPasswordStrength(e.target.value)),
                   })}
@@ -186,7 +186,7 @@ const UserSignUp = () => {
                 id="terms"
                 type="checkbox"
                 aria-label="Accept terms and privacy policy"
-                aria-invalid={!!errors.terms}
+                aria-invalid={errors.terms ? true : false}
                 {...register('terms')}
                 className="mr-2"
               />
