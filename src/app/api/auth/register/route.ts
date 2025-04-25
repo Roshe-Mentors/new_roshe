@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabaseClient';
 
@@ -68,7 +67,7 @@ export async function POST(request: NextRequest) {
       const [day, month, year] = dob.split('/');
       isoDob = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     } else {
-      isoDob = null;
+      return NextResponse.json({ error: 'Invalid date of birth format.' }, { status: 400 });
     }
     if (!isoDob || isNaN(Date.parse(isoDob))) {
       return NextResponse.json({ error: 'Invalid date of birth format.' }, { status: 400 });
@@ -105,18 +104,16 @@ export async function POST(request: NextRequest) {
     // The login endpoint will handle linking it after successful login
     
     // Create profile data
-    const profileData = {
-      user_id: authUserId,  // Will be null for existing users, which is fine
+    const profileData: Record<string, any> = {
+      user_id: authUserId,
       name,
       email,
       linkedin_url: linkedin,
       date_of_birth: isoDob,
-      role
+      role,
+      // bio will be conditionally added below
+      bio: role === 'mentor' ? `New mentor joined on ${new Date().toISOString().split('T')[0]}` : undefined
     };
-    
-    if (role === 'mentor') {
-      profileData.bio = `New mentor joined on ${new Date().toISOString().split('T')[0]}`;
-    }
     
     // Insert into correct table based on role
     if (role === 'mentee') {

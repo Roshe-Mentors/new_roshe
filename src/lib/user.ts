@@ -31,7 +31,7 @@ export async function getUserProfile(userId: string) {
   if (!userId) return null;
   
   // Try mentors table first
-  const { data: mentorData, error: mentorError } = await supabase
+  const { data: mentorData } = await supabase
     .from('mentors')
     .select('*')
     .eq('user_id', userId)
@@ -40,7 +40,7 @@ export async function getUserProfile(userId: string) {
   if (mentorData) return { ...mentorData, role: 'mentor' };
   
   // If not in mentors, check mentees table
-  const { data: menteeData, error: menteeError } = await supabase
+  const { data: menteeData } = await supabase
     .from('mentees')
     .select('*')
     .eq('user_id', userId)
