@@ -5,25 +5,49 @@ export type UserRole = 'mentor' | 'mentee';
 export async function getUserRole(userId: string): Promise<UserRole | null> {
   if (!userId) return null;
   
-  const { data, error } = await supabase
+  // Check if user is in mentors table
+  const { data: mentorData } = await supabase
     .from('mentors')
-    .select('role')
+    .select('id')
     .eq('user_id', userId)
     .single();
+    
+  if (mentorData) return 'mentor';
   
-  if (error || !data) return null;
-  return data.role as UserRole;
+  // If not in mentors, check mentees table
+  const { data: menteeData } = await supabase
+    .from('mentees')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+    
+  if (menteeData) return 'mentee';
+  
+  // User not found in either table
+  return null;
 }
 
 export async function getUserProfile(userId: string) {
   if (!userId) return null;
   
-  const { data, error } = await supabase
+  // Try mentors table first
+  const { data: mentorData, error: mentorError } = await supabase
     .from('mentors')
     .select('*')
     .eq('user_id', userId)
     .single();
   
-  if (error || !data) return null;
-  return data;
+  if (mentorData) return { ...mentorData, role: 'mentor' };
+  
+  // If not in mentors, check mentees table
+  const { data: menteeData, error: menteeError } = await supabase
+    .from('mentees')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  
+  if (menteeData) return { ...menteeData, role: 'mentee' };
+  
+  // User not found in either table
+  return null;
 }
