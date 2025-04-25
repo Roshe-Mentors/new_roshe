@@ -27,30 +27,37 @@ export async function POST(request: NextRequest) {
     
     console.log('Starting registration for:', email);
 
-    // Check if user already exists in Supabase Auth
-    const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email);
-    let authUserId = null;
+    // Try to sign up the user
+    const { data, error } = await withRetry(
+      () => supabase.auth.signUp({ email, password }),
+      2,
+      1000,
+      (err) => err.code === 'UND_ERR_CONNECT_TIMEOUT' // Only retry on timeout errors
+    );
+
+    // Check if the user already exists or there was a different error
+    let authUserId;
     let isNewAuthUser = false;
-    if (existingUser && existingUser.user) {
-      // User exists in Auth
-      authUserId = existingUser.user.id;
-    } else {
-      // Register new user in Auth
-      const { data, error } = await withRetry(
-        () => supabase.auth.signUp({ email, password }),
-        2,
-        1000,
-        (err) => err.code === 'UND_ERR_CONNECT_TIMEOUT'
-      );
-      if (error || !data.user) {
+    
+    if (error) {
+      // If the error is "User already registered", we need to use signInWithPassword to get the user ID
+      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+        console.log('User already exists, checking credentials');
+        // We can't get existing user ID without credentials, so just continue with profile check
+        // We'll check if profiles exist for this email
+      } else {
+        // If it's any other error, return it
         console.error('Auth signup error:', error);
         return NextResponse.json({ 
-          error: error?.message || 'Sign-up failed',
-          details: error?.cause ? String(error.cause) : undefined
+          error: error.message || 'Sign-up failed',
+          details: error.cause ? String(error.cause) : undefined
         }, { status: 400 });
       }
+    } else if (data.user) {
+      // New user created successfully
       authUserId = data.user.id;
       isNewAuthUser = true;
+      console.log('User created successfully:', authUserId);
     }
 
     // Parse DOB to ISO date string (YYYY-MM-DD)
@@ -67,57 +74,55 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid date of birth format.' }, { status: 400 });
     }
 
-    // Check if profile exists in the correct table
-    let profileExists = false;
+    // Check if profile exists in either table using email
     if (role === 'mentee') {
-      const { data: menteeProfile } = await supabase.from('mentees').select('id').eq('user_id', authUserId).single();
-      profileExists = !!menteeProfile;
-    } else {
-      const { data: mentorProfile } = await supabase.from('mentors').select('id').eq('user_id', authUserId).single();
-      profileExists = !!mentorProfile;
-    }
-    if (profileExists) {
-      return NextResponse.json({ error: 'An account with this email already exists. Please log in or reset your password.' }, { status: 400 });
-    }
-
-    // Enforce: user can only be in one table (mentee or mentor)
-    if (role === 'mentee') {
-      // Check if user is already a mentor
-      const { data: mentorProfile } = await supabase.from('mentors').select('id').eq('user_id', authUserId).single();
-      if (mentorProfile) {
+      // Check if user already has a mentee profile with this email
+      const { data: existingMentee } = await supabase.from('mentees').select('id, user_id').eq('email', email).single();
+      if (existingMentee) {
+        return NextResponse.json({ error: 'An account with this email already exists. Please log in or reset your password.' }, { status: 400 });
+      }
+      
+      // Check if user has a mentor profile with this email (they can't be both)
+      const { data: existingMentor } = await supabase.from('mentors').select('id').eq('email', email).single();
+      if (existingMentor) {
         return NextResponse.json({ error: 'You already have a mentor account. You cannot register as a mentee.' }, { status: 400 });
       }
     } else if (role === 'mentor') {
-      // Check if user is already a mentee
-      const { data: menteeProfile } = await supabase.from('mentees').select('id').eq('user_id', authUserId).single();
-      if (menteeProfile) {
+      // Check if user already has a mentor profile with this email
+      const { data: existingMentor } = await supabase.from('mentors').select('id, user_id').eq('email', email).single();
+      if (existingMentor) {
+        return NextResponse.json({ error: 'An account with this email already exists. Please log in or reset your password.' }, { status: 400 });
+      }
+      
+      // Check if user has a mentee profile with this email (they can't be both)
+      const { data: existingMentee } = await supabase.from('mentees').select('id').eq('email', email).single();
+      if (existingMentee) {
         return NextResponse.json({ error: 'You already have a mentee account. You cannot register as a mentor.' }, { status: 400 });
       }
     }
 
+    // If this is an existing auth user but we don't have their ID, we need to create profile without user_id
+    // The login endpoint will handle linking it after successful login
+    
     // Create profile data
-    const mentorData = {
-      user_id: authUserId,
-      name,
-      email,
-      bio: `New user joined on ${new Date().toISOString().split('T')[0]}`,
-      linkedin_url: linkedin,
-      date_of_birth: isoDob,
-      role
-    };
-    const menteeData = {
-      user_id: authUserId,
+    const profileData = {
+      user_id: authUserId,  // Will be null for existing users, which is fine
       name,
       email,
       linkedin_url: linkedin,
       date_of_birth: isoDob,
       role
     };
+    
+    if (role === 'mentor') {
+      profileData.bio = `New mentor joined on ${new Date().toISOString().split('T')[0]}`;
+    }
+    
     // Insert into correct table based on role
     if (role === 'mentee') {
       const menteeResult = await withRetry(
         () => supabase.from('mentees')
-          .insert(menteeData) as unknown as Promise<{ data: any; error: any }>,
+          .insert(profileData) as unknown as Promise<{ data: any; error: any }>,
         2,
         1000
       );
@@ -129,7 +134,7 @@ export async function POST(request: NextRequest) {
     } else {
       const profileResult = await withRetry(
         () => supabase.from('mentors')
-          .insert(mentorData) as unknown as Promise<{ data: any; error: any }>,
+          .insert(profileData) as unknown as Promise<{ data: any; error: any }>,
         2,
         1000
       );
@@ -141,7 +146,14 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('Registration complete for:', email);
-    return NextResponse.json({ user: { id: authUserId, email }, session: null, isNewAuthUser });
+    return NextResponse.json({ 
+      user: { id: authUserId, email }, 
+      session: data?.session || null, 
+      isNewAuthUser,
+      message: isNewAuthUser 
+        ? 'Registration successful! You can now log in.' 
+        : 'Profile created successfully. Please log in with your credentials.'
+    });
   } catch (err) {
     console.error('Unexpected registration error:', err);
     return NextResponse.json({ 

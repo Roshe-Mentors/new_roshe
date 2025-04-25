@@ -122,23 +122,34 @@ const MentorSignUp = () => {
     setLoading(true);
 
     try {
+      // Register mentor in Supabase Auth and mentors table
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          linkedin: formData.linkedin,
+          dob: formData.dob,
+          password: formData.password,
+          role: 'mentor',
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        setError(result.error || 'Registration failed.');
+        setLoading(false);
+        return;
+      }
+
+      // Send mentor signup email notification
       await sendMentorSignupEmail({
         to_email: formData.email,
         to_name: formData.name,
-        message: `
-New Mentor Registration Details:
-----------------------------
-Name: ${formData.name}
-Email: ${formData.email}
-LinkedIn: ${formData.linkedin}
-Date of Birth: ${formData.dob}
-Biography: ${formData.biography}
-        `.trim()
+        message: `\nNew Mentor Registration Details:\n----------------------------\nName: ${formData.name}\nEmail: ${formData.email}\nLinkedIn: ${formData.linkedin}\nDate of Birth: ${formData.dob}\nBiography: ${formData.biography}`.trim()
       });
 
       setSuccess('Thank you for your interest! We will review your application and contact you soon.');
-      
-      // Clear form
       setFormData({
         name: '',
         email: '',
@@ -148,7 +159,6 @@ Biography: ${formData.biography}
         password: '',
         showPassword: false
       });
-
     } catch (error) {
       console.error('Form submission error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit form. Please try again later.';
