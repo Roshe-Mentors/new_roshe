@@ -15,7 +15,7 @@ interface MentorHomeProps {
 
 const MentorHome: React.FC<MentorHomeProps> = ({ 
   user,
-  mentors, 
+  mentors = [], // Default to empty array if undefined
   onNavigate,
   userRole
 }) => {
