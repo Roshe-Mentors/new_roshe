@@ -6,6 +6,7 @@ import { getMentorProfileByUser, updateMentorProfile } from '../../../../service
 import { getUserRole } from '../../../../lib/user';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { supabase } from '../../../../lib/supabaseClient';
 
 type FormData = {
   name: string;
@@ -23,6 +24,8 @@ export default function GeneralPage() {
   const { user, loading: userLoading } = useUser();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { register, handleSubmit, reset, watch, formState: { isSubmitting, errors } } = useForm<FormData>({
     criteriaMode: 'all'
   });
@@ -53,6 +56,7 @@ export default function GeneralPage() {
               specialization: profile.specialization || '',
               years_experience: profile.years_experience || 0
             });
+            setImagePreview(profile.profile_image_url || '');
           } else {
             reset({ 
               name: '', 
@@ -64,6 +68,7 @@ export default function GeneralPage() {
               specialization: '',
               years_experience: 0
             });
+            setImagePreview('');
           }
         } catch (err) {
           console.error('Failed to load profile:', err);
@@ -72,12 +77,37 @@ export default function GeneralPage() {
     }
   }, [user, userLoading, reset]);
 
+  // Handle image file selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedImage(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     if (user) {
       setIsSaving(true);
+      let profileImageUrl = data.profile_image_url;
       try {
-        await updateMentorProfile(user.id, data);
+        // If a new image is selected, upload to Supabase Storage
+        if (selectedImage) {
+          const fileExt = selectedImage.name.split('.').pop();
+          const filePath = `profile-images/${user.id}_${Date.now()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from('public-profile-images')
+            .upload(filePath, selectedImage, { upsert: true, cacheControl: '3600' });
+          if (uploadError) throw uploadError;
+          // Get public URL
+          const { data: publicUrlData } = supabase.storage
+            .from('public-profile-images')
+            .getPublicUrl(filePath);
+          profileImageUrl = publicUrlData.publicUrl;
+        }
+        await updateMentorProfile(user.id, { ...data, profile_image_url: profileImageUrl });
         toast.success('Profile updated successfully!');
+        setSelectedImage(null);
       } catch (error) {
         console.error('Error updating profile:', error);
         toast.error('Failed to update profile. Please try again.');
@@ -189,34 +219,25 @@ export default function GeneralPage() {
             )}
           </div>
 
-          {/* Profile Image URL Field */}
+          {/* Profile Image Upload Field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Profile Image URL</label>
+            <label className="block text-sm font-medium text-gray-700">Profile Image</label>
             <input
-              {...register('profile_image_url', { 
-                pattern: { 
-                  value: /^(https?:\/\/).+$/, 
-                  message: 'Enter a valid URL starting with http:// or https://' 
-                } 
-              })}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://example.com/your-image.jpg"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mt-1 block w-full text-sm text-gray-500"
             />
-            {errors.profile_image_url && (
-              <p className="text-red-500 text-sm mt-1">{errors.profile_image_url.message}</p>
-            )}
-            {watch('profile_image_url') && (
+            {imagePreview && (
               <div className="mt-2">
                 <p className="text-sm text-gray-600 mb-1">Preview:</p>
                 <div className="relative w-20 h-20 rounded-full border border-gray-300 overflow-hidden">
                   <Image 
-                    src={watch('profile_image_url')} 
+                    src={imagePreview} 
                     alt="Profile preview" 
                     fill
                     className="object-cover"
                     onError={(e) => {
-                      // TypeScript doesn't like direct src setting on Image component
-                      // Instead we'll use a fallback URL pattern
                       const imgElement = e.target as HTMLImageElement;
                       if (imgElement.src !== "/images/mentor_pic.png") {
                         imgElement.src = "/images/mentor_pic.png";

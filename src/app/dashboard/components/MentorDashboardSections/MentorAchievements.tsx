@@ -86,13 +86,19 @@ const MentorAchievements: React.FC<MentorAchievementsProps> = ({
           />
           
           {/* User Profile Picture */}
-          <div className="absolute -bottom-12 left-6 border-4 border-white rounded-full shadow-md">
+          <div className="absolute -bottom-12 left-6 border-4 border-white rounded-full shadow-md bg-white flex items-center justify-center">
             <Image
               src={user?.image || selectedMentor?.imageUrl || "/images/mentor_pic.png"}
               alt="Profile"
               width={96}
               height={96}
               className="w-24 h-24 rounded-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== window.location.origin + '/images/mentor_pic.png') {
+                  target.src = '/images/mentor_pic.png';
+                }
+              }}
             />
           </div>
         </div>

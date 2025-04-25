@@ -14,7 +14,15 @@ const ProfileBubble: React.FC<ProfileBubbleProps> = ({ user, userRole }) => {
   const router = useRouter();
   
   // Get user profile image or use default
-  const profileImage = user?.image || user?.profile_image_url || '/images/mentor_pic.png';
+  const [imgSrc, setImgSrc] = useState<string>(
+    (user?.image as string) || (user?.profile_image_url as string) || '/images/mentor_pic.png'
+  );
+  const userName = (user?.name as string) || 'User';
+  const handleImgError = () => {
+    if (imgSrc !== '/images/mentor_pic.png') {
+      setImgSrc('/images/mentor_pic.png');
+    }
+  };
   
   // Handle logout functionality
   const handleLogout = async () => {
@@ -39,16 +47,21 @@ const ProfileBubble: React.FC<ProfileBubbleProps> = ({ user, userRole }) => {
       <div className="relative">
         {/* Profile Image */}
         <div 
-          className="w-14 h-14 rounded-full border-2 border-indigo-600 overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          className="w-14 h-14 rounded-full border-2 border-indigo-600 overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center bg-white"
           onClick={toggleMenu}
         >
-          <Image 
-            src={profileImage as string}
-            alt="Profile"
-            width={56}
-            height={56}
-            className="w-full h-full object-cover"
-          />
+          {imgSrc ? (
+            <Image 
+              src={imgSrc}
+              alt="Profile"
+              width={56}
+              height={56}
+              className="w-full h-full object-cover"
+              onError={handleImgError}
+            />
+          ) : (
+            <span className="text-xl font-bold text-indigo-700">{userName.charAt(0)}</span>
+          )}
         </div>
         
         {/* Menu Popup */}
