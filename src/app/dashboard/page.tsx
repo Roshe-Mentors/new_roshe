@@ -31,8 +31,9 @@ export default function DashboardPage() {
       }
     }
 
-    // For development, allow bypassing authentication after confirming
-    if (isDevelopmentMode && !bypassAuth) {
+    // For development, allow bypassing authentication after confirming,
+    // but ONLY if the user is not already logged in
+    if (isDevelopmentMode && !bypassAuth && !user && !userLoading) {
       const shouldBypass = window.confirm(
         'You are not logged in. Would you like to bypass authentication to view the dashboard? (Development mode only)'
       );
@@ -47,7 +48,7 @@ export default function DashboardPage() {
         router.replace('/signIn');
       }
     }
-  }, [isDevelopmentMode, bypassAuth, router]);
+  }, [isDevelopmentMode, bypassAuth, router, user, userLoading]);
 
   // Fetch user role when user data is available
   useEffect(() => {

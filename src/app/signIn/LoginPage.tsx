@@ -57,6 +57,17 @@ const LoginPage = () => {
       if (!res.ok) {
         setServerError(result.error || 'Login failed');
       } else {
+        // Store the session in Supabase's local storage
+        if (result.session) {
+          // Set the session in the Supabase client
+          await supabase.auth.setSession({
+            access_token: result.session.access_token,
+            refresh_token: result.session.refresh_token
+          });
+          
+          // Wait for a brief moment to ensure the session is set
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
         router.replace('/dashboard');
       }
     } catch (err) {
