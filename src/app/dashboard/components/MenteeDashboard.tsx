@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
-import { getUserRole, UserRole } from '../../../lib/user';
+import { getUserRole, UserRole, getUserProfile } from '../../../lib/user';
 import { fetchAllMentors } from '../../../lib/mentors';
 import { Mentor } from './common/types';
 import BaseDashboard from './common/BaseDashboard';
@@ -25,6 +25,7 @@ const MenteeDashboard: React.FC = () => {
   const [activeNavItem, setActiveNavItem] = useState<'home' | 'explore' | 'community' | 'calendar' | 'chat' | 'achievement'>('home');
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [mentee, setMentee] = useState<Record<string, unknown> | null>(null);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
@@ -48,6 +49,27 @@ const MenteeDashboard: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [searchParams, router]);
+
+  // Fetch mentee profile for the logged-in user
+  useEffect(() => {
+    const loadMentee = async () => {
+      setIsLoading(true);
+      try {
+        if (user?.id) {
+          const menteeData = await getUserProfile(user.id);
+          setMentee(menteeData);
+        } else {
+          setMentee(null);
+        }
+      } catch (error) {
+        console.error('Error loading mentee:', error);
+        setMentee(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadMentee();
+  }, [user]);
 
   // Fetch mentors from Supabase
   useEffect(() => {
@@ -170,13 +192,12 @@ const MenteeDashboard: React.FC = () => {
         id: "dev-user-id",
         email: "dev@example.com"
       };
-
+    // Use mentee data for sections
     switch (activeNavItem) {
       case 'home':
         return (
           <MenteeHome 
             user={userRecord}
-            mentors={mentors} 
             onNavigate={handleNavigate} 
             userRole={userRole}
           />
@@ -213,7 +234,6 @@ const MenteeDashboard: React.FC = () => {
         return (
           <MenteeHome
             user={userRecord}
-            mentors={mentors}
             onNavigate={handleNavigate}
             userRole={userRole}
           />
