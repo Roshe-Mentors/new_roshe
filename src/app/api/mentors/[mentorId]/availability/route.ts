@@ -3,9 +3,9 @@ import { supabase } from '../../../../../lib/supabaseClient';
 
 export async function GET(
   request: Request,
-  { params }: { params: { mentorId: string } }
+  context: any
 ) {
-  const { mentorId } = params;
+  const { mentorId } = context.params;
 
   // Get current time to filter out past slots
   const now = new Date().toISOString();
