@@ -10,8 +10,13 @@ import {
   FaLinkedinIn,
   FaTiktok,
 } from "react-icons/fa";
+import { usePathname } from 'next/navigation';
 
 const Footer: React.FC = () => {
+  const pathname = usePathname();
+  // Do not render Footer on dashboard pages
+  if (pathname.startsWith('/dashboard')) return null;
+
   return (
     <footer className="bg-white border-t border-gray-200 py-12 relative z-20">
       <div className="container mx-auto px-6">

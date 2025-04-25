@@ -50,6 +50,15 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
         </nav>
       </aside>
       <section className="flex-1 bg-gray-50 pt-32 md:pt-24 lg:pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+        {/* Back to Dashboard button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="text-indigo-600 hover:text-indigo-700 font-medium"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
         {children}
       </section>
     </div>

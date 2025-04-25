@@ -40,9 +40,7 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex space-x-4">
           {!loading && user ? (
             <>
-              <button onClick={handleLogout} className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition">
-                Log out
-              </button>
+              {/* Logout button removed from here */}
             </>
           ) : (
             <>

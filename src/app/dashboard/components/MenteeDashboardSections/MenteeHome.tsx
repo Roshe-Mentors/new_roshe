@@ -166,7 +166,7 @@ const MenteeHome: React.FC<MenteeHomeProps> = ({
           {mentors && mentors.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {mentors.slice(0, 3).map((mentor, index) => (
-                <div key={mentor.id || index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={`${mentor.id}-${index}`} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center mb-3">
                     <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
                       {mentor.imageUrl ? (
