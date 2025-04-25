@@ -2,6 +2,7 @@
 import React, { ReactNode, Suspense } from 'react';
 import { NavItem } from './DashboardComponents';
 import { UserRole } from '../../../../lib/user';
+import ProfileBubble from './ProfileBubble';
 
 // Welcome message component
 const WelcomeMessage: React.FC<{
@@ -34,8 +35,6 @@ export type BaseDashboardProps = {
 
 // Base Dashboard component that abstracts the common UI structure
 const BaseDashboard: React.FC<BaseDashboardProps> = ({
-  // user is unused but we keep it in props for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   user,
   userRole,
   showWelcome,
@@ -48,18 +47,14 @@ const BaseDashboard: React.FC<BaseDashboardProps> = ({
   isLoading = false
 }) => {
   return (
-    <div className="flex min-h-screen bg-white pt-16 overflow-x-hidden">
+    <div className="flex min-h-screen bg-white overflow-x-hidden">
       {/* Welcome Message */}
       <Suspense fallback={<div>Loading...</div>}>
         <WelcomeMessage setShowWelcome={setShowWelcome} showWelcome={showWelcome} />
       </Suspense>
 
-      {/* Conditionally render dashboard header based on role */}
-      {userRole && (
-        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs py-1 px-4 text-center z-50">
-          {userRole === 'mentor' ? 'Mentor Dashboard' : 'Mentee Dashboard'}
-        </div>
-      )}
+      {/* Profile Bubble */}
+      <ProfileBubble user={user} userRole={userRole} />
 
       {/* Sidebar */}
       <div className="w-20 bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-4">
