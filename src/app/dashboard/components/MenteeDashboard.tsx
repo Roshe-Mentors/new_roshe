@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '../../../lib/auth';
 import { getUserRole, UserRole } from '../../../lib/user';
 import { fetchAllMentors } from '../../../lib/mentors';
+import { getMenteeProfileByUser } from '../../../services/profileService';
 import { Mentor } from './common/types';
 import BaseDashboard from './common/BaseDashboard';
 
@@ -27,6 +28,7 @@ const MenteeDashboard: React.FC = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [menteeProfile, setMenteeProfile] = useState<any>(null);
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
 
   // Check for welcome message display
@@ -120,6 +122,17 @@ const MenteeDashboard: React.FC = () => {
           const role = await getUserRole(user.id);
           setUserRole(role);
           console.log('User role:', role);
+          
+          // If user is a mentee, fetch their profile
+          if (role === 'mentee') {
+            try {
+              const profile = await getMenteeProfileByUser(user.id);
+              console.log('Fetched mentee profile:', profile);
+              setMenteeProfile(profile);
+            } catch (err) {
+              console.error('Error fetching mentee profile:', err);
+            }
+          }
         } catch (error) {
           console.error('Error fetching user role:', error);
           if (isDevelopmentMode) {
@@ -224,7 +237,21 @@ const MenteeDashboard: React.FC = () => {
   // Use the base dashboard component with our specific logic
   return (
     <BaseDashboard
-      user={user ? ({ ...user } as unknown as Record<string, unknown>) : {
+      user={user ? ({
+        ...user,
+        // Add the mentee's profile data, especially the profile image
+        ...(menteeProfile ? {
+          profile_image_url: menteeProfile.profile_image_url,
+          // This is what the ProfileBubble component will look for to display the profile image
+          image: menteeProfile.profile_image_url || '/images/mentor_pic.png',
+          name: menteeProfile.name || (user as any).name || 'User',
+          bio: menteeProfile.bio,
+          location: menteeProfile.location,
+          role: userRole
+        } : {
+          role: userRole
+        })
+      } as unknown as Record<string, unknown>) : {
         name: "Development User", 
         image: "/images/mentor_pic.png", 
         role: userRole,

@@ -132,7 +132,7 @@ const MentorDashboard: React.FC = () => {
         ...(user as unknown as Record<string, unknown>), 
         role: userRole,
         // Use profile image if available in mentor data
-        image: mentor?.profile_image_url || (user as any).image || "/images/mentor_pic.png"
+        image: mentor?.imageUrl || (user as any).image || "/images/mentor_pic.png"
       } : 
       { 
         name: "Development User", 
