@@ -175,7 +175,13 @@ const MenteeDashboard: React.FC = () => {
   const renderActiveSection = () => {
     // Create a default user object that satisfies Record<string, unknown>
     const userRecord: Record<string, unknown> = user ? 
-      { ...(user as unknown as Record<string, unknown>), role: userRole } : 
+      { 
+        ...(user as unknown as Record<string, unknown>), 
+        role: userRole,
+        // Include mentee name from profile
+        name: menteeProfile?.name || (user as any).name || 'User',
+        image: menteeProfile?.profile_image_url || (user as any).image || "/images/mentor_pic.png"
+      } : 
       { 
         name: "Development User", 
         image: "/images/mentor_pic.png", 
