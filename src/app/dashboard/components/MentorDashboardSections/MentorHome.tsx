@@ -1,10 +1,11 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiArrowRight, FiCalendar, FiUsers, FiMessageCircle } from 'react-icons/fi';
 import { Mentor } from '../common/types';
 import { UserRole } from '../../../../lib/user';
+import { getMentorStats, MentorStats } from '../../../../services/profileService';
 
 interface MentorHomeProps {
   user: Record<string, unknown>;
@@ -19,6 +20,35 @@ const MentorHome: React.FC<MentorHomeProps> = ({
   onNavigate,
   userRole
 }) => {
+  // Add state for mentor statistics
+  const [mentorStats, setMentorStats] = useState<MentorStats>({
+    sessionsCompleted: 0,
+    activeMentees: 0,
+    rating: 0
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
+
+  // Fetch mentor statistics when component mounts
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (userRole === 'mentor' && mentors.length > 0 && mentors[0]?.id) {
+        setIsLoadingStats(true);
+        try {
+          const mentorId = mentors[0].id;
+          const stats = await getMentorStats(mentorId);
+          console.log('Fetched mentor stats:', stats);
+          setMentorStats(stats);
+        } catch (error) {
+          console.error('Error fetching mentor statistics:', error);
+        } finally {
+          setIsLoadingStats(false);
+        }
+      }
+    };
+
+    fetchStats();
+  }, [userRole, mentors]);
+
   // Featured mentors (just take the first 3 for demo)
   const featuredMentors = mentors.slice(0, 3);
   
@@ -56,15 +86,47 @@ const MentorHome: React.FC<MentorHomeProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg">
               <h3 className="font-medium text-black">Sessions Completed</h3>
-              <p className="text-2xl font-bold text-black">12</p>
+              {isLoadingStats ? (
+                <div className="animate-pulse h-8 bg-blue-100 rounded w-16 mt-1"></div>
+              ) : (
+                <p className="text-2xl font-bold text-black">
+                  {mentorStats.sessionsCompleted}
+                  {mentorStats.sessionsCompleted === 0 && 
+                    <span className="text-xs font-normal text-gray-500 block mt-1">
+                      No sessions completed yet
+                    </span>
+                  }
+                </p>
+              )}
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
               <h3 className="font-medium text-black">Active Mentees</h3>
-              <p className="text-2xl font-bold text-black">5</p>
+              {isLoadingStats ? (
+                <div className="animate-pulse h-8 bg-green-100 rounded w-16 mt-1"></div>
+              ) : (
+                <p className="text-2xl font-bold text-black">
+                  {mentorStats.activeMentees}
+                  {mentorStats.activeMentees === 0 && 
+                    <span className="text-xs font-normal text-gray-500 block mt-1">
+                      No active mentees yet
+                    </span>
+                  }
+                </p>
+              )}
             </div>
             <div className="bg-purple-50 p-4 rounded-lg">
               <h3 className="font-medium text-black">Rating</h3>
-              <p className="text-2xl font-bold text-black">4.8 <span className="text-sm font-normal">/5</span></p>
+              {isLoadingStats ? (
+                <div className="animate-pulse h-8 bg-purple-100 rounded w-16 mt-1"></div>
+              ) : (
+                <p className="text-2xl font-bold text-black">
+                  {mentorStats.rating > 0 ? (
+                    <>{mentorStats.rating} <span className="text-sm font-normal">/5</span></>
+                  ) : (
+                    <span className="text-xs font-normal text-gray-500">No ratings yet</span>
+                  )}
+                </p>
+              )}
             </div>
           </div>
         </div>

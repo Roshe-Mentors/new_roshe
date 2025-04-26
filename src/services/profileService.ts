@@ -248,3 +248,81 @@ export async function updateMenteeProfile(userId: string, updates: Partial<Mente
   if (error) throw error;
   return data;
 }
+
+// Mentor Statistics
+export interface MentorStats {
+  sessionsCompleted: number;
+  activeMentees: number;
+  rating: number;
+}
+
+export async function getMentorStats(mentorId: string): Promise<MentorStats> {
+  try {
+    // Check if the tables exist first
+    const { error: tablesError } = await supabase
+      .from('mentoring_sessions')
+      .select('count')
+      .limit(1);
+
+    // If tables don't exist, return placeholder data
+    if (tablesError) {
+      console.log('Tables not found, using placeholder data:', tablesError);
+      return {
+        sessionsCompleted: 0,
+        activeMentees: 0,
+        rating: 0
+      };
+    }
+    
+    // Get sessions completed
+    const { data: sessionsData, error: sessionsError } = await supabase
+      .from('mentoring_sessions')
+      .select('count')
+      .eq('mentor_id', mentorId)
+      .eq('status', 'completed')
+      .single();
+      
+    if (sessionsError) console.error('Error fetching sessions:', sessionsError);
+    
+    // Get active mentees (mentees with at least one active or upcoming session)
+    const { data: menteesData, error: menteesError } = await supabase
+      .from('mentoring_sessions')
+      .select('mentee_id')
+      .eq('mentor_id', mentorId)
+      .in('status', ['upcoming', 'active'])
+      .is('cancelled_at', null);
+      
+    if (menteesError) console.error('Error fetching mentees:', menteesError);
+    
+    // Get unique mentee count
+    const uniqueMentees = menteesData ? [...new Set(menteesData.map(item => item.mentee_id))] : [];
+    
+    // Get average rating
+    const { data: ratingsData, error: ratingsError } = await supabase
+      .from('mentor_reviews')
+      .select('rating')
+      .eq('mentor_id', mentorId);
+      
+    if (ratingsError) console.error('Error fetching ratings:', ratingsError);
+    
+    // Calculate average rating
+    const ratings = ratingsData || [];
+    const averageRating = ratings.length 
+      ? Number((ratings.reduce((sum, item) => sum + item.rating, 0) / ratings.length).toFixed(1))
+      : 0;
+    
+    return {
+      sessionsCompleted: sessionsData?.count || 0,
+      activeMentees: uniqueMentees.length || 0,
+      rating: averageRating || 0
+    };
+  } catch (error) {
+    console.error('Error fetching mentor statistics:', error);
+    // Return default values if there's an error
+    return {
+      sessionsCompleted: 0,
+      activeMentees: 0,
+      rating: 0
+    };
+  }
+}
