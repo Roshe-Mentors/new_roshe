@@ -11,6 +11,17 @@ interface MentorRecord {
   created_at?: string;
 }
 
+// Mentee table row
+interface MenteeRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  email?: string;
+  bio?: string;
+  profile_image_url?: string;
+  created_at?: string;
+}
+
 // Availability slot row
 interface AvailabilityRecord {
   id: string;
@@ -200,6 +211,37 @@ export async function updateMentorProfile(userId: string, updates: Partial<Mento
   // Update profile by user_id instead of direct mentor id
   const { data, error } = await supabase
     .from('mentors')
+    .update(updates)
+    .eq('user_id', userId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// Core Mentee Profile
+export async function getMenteeProfileByUser(userId: string) {
+  const { data, error } = await supabase
+    .from('mentees')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  if (error) {
+    console.warn('No mentee profile found, creating new one for user:', userId, error);
+    // Create a new mentee record with minimal fields
+    const insertRes = await supabase
+      .from('mentees')
+      .insert({ user_id: userId, name: '' })
+      .single();
+    if (insertRes.error) throw insertRes.error;
+    return insertRes.data;
+  }
+  return data;
+}
+
+export async function updateMenteeProfile(userId: string, updates: Partial<MenteeRecord>) {
+  // Update profile by user_id instead of direct mentee id
+  const { data, error } = await supabase
+    .from('mentees')
     .update(updates)
     .eq('user_id', userId)
     .single();

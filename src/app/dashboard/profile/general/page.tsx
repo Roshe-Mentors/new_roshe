@@ -2,7 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useUser } from '../../../../lib/auth';
-import { getMentorProfileByUser, updateMentorProfile } from '../../../../services/profileService';
+import { 
+  getMentorProfileByUser, 
+  updateMentorProfile, 
+  getMenteeProfileByUser, 
+  updateMenteeProfile 
+} from '../../../../services/profileService';
 import { getUserRole } from '../../../../lib/user';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -41,10 +46,16 @@ export default function GeneralPage() {
 
   // Load the profile data
   useEffect(() => {
-    if (!userLoading && user) {
+    if (!userLoading && user && userRole) {
       (async () => {
         try {
-          const profile = await getMentorProfileByUser(user.id);
+          let profile;
+          if (userRole === 'mentor') {
+            profile = await getMentorProfileByUser(user.id);
+          } else {
+            profile = await getMenteeProfileByUser(user.id);
+          }
+          
           if (profile) {
             reset({
               name: profile.name || '',
@@ -75,7 +86,7 @@ export default function GeneralPage() {
         }
       })();
     }
-  }, [user, userLoading, reset]);
+  }, [user, userLoading, userRole, reset]);
 
   // Handle image file selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +113,7 @@ export default function GeneralPage() {
           console.log("Attempting to upload to:", filePath);
           
           // Try the upload
-          const { data: uploadData, error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('public-profile-images')
             .upload(filePath, selectedImage, { 
               upsert: true, 
@@ -131,7 +142,14 @@ export default function GeneralPage() {
         }
         
         console.log("Updating profile with image URL:", profileImageUrl);
-        await updateMentorProfile(user.id, { ...data, profile_image_url: profileImageUrl });
+        
+        // Use the correct update function based on user role
+        if (userRole === 'mentor') {
+          await updateMentorProfile(user.id, { ...data, profile_image_url: profileImageUrl });
+        } else {
+          await updateMenteeProfile(user.id, { ...data, profile_image_url: profileImageUrl });
+        }
+        
         toast.success('Profile updated successfully!');
         setSelectedImage(null);
       } catch (error) {
