@@ -93,29 +93,90 @@ export default function GeneralPage() {
       try {
         // If a new image is selected, upload to Supabase Storage
         if (selectedImage) {
+          console.log("Starting image upload process...");
+          // Proceed with upload
           const fileExt = selectedImage.name.split('.').pop();
-          const filePath = `profile-images/${user.id}_${Date.now()}.${fileExt}`;
-          const { error: uploadError } = await supabase.storage
+          const fileName = `${Date.now()}.${fileExt}`;
+          const filePath = `${user.id}/${fileName}`;
+
+          console.log("Attempting to upload to:", filePath);
+          
+          // Try the upload
+          const { data: uploadData, error: uploadError } = await supabase.storage
             .from('public-profile-images')
-            .upload(filePath, selectedImage, { upsert: true, cacheControl: '3600' });
-          if (uploadError) throw uploadError;
-          // Get public URL
+            .upload(filePath, selectedImage, { 
+              upsert: true, 
+              cacheControl: '3600'
+            });
+            
+          if (uploadError) {
+            console.error("Supabase upload error details:", uploadError);
+            throw new Error(`Upload failed: ${uploadError.message}`);
+          }
+          
+          console.log("Upload successful, getting public URL");
           const { data: publicUrlData } = supabase.storage
             .from('public-profile-images')
             .getPublicUrl(filePath);
-          profileImageUrl = publicUrlData.publicUrl;
+            
+          console.log("Public URL data:", publicUrlData);
+          
+          if (publicUrlData) {
+            profileImageUrl = publicUrlData.publicUrl;
+            console.log("Set profile URL to:", profileImageUrl);
+          } else {
+            console.error("Failed to get public URL");
+            throw new Error("Failed to get public URL for uploaded image");
+          }
         }
+        
+        console.log("Updating profile with image URL:", profileImageUrl);
         await updateMentorProfile(user.id, { ...data, profile_image_url: profileImageUrl });
         toast.success('Profile updated successfully!');
         setSelectedImage(null);
       } catch (error) {
-        console.error('Error updating profile:', error);
-        toast.error('Failed to update profile. Please try again.');
+        console.error('Detailed error updating profile:', error);
+        if (error instanceof Error) {
+          toast.error(`Failed to update profile: ${error.message}`);
+        } else {
+          toast.error('Failed to update profile. Please try again.');
+        }
       } finally {
         setIsSaving(false);
       }
     }
   };
+
+  // Add this useEffect to check bucket existence when component loads
+  useEffect(() => {
+    const checkBucket = async () => {
+      try {
+        console.log("Checking if bucket exists...");
+        const { data: buckets, error } = await supabase.storage.listBuckets();
+        
+        if (error) {
+          console.error("Error listing buckets:", error);
+          return;
+        }
+        
+        console.log("Available buckets:", buckets);
+        
+        // Check if our specific bucket exists
+        const bucketExists = buckets.some(bucket => bucket.name === 'public-profile-images');
+        console.log("public-profile-images bucket exists:", bucketExists);
+        
+        if (!bucketExists) {
+          console.warn("WARNING: Please create the 'public-profile-images' bucket in your Supabase dashboard");
+        }
+      } catch (e) {
+        console.error("Error checking bucket:", e);
+      }
+    };
+    
+    if (user) {
+      checkBucket();
+    }
+  }, [user]);
 
   if (userLoading || !user) return <div>Loading...</div>;
 

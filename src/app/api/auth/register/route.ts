@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabaseClient';
+import { sendMentorSignupEmail } from '../../../../services/emailService';
 
 // Helper function to retry operations
 async function withRetry<T>(
@@ -139,6 +140,17 @@ export async function POST(request: NextRequest) {
       if (profileError) {
         console.error('Profile insert error:', profileError);
         return NextResponse.json({ error: profileError.message }, { status: 500 });
+      }
+      // Send welcome email to new mentor
+      try {
+        await sendMentorSignupEmail({
+          to_email: email,
+          to_name: name,
+          message: profileData.bio || ''
+        });
+        console.log('Mentor signup email sent to:', email);
+      } catch (emailErr) {
+        console.error('Failed to send mentor signup email:', emailErr);
       }
     }
     

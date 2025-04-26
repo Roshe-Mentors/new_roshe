@@ -24,6 +24,12 @@ const LoginPage = () => {
 
   // Hooks must be called unconditionally at top
   const [serverError, setServerError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
+  };
+
   useEffect(() => {
     const err = searchParams.get('error');
     if (err) setServerError(err);
@@ -117,17 +123,6 @@ const LoginPage = () => {
               Continue with Google
             </button>
             
-            <button
-              type="button"
-              onClick={() => handleSocialLogin('facebook')}
-              className="w-full py-3 mb-6 rounded-md border border-gray-300 text-black flex items-center justify-center font-medium"
-            >
-              <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M13.397,20.997v-8.196h2.765l0.411-3.209h-3.176V7.548c0-0.926,0.258-1.56,1.587-1.56h1.684V3.127 C15.849,3.039,15.025,2.997,14.201,3c-2.444,0-4.122,1.492-4.122,4.231v2.355H7.332v3.209h2.753v8.202H13.397z"/>
-              </svg>
-              Continue with Facebook
-            </button>
-            
             <div className="flex items-center mb-6">
               <div className="flex-1 h-px bg-gray-300"></div>
               <span className="px-4 text-sm text-gray-500">or</span>
@@ -150,17 +145,26 @@ const LoginPage = () => {
             </div>
             
             {/* Password Field */}
-            <div className="mb-6">
+            <div className="mb-6 relative">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
-              <input
-                type="password"
-                {...register('password')}
-                id="password"
-                placeholder="Enter your password"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
+                  id="password"
+                  placeholder="Password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-400"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
             </div>
             
