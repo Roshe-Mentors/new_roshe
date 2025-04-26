@@ -195,7 +195,13 @@ const MentorDashboard: React.FC = () => {
   // Use the base dashboard component with our specific logic
   return (
     <BaseDashboard
-      user={user ? { ...(user as unknown as Record<string, unknown>) } : {
+      user={user ? {
+        ...(user as unknown as Record<string, unknown>),
+        // Add the mentor's name if available
+        name: mentor?.name || (user as any).name || "User",
+        image: mentor?.imageUrl || (user as any).image || "/images/mentor_pic.png",
+        role: userRole
+      } : {
         name: "Guest User", 
         image: "/images/mentor_pic.png", 
         role: userRole,
