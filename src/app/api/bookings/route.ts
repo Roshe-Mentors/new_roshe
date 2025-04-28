@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGoogleMeetMeeting, saveBooking, checkTimeSlotAvailability } from '../../../services/googleMeetService';
+import { createGoogleMeetMeeting } from '../../../services/googleMeetService';
+import { saveBooking, checkTimeSlotAvailability } from '../../../services/zoomService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +18,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if time slot is available
-    const { available } = await checkTimeSlotAvailability(bookingData.slotId);
+    const { available } = await checkTimeSlotAvailability(
+      bookingData.mentorId,
+      bookingData.date,
+      bookingData.time
+    );
 
     if (!available) {
       return NextResponse.json(
@@ -28,14 +33,13 @@ export async function POST(request: NextRequest) {
 
     // Create Google Meet meeting
     try {
-      const meeting = await createGoogleMeetMeeting(
-        bookingData.mentorName || 'Mentor',
-        bookingData.mentorEmail || 'mentor@example.com',
-        bookingData.userEmail || 'user@example.com',
-        bookingData.date,
-        bookingData.time,
-        bookingData.sessionType
-      );
+      const meeting = await createGoogleMeetMeeting({
+        title: bookingData.sessionType,
+        startTime: `${bookingData.date} ${bookingData.time}`,
+        endTime: `${bookingData.date} ${bookingData.time}`,
+        description: bookingData.sessionType,
+        attendees: [bookingData.userEmail]
+      });
 
       // Generate fallback values for required fields
       const defaultMeetingId = `default-${Date.now()}`;
@@ -52,8 +56,8 @@ export async function POST(request: NextRequest) {
         date: bookingData.date,
         time: bookingData.time,
         session_type: bookingData.sessionType,
-        meeting_id: meeting.meetingId || defaultMeetingId,  // Ensure it's always a string
-        meeting_url: meeting.meetingUrl || defaultMeetingUrl,  // Ensure it's always a string
+        meeting_id: meeting.meetingId || defaultMeetingId,
+        meeting_url: meeting.meetingLink || defaultMeetingUrl,
         // No password for Google Meet
       };
 
