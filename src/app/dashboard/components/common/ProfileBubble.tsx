@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabaseClient';
@@ -14,10 +14,33 @@ const ProfileBubble: React.FC<ProfileBubbleProps> = ({ user }) => {
   const router = useRouter();
   
   // Get user profile image or use default
-  const [imgSrc, setImgSrc] = useState<string>(
-    (user?.image as string) || (user?.profile_image_url as string) || '/images/mentor_pic.png'
-  );
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
   const userName = (user?.name as string) || 'User';
+  
+  // Effect to determine the best image source when user object changes
+  useEffect(() => {
+    const possibleImageProperties = [
+      'image',
+      'profile_image_url',
+      'avatar_url',
+      'photo_url',
+      'picture',
+      'profilePicture',
+      'imageUrl'
+    ];
+    
+    // Try to find a valid image URL from user object
+    for (const prop of possibleImageProperties) {
+      if (user && typeof user[prop] === 'string' && (user[prop] as string).length > 0) {
+        setImgSrc(user[prop] as string);
+        return;
+      }
+    }
+    
+    // If no valid image is found, use default
+    setImgSrc('/images/mentor_pic.png');
+  }, [user]);
+
   const handleImgError = () => {
     if (imgSrc !== '/images/mentor_pic.png') {
       setImgSrc('/images/mentor_pic.png');
@@ -53,11 +76,12 @@ const ProfileBubble: React.FC<ProfileBubbleProps> = ({ user }) => {
           {imgSrc ? (
             <Image 
               src={imgSrc}
-              alt="Profile"
+              alt={`${userName}'s profile`}
               width={56}
               height={56}
               className="w-full h-full object-cover"
               onError={handleImgError}
+              priority
             />
           ) : (
             <span className="text-xl font-bold text-indigo-700">{userName.charAt(0)}</span>
