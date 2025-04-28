@@ -147,9 +147,11 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       
       setBookingStep('confirmation');
       toast.success('Session booked successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error booking session:', error);
-      toast.error('Failed to book session. Please try again.');
+      // Show specific error message if available
+      const errMsg = error.message || JSON.stringify(error);
+      toast.error(`Booking failed: ${errMsg}`);
     } finally {
       setIsBooking(false);
     }

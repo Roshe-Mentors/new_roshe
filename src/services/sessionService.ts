@@ -21,8 +21,12 @@ export async function createSession(data: SessionData) {
     .single();
 
   if (error) {
+    // Detailed logging of Supabase error
     console.error('Error creating session:', error);
-    throw error;
+    // Throw a native Error with supabase error details
+    throw new Error(
+      `Supabase createSession failed: ${error.message}${error.code ? ` (code: ${error.code})` : ''}${error.details ? ` - ${error.details}` : ''}`
+    );
   }
 
   return session;
