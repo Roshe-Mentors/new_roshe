@@ -24,3 +24,30 @@ export async function GET(
 
   return NextResponse.json(data || []);
 }
+
+export async function POST(request: Request, context: any) {
+  const { mentorId } = context.params;
+  const body = await request.json();
+  const { start_time, end_time } = body;
+
+  if (!start_time || !end_time) {
+    return NextResponse.json({ error: 'Missing start_time or end_time' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase
+    .from('availability')
+    .insert([
+      {
+        mentor_id: mentorId,
+        start_time,
+        end_time,
+        status: 'available',
+      },
+    ]);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, data });
+}
