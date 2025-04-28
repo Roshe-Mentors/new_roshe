@@ -27,22 +27,62 @@ export async function createReview(data: ReviewData) {
 
 // Get reviews for a mentor
 export async function getMentorReviews(mentorId: string) {
-  const { data, error } = await supabase
-    .from('mentor_reviews')
-    .select(`
-      *,
-      mentees:mentee_id(id, name, profile_image_url),
-      mentoring_sessions:session_id(id, title, start_time)
-    `)
-    .eq('mentor_id', mentorId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching mentor reviews:', error);
+  if (!mentorId) {
+    const error = new Error('Mentor ID is required');
+    console.error('Error fetching mentor reviews: Missing mentorId parameter');
     throw error;
   }
+  
+  try {
+    // First, let's query just the reviews to avoid column naming issues
+    const { data, error } = await supabase
+      .from('mentor_reviews')
+      .select(`
+        *,
+        mentees:mentee_id(id, name, profile_image_url)
+      `)
+      .eq('mentor_id', mentorId)
+      .order('created_at', { ascending: false });
 
-  return data || [];
+    if (error) {
+      console.error('Error fetching mentor reviews:', error.message);
+      throw error;
+    }
+
+    // If we successfully get the reviews, let's fetch the session details separately
+    if (data && data.length > 0) {
+      // Get unique session IDs from reviews
+      const sessionIds = [...new Set(data.map(review => review.session_id))];
+      
+      // Fetch session details if we have session IDs
+      if (sessionIds.length > 0) {
+        const { data: sessionData, error: sessionError } = await supabase
+          .from('mentoring_sessions')
+          .select('id, name, session_title, start_time')
+          .in('id', sessionIds);
+
+        if (!sessionError && sessionData) {
+          // Create a lookup map of sessions
+          const sessionsMap = sessionData.reduce((map: Record<string, any>, session) => {
+            map[session.id] = session;
+            return map;
+          }, {});
+          
+          // Add session data to each review
+          data.forEach(review => {
+            review.session = sessionsMap[review.session_id] || null;
+          });
+        }
+      }
+    }
+
+    return data || [];
+  } catch (err) {
+    // More detailed error logging
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error(`Error fetching mentor reviews for mentor ${mentorId}:`, errorMessage, err);
+    throw err;
+  }
 }
 
 // Check if a mentee has reviewed a specific session

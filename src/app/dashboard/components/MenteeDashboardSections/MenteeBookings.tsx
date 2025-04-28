@@ -26,7 +26,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const [agenda, setAgenda] = useState<string>('');
   const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
   const [isBooking, setIsBooking] = useState(false);
-  const [bookedSessionId, setBookedSessionId] = useState<string | null>(null);
   
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
   
@@ -135,8 +134,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         }
       }
       
-      // Create session in Supabase
-      const session = await createSession({
+      await createSession({
         mentor_id: selectedMentor.id,
         mentee_id: user.id as string,
         title: formatSessionTitle(selectedMentor.name),
@@ -147,7 +145,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         meeting_link: meetingLink
       });
       
-      setBookedSessionId(session?.id || null);
       setBookingStep('confirmation');
       toast.success('Session booked successfully!');
     } catch (error) {

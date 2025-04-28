@@ -12,7 +12,6 @@ import BaseDashboard from './common/BaseDashboard';
 import MentorHome from './MentorDashboardSections/MentorHome';
 import MentorExplore from './MentorDashboardSections/MentorExplore';
 import MentorCommunity from './MentorDashboardSections/MentorCommunity';
-import MentorBookings from './MentorDashboardSections/MentorBookings';
 import MentorChat from './MentorDashboardSections/MentorChat';
 import MentorAchievements from './MentorDashboardSections/MentorAchievements';
 import MentorSessions from './MentorDashboardSections/MentorSessions';
@@ -132,7 +131,8 @@ const MentorDashboard: React.FC = () => {
       { 
         ...(user as unknown as Record<string, unknown>), 
         role: userRole,
-        // Use profile image if available in mentor data
+        // Use mentor name and profile image if available
+        name: mentor?.name || (user as any).name || "User",
         image: mentor?.imageUrl || (user as any).image || "/images/mentor_pic.png"
       } : 
       { 

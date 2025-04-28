@@ -27,15 +27,30 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
         const sessionsPromise = getMentorSessions(mentorId);
         const reviewsPromise = getMentorReviews(mentorId);
         
-        const [sessionsData, reviewsData] = await Promise.all([
+        // Use Promise.allSettled instead of Promise.all to handle partial success
+        const [sessionsResult, reviewsResult] = await Promise.allSettled([
           sessionsPromise,
           reviewsPromise
         ]);
         
-        setSessions(sessionsData);
-        setReviews(reviewsData);
+        // Handle sessions result
+        if (sessionsResult.status === 'fulfilled') {
+          setSessions(sessionsResult.value);
+        } else {
+          console.error('Failed to load sessions:', sessionsResult.reason);
+          toast.error('Failed to load sessions');
+        }
+        
+        // Handle reviews result
+        if (reviewsResult.status === 'fulfilled') {
+          setReviews(reviewsResult.value);
+        } else {
+          console.error('Failed to load reviews:', reviewsResult.reason);
+          toast.error('Failed to load mentor reviews');
+        }
       } catch (error) {
-        console.error('Error loading mentor data:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error loading mentor data:', errorMessage, error);
         toast.error('Failed to load sessions and reviews');
       } finally {
         setIsLoading(false);
@@ -350,9 +365,9 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
                       month: 'short', 
                       day: 'numeric' 
                     })}
-                    {review.mentoring_sessions?.title && (
-                      <> • {review.mentoring_sessions.title}</>
-                    )}
+                    {review.session?.session_title || review.session?.name ? (
+                      <> • {review.session?.session_title || review.session?.name}</>
+                    ) : null}
                   </p>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getMenteeSessions, cancelSession, completeSession } from '../../../../services/sessionService';
 import { hasReviewedSession } from '../../../../services/reviewService';
@@ -21,17 +21,11 @@ const MenteeSessions: React.FC<MenteeSessionsProps> = ({ menteeId }) => {
   const [reviewSessionId, setReviewSessionId] = useState<string | null>(null);
   const [sessionStatusMap, setSessionStatusMap] = useState<Record<string, boolean>>({});
   
-  useEffect(() => {
-    loadSessions();
-  }, [menteeId]);
-  
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     setIsLoading(true);
     try {
       const sessionsData = await getMenteeSessions(menteeId);
       setSessions(sessionsData);
-      
-      // Check which sessions have been reviewed
       const reviewStatusMap: Record<string, boolean> = {};
       for (const session of sessionsData) {
         if (session.status === 'completed') {
@@ -46,7 +40,10 @@ const MenteeSessions: React.FC<MenteeSessionsProps> = ({ menteeId }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [menteeId]);
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
   
   const handleCancelSession = async () => {
     if (!cancelSessionId) return;
@@ -300,6 +297,8 @@ const MenteeSessions: React.FC<MenteeSessionsProps> = ({ menteeId }) => {
               <button
                 onClick={() => setReviewSessionId(null)}
                 className="text-gray-400 hover:text-gray-500"
+                aria-label="Close review modal"
+                title="Close review modal"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
