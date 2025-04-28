@@ -15,6 +15,7 @@ import MentorCommunity from './MentorDashboardSections/MentorCommunity';
 import MentorBookings from './MentorDashboardSections/MentorBookings';
 import MentorChat from './MentorDashboardSections/MentorChat';
 import MentorAchievements from './MentorDashboardSections/MentorAchievements';
+import MentorSessions from './MentorDashboardSections/MentorSessions';
 
 // Main Dashboard Component
 const MentorDashboard: React.FC = () => {
@@ -164,12 +165,7 @@ const MentorDashboard: React.FC = () => {
         return <MentorCommunity />;
       case 'calendar':
         return (
-          <MentorBookings
-            mentors={mentor ? [mentor] : []}
-            selectedMentorId={selectedMentorId}
-            setSelectedMentorId={setSelectedMentorId}
-            user={userRecord}
-          />
+          <MentorSessions mentorId={mentor?.id || ''} />
         );
       case 'chat':
         return <MentorChat />;

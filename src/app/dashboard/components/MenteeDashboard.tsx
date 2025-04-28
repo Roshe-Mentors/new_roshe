@@ -15,6 +15,7 @@ import MenteeCommunity from './MenteeDashboardSections/MenteeCommunity';
 import MenteeBookings from './MenteeDashboardSections/MenteeBookings';
 import MenteeChat from './MenteeDashboardSections/MenteeChat';
 import MenteeAchievements from './MenteeDashboardSections/MenteeAchievements';
+import MenteeSessions from './MenteeDashboardSections/MenteeSessions';
 
 // Main Dashboard Component
 const MenteeDashboard: React.FC = () => {
@@ -29,6 +30,7 @@ const MenteeDashboard: React.FC = () => {
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [menteeProfile, setMenteeProfile] = useState<any>(null);
+  const [viewMySessions, setViewMySessions] = useState(false);
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
 
   // Check for welcome message display
@@ -146,13 +148,6 @@ const MenteeDashboard: React.FC = () => {
     fetchUserRole();
   }, [user, isDevelopmentMode]);
 
-  // Make sure we have a selected mentor when viewing booking page
-  useEffect(() => {
-    if (activeNavItem === 'calendar' && !selectedMentorId && mentors.length > 0) {
-      setSelectedMentorId(mentors[0].id);
-    }
-  }, [activeNavItem, selectedMentorId, mentors]);
-
   // Function to navigate between sections from the home screen
   const handleNavigate = (section: 'explore' | 'community' | 'calendar' | 'chat') => {
     switch (section) {
@@ -212,12 +207,49 @@ const MenteeDashboard: React.FC = () => {
         return <MenteeCommunity />;
       case 'calendar':
         return (
-          <MenteeBookings
-            mentors={mentors}
-            selectedMentorId={selectedMentorId}
-            setSelectedMentorId={setSelectedMentorId}
-            user={userRecord}
-          />
+          <>
+            <div className="flex space-x-2 mb-4">
+              <button
+                className={`px-4 py-2 rounded-lg transition-colors ${!viewMySessions ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                onClick={() => setViewMySessions(false)}
+              >
+                Book Sessions
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg transition-colors ${viewMySessions ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                onClick={() => setViewMySessions(true)}
+              >
+                My Sessions
+              </button>
+            </div>
+            
+            {viewMySessions ? (
+              <MenteeSessions menteeId={menteeProfile?.id || ''} />
+            ) : (
+              selectedMentorId ? (
+                <MenteeBookings
+                  mentors={mentors}
+                  selectedMentorId={selectedMentorId}
+                  setSelectedMentorId={setSelectedMentorId}
+                  user={userRecord}
+                />
+              ) : mentors.length > 0 ? (
+                <div className="bg-white rounded-lg p-6 text-center">
+                  <p className="text-gray-600 mb-4">Select a mentor to book a session with.</p>
+                  <button
+                    onClick={() => setActiveNavItem('explore')}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    Browse Mentors
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg p-6 text-center">
+                  <p className="text-gray-600">No mentors available at the moment.</p>
+                </div>
+              )
+            )}
+          </>
         );
       case 'chat':
         return <MenteeChat />;

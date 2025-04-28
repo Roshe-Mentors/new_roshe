@@ -1,7 +1,10 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Mentor } from '../common/types';
+import { createSession } from '../../../../services/sessionService';
+import { toast } from 'react-toastify';
+import { createGoogleMeetMeeting } from '../../../../services/googleMeetService';
 
 interface MenteeBookingsProps {
   mentors: Mentor[];
@@ -14,7 +17,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   mentors,
   selectedMentorId,
   setSelectedMentorId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   user
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -23,8 +25,18 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const [sessionDuration, setSessionDuration] = useState<30 | 45 | 60>(30);
   const [agenda, setAgenda] = useState<string>('');
   const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookedSessionId, setBookedSessionId] = useState<string | null>(null);
   
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
+  
+  // Reset form when mentor changes
+  useEffect(() => {
+    setSelectedDate('');
+    setSelectedTimeSlot('');
+    setAgenda('');
+    setBookingStep('select-mentor');
+  }, [selectedMentorId]);
   
   const generateAvailableDates = () => {
     const dates = [];
@@ -72,8 +84,78 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const availableDates = generateAvailableDates();
   const timeSlots = generateTimeSlots();
   
-  const handleBookSession = () => {
-    setBookingStep('confirmation');
+  const calculateEndTime = (startTime: string, durationMinutes: number) => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    
+    const endDate = new Date(startDate);
+    endDate.setMinutes(startDate.getMinutes() + durationMinutes);
+    
+    const endHours = endDate.getHours().toString().padStart(2, '0');
+    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+    
+    return `${endHours}:${endMinutes}`;
+  };
+  
+  const formatSessionTitle = (mentorName: string) => {
+    const sessionTypeText = sessionType === 'video' ? 'Video Session' : 'Audio Session';
+    return `${sessionTypeText} with ${mentorName}`;
+  };
+  
+  const handleBookSession = async () => {
+    if (!selectedMentor || !user.id || !selectedDate || !selectedTimeSlot) {
+      toast.error('Missing required booking information');
+      return;
+    }
+    
+    setIsBooking(true);
+    
+    try {
+      // Format start and end times
+      const startDateTime = `${selectedDate}T${selectedTimeSlot}:00`;
+      const endTime = calculateEndTime(selectedTimeSlot, sessionDuration);
+      const endDateTime = `${selectedDate}T${endTime}:00`;
+      
+      // Create Google Meet link if it's a video session
+      let meetingLink = '';
+      if (sessionType === 'video') {
+        try {
+          const meetResult = await createGoogleMeetMeeting({
+            title: formatSessionTitle(selectedMentor.name),
+            startTime: startDateTime,
+            endTime: endDateTime,
+            description: agenda || `Mentoring session with ${selectedMentor.name}`,
+            attendees: [] // Would typically include mentor's email
+          });
+          meetingLink = meetResult?.meetingLink || '';
+        } catch (err) {
+          console.error('Failed to create Google Meet link:', err);
+          // Continue without meeting link
+        }
+      }
+      
+      // Create session in Supabase
+      const session = await createSession({
+        mentor_id: selectedMentor.id,
+        mentee_id: user.id as string,
+        title: formatSessionTitle(selectedMentor.name),
+        description: agenda,
+        status: 'upcoming',
+        start_time: startDateTime,
+        end_time: endDateTime,
+        meeting_link: meetingLink
+      });
+      
+      setBookedSessionId(session?.id || null);
+      setBookingStep('confirmation');
+      toast.success('Session booked successfully!');
+    } catch (error) {
+      console.error('Error booking session:', error);
+      toast.error('Failed to book session. Please try again.');
+    } finally {
+      setIsBooking(false);
+    }
   };
   
   const renderMentorSelection = () => {
@@ -130,6 +212,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
               </div>
             </div>
           ))}
+
         </div>
         
         <div className="flex justify-end mt-6">
@@ -394,9 +477,12 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         <div className="flex justify-end mt-6">
           <button
             onClick={handleBookSession}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            disabled={isBooking}
+            className={`px-6 py-2 bg-indigo-600 text-white rounded-lg ${
+              isBooking ? 'opacity-70 cursor-not-allowed' : 'hover:bg-indigo-700'
+            } transition-colors`}
           >
-            Book Session
+            {isBooking ? 'Booking...' : 'Book Session'}
           </button>
         </div>
       </div>
