@@ -43,7 +43,7 @@ export default function AvailabilityPage() {
     if (!loading && user) {
       channel = supabase
         .channel(`availability_${user.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${user.id}` }, payload => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'availability', filter: `mentor_id=eq.${user.id}` }, payload => {
           try {
             const newSlot = (payload as any).record as Slot;
             if (newSlot && newSlot.id) {
@@ -53,7 +53,7 @@ export default function AvailabilityPage() {
             console.warn('Subscription insert error:', err);
           }
         })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${user.id}` }, payload => {
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'availability', filter: `mentor_id=eq.${user.id}` }, payload => {
           try {
             const oldSlot = (payload as any).record as Slot;
             if (oldSlot && oldSlot.id) {
@@ -61,6 +61,14 @@ export default function AvailabilityPage() {
             }
           } catch (err) {
             console.warn('Subscription delete error:', err);
+          }
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'availability', filter: `mentor_id=eq.${user.id}` }, payload => {
+          try {
+            const updatedSlot = (payload as any).record as Slot;
+            setSlots(prev => prev.map(s => s.id === updatedSlot.id ? updatedSlot : s));
+          } catch (err) {
+            console.warn('Subscription update error:', err);
           }
         })
         .subscribe();
