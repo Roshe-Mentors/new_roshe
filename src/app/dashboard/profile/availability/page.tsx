@@ -6,6 +6,7 @@ import {
   createAvailability,
   deleteAvailability
 } from '../../../../services/profileService';
+import { supabase } from '../../../../lib/supabaseClient';
 
 type Slot = {
   id: string;
@@ -23,14 +24,49 @@ export default function AvailabilityPage() {
 
   const loadSlots = useCallback(async () => {
     if (user) {
-      const data = await getAvailability(user.id);
-      setSlots(data);
+      try {
+        const data = await getAvailability(user.id);
+        setSlots(data || []);
+      } catch (err) {
+        console.warn('Error loading availability slots:', err);
+      }
     }
   }, [user]);
 
   useEffect(() => {
     if (!loading && user) loadSlots();
   }, [user, loading, loadSlots]);
+  
+  // subscribe to real-time availability changes for this mentor
+  useEffect(() => {
+    let channel: any;
+    if (!loading && user) {
+      channel = supabase
+        .channel(`availability_${user.id}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${user.id}` }, payload => {
+          try {
+            const newSlot = (payload as any).record as Slot;
+            if (newSlot && newSlot.id) {
+              setSlots(prev => [...prev, newSlot]);
+            }
+          } catch (err) {
+            console.warn('Subscription insert error:', err);
+          }
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${user.id}` }, payload => {
+          try {
+            const oldSlot = (payload as any).record as Slot;
+            if (oldSlot && oldSlot.id) {
+              setSlots(prev => prev.filter(s => s.id !== oldSlot.id));
+            }
+          } catch (err) {
+            console.warn('Subscription delete error:', err);
+          }
+        })
+        .subscribe();
+    }
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [user, loading]);
 
   const handleAdd = async () => {
     if (!user) return;
@@ -50,7 +86,10 @@ export default function AvailabilityPage() {
     try {
       await createAvailability({ mentor_id: user.id, start_time: start, end_time: end, recurrence: null });
       setStart(''); setEnd('');
-      loadSlots();
+      await loadSlots();
+    } catch (err) {
+      console.warn('Error adding availability slot:', err);
+      setFormError('Failed to add slot');
     } finally {
       setBusy(false);
     }
@@ -60,7 +99,10 @@ export default function AvailabilityPage() {
     setBusy(true);
     try {
       await deleteAvailability(id);
-      loadSlots();
+      await loadSlots();
+    } catch (err) {
+      console.warn('Error deleting availability slot:', err);
+      setFormError('Failed to delete slot');
     } finally {
       setBusy(false);
     }

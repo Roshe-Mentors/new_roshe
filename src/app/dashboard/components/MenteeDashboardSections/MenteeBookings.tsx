@@ -5,6 +5,15 @@ import { Mentor } from '../common/types';
 import { createSession } from '../../../../services/sessionService';
 import { toast } from 'react-toastify';
 import { createGoogleMeetMeeting } from '../../../../services/googleMeetService';
+import { getAvailability } from '../../../../services/profileService';
+import { supabase } from '../../../../lib/supabaseClient';
+
+// Availability slot from mentor profile
+interface AvailabilitySlot {
+  id: string;
+  start_time: string;
+  end_time: string;
+}
 
 interface MenteeBookingsProps {
   mentors: Mentor[];
@@ -26,9 +35,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const [agenda, setAgenda] = useState<string>('');
   const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
   const [isBooking, setIsBooking] = useState(false);
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
   
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
-  
+
   // Reset form when mentor changes
   useEffect(() => {
     setSelectedDate('');
@@ -37,52 +47,65 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     setBookingStep('select-mentor');
   }, [selectedMentorId]);
   
-  const generateAvailableDates = () => {
-    const dates = [];
-    const today = new Date();
-    
-    for (let i = 1; i <= 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      if (date.getDay() !== 0 && date.getDay() !== 6) {
-        dates.push({
-          date: date.toISOString().split('T')[0],
-          formattedDate: date.toLocaleDateString('en-US', { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric' 
-          })
-        });
-      }
+  // Load mentor availability when selected and subscribe to real-time changes
+  useEffect(() => {
+    let channel: any;
+    if (selectedMentorId) {
+      // initial fetch
+      getAvailability(selectedMentorId)
+        .then(data => setAvailabilitySlots(data || []))
+        .catch(err => console.error('Error fetching availability:', err));
+      // subscribe to INSERT/DELETE on mentor_availability for this mentor
+      channel = supabase
+        .channel(`availability_${selectedMentorId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
+          const newSlot = (payload as any).record as AvailabilitySlot;
+          setAvailabilitySlots(prev => [...prev, newSlot]);
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
+          const oldSlot = (payload as any).record as AvailabilitySlot;
+          setAvailabilitySlots(prev => prev.filter(s => s.id !== oldSlot.id));
+        })
+        .subscribe();
+    } else {
+      setAvailabilitySlots([]);
     }
-    
-    return dates;
-  };
-  
-  const generateTimeSlots = () => {
-    const slots = [];
-    const startHour = 9;
-    const endHour = 17;
-    
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minutes = 0; minutes < 60; minutes += 30) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        const formattedTime = new Date(`2000-01-01T${timeString}:00`).toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          minute: 'numeric',
-          hour12: true
-        });
-        slots.push({ time: timeString, formattedTime });
-      }
-    }
-    
-    return slots;
-  };
-  
-  const availableDates = generateAvailableDates();
-  const timeSlots = generateTimeSlots();
-  
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [selectedMentorId]);
+
+  // Compute available dates from availability slots
+  const uniqueDates = Array.from(new Set(availabilitySlots.map(s => s.start_time.split('T')[0])));
+  const availableDates = uniqueDates.sort().map(date => {
+    const d = new Date(date);
+    return {
+      date,
+      formattedDate: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    };
+  });
+  // Compute time slots for selected date based on availability and current session duration
+  const timeSlots = selectedDate
+    ? availabilitySlots
+        .filter(s => s.start_time.startsWith(`${selectedDate}T`))
+        .flatMap(slot => {
+          const slots = [];
+          const start = new Date(slot.start_time);
+          const end = new Date(slot.end_time);
+          const interval = 30; // minutes step
+          const cursor = new Date(start);
+          while (cursor.getTime() + sessionDuration * 60000 <= end.getTime()) {
+            const hh = cursor.getHours().toString().padStart(2, '0');
+            const mm = cursor.getMinutes().toString().padStart(2, '0');
+            const time = `${hh}:${mm}`;
+            const formattedTime = cursor.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+            slots.push({ time, formattedTime });
+            cursor.setMinutes(cursor.getMinutes() + interval);
+          }
+          return slots;
+        })
+    : [];
+
   const calculateEndTime = (startTime: string, durationMinutes: number) => {
     const [hours, minutes] = startTime.split(':').map(Number);
     const startDate = new Date();
@@ -275,17 +298,17 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Select Date</h3>
             <div className="space-y-2 h-60 overflow-y-auto pr-2 border rounded-lg p-2">
-              {availableDates.map(date => (
+              {availableDates.map(({ date, formattedDate }) => (
                 <div
-                  key={date.date}
+                  key={date}
                   className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                    selectedDate === date.date
+                    selectedDate === date
                       ? 'border-indigo-500 bg-indigo-50'
                       : 'border-gray-200 hover:border-indigo-300'
                   }`}
-                  onClick={() => setSelectedDate(date.date)}
+                  onClick={() => setSelectedDate(date)}
                 >
-                  <p className="text-sm font-medium">{date.formattedDate}</p>
+                  <p className="text-sm font-medium">{formattedDate}</p>
                 </div>
               ))}
             </div>

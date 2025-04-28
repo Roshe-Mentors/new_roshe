@@ -89,7 +89,7 @@ export async function removeMentorExpertise(mentorId: string, tagId: string) {
 // Availability
 export async function getAvailability(mentorId: string) {
   const { data, error } = await supabase
-    .from('mentor_availability')
+    .from('availability')
     .select('*')
     .eq('mentor_id', mentorId);
   if (error) throw error;
@@ -98,7 +98,7 @@ export async function getAvailability(mentorId: string) {
 
 export async function createAvailability(slot: Omit<AvailabilityRecord, 'id' | 'created_at'>) {
   const { data, error } = await supabase
-    .from('mentor_availability')
+    .from('availability')
     .insert(slot)
     .single();
   if (error) throw error;
@@ -107,7 +107,7 @@ export async function createAvailability(slot: Omit<AvailabilityRecord, 'id' | '
 
 export async function updateAvailability(id: string, updates: Partial<AvailabilityRecord>) {
   const { data, error } = await supabase
-    .from('mentor_availability')
+    .from('availability')
     .update(updates)
     .eq('id', id)
     .single();
@@ -117,7 +117,7 @@ export async function updateAvailability(id: string, updates: Partial<Availabili
 
 export async function deleteAvailability(id: string) {
   const { error } = await supabase
-    .from('mentor_availability')
+    .from('availability')
     .delete()
     .eq('id', id);
   if (error) throw error;
