@@ -7,6 +7,8 @@ import {
   deleteAvailability
 } from '../../../../services/profileService';
 import { supabase } from '../../../../lib/supabaseClient';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 type Slot = {
   id: string;
@@ -18,8 +20,8 @@ type Slot = {
 export default function AvailabilityPage() {
   const { user, loading } = useUser();
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -80,13 +82,10 @@ export default function AvailabilityPage() {
   const handleAdd = async () => {
     if (!user) return;
     // Validation
-    if (!start || !end) {
+    if (!startDate || !endDate) {
       setFormError('Start and end time are required');
       return;
     }
-    
-    const startDate = new Date(start);
-    const endDate = new Date(end);
     
     if (endDate <= startDate) {
       setFormError('End time must be after start time');
@@ -106,8 +105,8 @@ export default function AvailabilityPage() {
       await createAvailability(newSlot);
       
       // Reset form on success
-      setStart('');
-      setEnd('');
+      setStartDate(null);
+      setEndDate(null);
       // No need to call loadSlots since we have real-time subscription
     } catch (err: any) {
       console.error('Error adding availability slot:', err.message || err);
@@ -137,43 +136,99 @@ export default function AvailabilityPage() {
       <div className="bg-white p-6 rounded-lg shadow w-11/12 md:w-4/5 lg:w-3/4 mx-auto space-y-6">
         <h2 className="text-xl font-semibold text-gray-800">Availability Slots</h2>
         {formError && <p className="text-red-500 text-sm">{formError}</p>}
-        <ul className="space-y-3">
-          {slots.map(slot => (
-            <li key={slot.id} className="flex justify-between items-center">
-              <span>{new Date(slot.start_time).toLocaleString()} - {new Date(slot.end_time).toLocaleString()}</span>
-              <button onClick={() => handleDelete(slot.id)} disabled={busy} className="text-red-500 hover:underline">
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
+        {slots.length === 0 ? (
+          <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="font-medium">No availability slots yet</p>
+              <p className="text-sm">Create your first session slot below</p>
+            </div>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {slots.map(slot => {
+              const startDateTime = new Date(slot.start_time);
+              const endDateTime = new Date(slot.end_time);
+              
+              return (
+                <li key={slot.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition duration-200">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-3 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">
+                        {startDateTime.toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric', year: 'numeric'})}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        <span className="font-medium">{startDateTime.toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</span>
+                        <span className="mx-2">—</span>
+                        <span className="font-medium">{endDateTime.toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'})}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDelete(slot.id)} 
+                    disabled={busy} 
+                    className="flex items-center px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         <div className="space-y-2">
           <h2 className="text-xl font-semibold text-gray-800">Add New Slot</h2>
-          <div>
-            <label htmlFor="start-time" className="block text-sm font-medium text-gray-700">Start Time</label>
-            <input
-              id="start-time"
-              type="datetime-local"
-              value={start}
-              onChange={e => setStart(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          <div>
-            <label htmlFor="end-time" className="block text-sm font-medium text-gray-700">End Time</label>
-            <input
-              id="end-time"
-              type="datetime-local"
-              value={end}
-              onChange={e => setEnd(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Session Begins</label>
+              <div className="relative">
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                  minDate={new Date()}
+                  placeholderText="Select start date and time"
+                  className="w-full px-4 py-2 border border-gray-300 rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  calendarClassName="bg-white shadow-lg rounded-lg border border-gray-200"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Session Ends</label>
+              <div className="relative">
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                  minDate={startDate || new Date()}
+                  placeholderText="Select end date and time"
+                  className="w-full px-4 py-2 border border-gray-300 rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  calendarClassName="bg-white shadow-lg rounded-lg border border-gray-200"
+                />
+              </div>
+            </div>
           </div>
           <button
             onClick={handleAdd}
             disabled={busy}
-            className="w-full py-2 text-white font-medium rounded transition"
+            className="w-full py-2 text-white font-medium rounded transition mt-4"
             style={{ background: 'linear-gradient(90deg, #24242E 0%, #747494 100%)' }}
           >
             {busy ? 'Saving...' : 'Add Slot'}
