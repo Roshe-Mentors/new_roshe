@@ -5,6 +5,8 @@ import { Mentor } from '../common/types';
 import { createSession } from '../../../../services/sessionService';
 import { toast } from 'react-toastify';
 import { createGoogleMeetMeeting } from '../../../../services/googleMeetService';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 import { supabase } from '../../../../lib/supabaseClient';
 
@@ -13,6 +15,8 @@ interface AvailabilitySlot {
   id: string;
   start_time: string;
   end_time: string;
+  status?: string; // Making the status field explicit
+  mentor_id?: string;
 }
 
 interface MenteeBookingsProps {
@@ -29,6 +33,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   user
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   // Fixed video call sessions, 30-minute duration
   const sessionDuration = 30;
@@ -58,9 +63,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         .then(response => response.json())
         .then(data => {
           console.log('Fetched availability slots:', data);
-          setAvailabilitySlots(data || []);
+          // Make sure we process all valid slots regardless of status format
+          const validSlots = Array.isArray(data) ? data.filter(slot => 
+            // Account for both 'available' and 'available ' with trim()
+            slot && (slot.status?.trim() === 'available')
+          ) : [];
+          console.log('Valid availability slots after filtering:', validSlots);
+          setAvailabilitySlots(validSlots);
           
-          if (!data || data.length === 0) {
+          if (!validSlots.length) {
             console.log('No availability slots found for this mentor');
           }
         })
@@ -93,8 +104,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     };
   }, [selectedMentorId]);
 
-  // Compute available dates from availability slots
-  const futureSlots = availabilitySlots.filter(s => new Date(s.end_time) > new Date());
+  // Compute available dates from availability slots, ensuring we only use future slots
+  const now = new Date();
+  const futureSlots = availabilitySlots.filter(s => {
+    const endTime = new Date(s.end_time);
+    return endTime > now; // Only include slots that end in the future
+  });
+
+  console.log('Future slots available:', futureSlots.length);
+  
   const uniqueDates = Array.from(new Set(futureSlots.map(s => s.start_time.split('T')[0])));
   const availableDates = uniqueDates.sort().map(date => {
     const d = new Date(date);
@@ -274,6 +292,16 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   };
   
   const renderTimeSelection = () => {
+    // Create an array of available dates for the DatePicker
+    const availableDateObjects = availableDates.map(({ date }) => new Date(date));
+    
+    // Function to check if a date should be enabled in the calendar
+    const isDateAvailable = (date: Date) => {
+      return availableDates.some(({ date: availableDate }) => 
+        availableDate === date.toISOString().split('T')[0]
+      );
+    };
+
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -318,53 +346,74 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Select Date</h3>
-            <div className="space-y-2 h-60 overflow-y-auto pr-2 border rounded-lg p-2">
-              {availableDates.length > 0 ? (
-                availableDates.map(({ date, formattedDate }) => (
-                  <div
-                    key={date}
-                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                      selectedDate === date
-                        ? 'border-indigo-500 bg-indigo-50'
-                        : 'border-gray-200 hover:border-indigo-300'
-                    }`}
-                    onClick={() => setSelectedDate(date)}
-                  >
-                    <p className="text-sm font-medium">{formattedDate}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
-                  <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p>No availability found for this mentor.</p>
-                  <p className="text-sm mt-1">Please check back later or select a different mentor.</p>
-                </div>
-              )}
-            </div>
+            {availableDateObjects.length > 0 ? (
+              <div className="border rounded-lg p-4">
+                <DatePicker
+                  selected={selectedDateObj}
+                  onChange={(date) => {
+                    if (date) {
+                      setSelectedDateObj(date);
+                      setSelectedDate(date.toISOString().split('T')[0]);
+                      setSelectedTimeSlot(''); // Reset time slot when date changes
+                    }
+                  }}
+                  filterDate={isDateAvailable}
+                  highlightDates={availableDateObjects}
+                  minDate={new Date()}
+                  inline
+                  className="w-full"
+                  calendarClassName="bg-white rounded-lg border-none shadow-none"
+                  dayClassName={date => 
+                    isDateAvailable(date) ? "react-datepicker__day--highlighted" : undefined
+                  }
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center text-gray-500 border rounded-lg bg-gray-50">
+                <svg className="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="font-medium">No availability found</p>
+                <p className="text-sm mt-1">This mentor hasn't added any available time slots yet.</p>
+              </div>
+            )}
           </div>
           
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Select Time</h3>
-            <div className="grid grid-cols-2 gap-2 h-60 overflow-y-auto pr-2 border rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-2 h-[320px] overflow-y-auto pr-2 border rounded-lg p-4">
               {timeSlots.length > 0 ? (
                 timeSlots.map(slot => (
                   <div
                     key={slot.uniqueKey}
-                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                    className={`p-3 border rounded-lg cursor-pointer transition-all flex items-center justify-center ${
                       selectedTimeSlot === slot.time
-                        ? 'border-indigo-500 bg-indigo-50'
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                         : 'border-gray-200 hover:border-indigo-300'
                     }`}
                     onClick={() => setSelectedTimeSlot(slot.time)}
                   >
-                    <p className="text-sm font-medium text-center">{slot.formattedTime}</p>
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-2 ${selectedTimeSlot === slot.time ? 'text-indigo-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm font-medium">{slot.formattedTime}</p>
+                    </div>
                   </div>
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center h-full p-4 col-span-2 text-center text-gray-500">
-                  <p>Select a date to view available time slots</p>
+                  {selectedDate ? (
+                    <>
+                      <svg className="w-10 h-10 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="font-medium">No available times</p>
+                      <p className="text-sm mt-1">Try selecting a different date</p>
+                    </>
+                  ) : (
+                    <p>Select a date to view available time slots</p>
+                  )}
                 </div>
               )}
             </div>

@@ -41,13 +41,16 @@ export async function GET(
       latest: allData?.length ? new Date(Math.max(...allData.map(i => new Date(i.start_time).getTime()))).toISOString() : 'none',
     });
 
-    // Then get the filtered ones as before (only difference is logging the SQL filter values)
-    console.log('API: Filtering with mentor_id =', mentorId, ', status = available, start_time >', now);
+    // Modified: Use a more flexible approach for status - now we check for status that contains 'available'
+    // rather than being exactly 'available'
+    console.log('API: Filtering with mentor_id =', mentorId, ', status LIKE available, start_time >', now);
+    
+    // Using ILIKE for case-insensitive matching with wildcards
     const { data, error } = await supabaseAdmin
       .from('availability')
       .select('id, start_time, end_time, status, mentor_id')
       .eq('mentor_id', mentorId)
-      .eq('status', 'available')
+      .ilike('status', '%available%') // This will match 'available', 'available ', etc.
       .gt('start_time', now)
       .order('start_time', { ascending: true });
 
