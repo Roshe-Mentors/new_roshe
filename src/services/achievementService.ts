@@ -1,5 +1,5 @@
 // services/achievementService.ts
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 
 // Types for achievements data
 export interface Achievement {
@@ -70,11 +70,14 @@ export const fetchUserAchievements = async (userId: string, role: 'mentor' | 'me
       .eq('user_id', userId)
       .eq('role', role)
       .order('id', { ascending: true });
-      
-    if (error) throw error;
+    
+    if (error) {
+      console.error('Supabase error fetching achievements:', error.message || error);
+      return [];
+    }
     return data || [];
-  } catch (error) {
-    console.error('Error fetching achievements:', error);
+  } catch (error: any) {
+    console.error('Error fetching achievements:', error.message || error);
     return [];
   }
 };

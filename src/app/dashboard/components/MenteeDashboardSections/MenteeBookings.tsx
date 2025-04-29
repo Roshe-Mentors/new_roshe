@@ -126,22 +126,24 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const timeSlots = selectedDate
     ? availabilitySlots
         .filter(s => s.start_time.startsWith(`${selectedDate}T`))
-        .flatMap(slot => {
+        .flatMap((slot, slotIndex) => {
           const slots = [];
           const start = new Date(slot.start_time);
           const end = new Date(slot.end_time);
           const interval = 30; // minutes step
           const cursor = new Date(start);
+          let timeIndex = 0; // Counter to ensure uniqueness
           
           while (cursor.getTime() + sessionDuration * 60000 <= end.getTime()) {
             const hh = cursor.getHours().toString().padStart(2, '0');
             const mm = cursor.getMinutes().toString().padStart(2, '0');
             const time = `${hh}:${mm}`;
             const formattedTime = cursor.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-            // Create a unique key by combining time with slot ID and position
-            const uniqueKey = `${slot.id}-${time}`;
+            // Create a truly unique key by combining time with slot ID, slotIndex and timeIndex
+            const uniqueKey = `${slot.id}-${slotIndex}-${timeIndex}-${time}`;
             slots.push({ time, formattedTime, uniqueKey });
             cursor.setMinutes(cursor.getMinutes() + interval);
+            timeIndex++; // Increment the counter
           }
           return slots;
         })
@@ -364,7 +366,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
                   className="w-full"
                   calendarClassName="bg-white rounded-lg border-none shadow-none"
                   dayClassName={date => 
-                    isDateAvailable(date) ? "react-datepicker__day--highlighted" : undefined
+                    isDateAvailable(date) ? "react-datepicker__day--highlighted" : ""
                   }
                 />
               </div>

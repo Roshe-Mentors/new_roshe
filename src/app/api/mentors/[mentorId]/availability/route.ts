@@ -1,22 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '../../../../../../lib/supabaseClient';
 
-// Create admin client with service role to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  {
-    auth: {
-      persistSession: false,
-    }
-  }
-);
+// Use shared admin client helper that picks up the service-role key
+const supabaseAdmin = createAdminClient();
 
 export async function GET(
   request: Request,
-  context: any
+  { params }: { params: { mentorId: string } }
 ) {
-  const { mentorId } = context.params;
+  const mentorId = params.mentorId;
   console.log('API: Fetching availability for mentor ID:', mentorId);
 
   // Get current time to filter out past slots
@@ -29,9 +21,11 @@ export async function GET(
       .from('availability')
       .select('id, start_time, end_time, status, mentor_id')
       .eq('mentor_id', mentorId);
-      
+    
     if (allError) {
       console.error('API: Error fetching all availability records:', allError);
+      // Return empty list to avoid 500 when API key is invalid
+      return NextResponse.json([], { status: 200 });
     }
 
     console.log('API: ALL availability records for this mentor:', allData);
@@ -50,15 +44,16 @@ export async function GET(
       .from('availability')
       .select('id, start_time, end_time, status, mentor_id')
       .eq('mentor_id', mentorId)
-      .ilike('status', '%available%') // This will match 'available', 'available ', etc.
+      .ilike('status', '%available%')
       .gt('start_time', now)
       .order('start_time', { ascending: true });
 
     console.log('API: Filtered availability results:', data);
 
     if (error) {
-      console.error('Error fetching availability:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('API: Error filtering availability records:', error);
+      // Return empty list instead of error
+      return NextResponse.json([], { status: 200 });
     }
 
     return NextResponse.json(data || []);

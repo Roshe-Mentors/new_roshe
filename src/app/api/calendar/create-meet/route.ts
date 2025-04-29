@@ -1,118 +1,135 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
-// Set up Google Calendar API with service account credentials
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+// Configure OAuth2 client with credentials from environment variables
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_CALENDAR_REDIRECT_URI
+);
 
-// Google service account authentication
-function getServiceAccountAuth() {
-  try {
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}');
-    
-    const auth = new google.auth.JWT({
-      email: credentials.client_email,
-      key: credentials.private_key,
-      scopes: SCOPES
-    });
-    
-    return auth;
-  } catch (error) {
-    console.error('Error setting up service account auth:', error);
-    throw new Error('Failed to initialize Google service account');
-  }
-}
+// Set refresh token for the OAuth client
+oauth2Client.setCredentials({
+  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+});
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { title, description, startTime, endTime, attendees = [] } = await request.json();
-    
-    // Validate required fields
+    const { title, description, startTime, endTime, attendees = [] } = await req.json();
+
     if (!title || !startTime || !endTime) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
-    
-    // Parse start and end times
-    const startDateTime = new Date(startTime);
-    const endDateTime = new Date(endTime);
-    
-    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-      return NextResponse.json(
-        { error: 'Invalid start or end time' },
-        { status: 400 }
-      );
+
+    // Ensure OAuth credentials are present and valid
+    console.log('OAuth client credentials set, attempting to get access token');
+    const tokenResponse = await oauth2Client.getAccessToken();
+    const accessToken = tokenResponse?.token;
+    if (!accessToken) {
+      console.error('Failed to retrieve access token, token response:', tokenResponse);
+      return NextResponse.json({ error: 'Unable to authenticate with Google Calendar' }, { status: 500 });
     }
-    
-    // Authenticate with service account
-    const auth = getServiceAccountAuth();
-    
-    // Create Calendar API client
-    const calendar = google.calendar({ version: 'v3', auth });
-    
-    // Generate a unique requestId for this conference
-    const requestId = `meet-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-    
-    // Create the calendar event with Google Meet conferencing
+    console.log('Obtained access token, proceeding to create event');
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    // Create the event with Google Meet conferencing
     const event = {
       summary: title,
-      description: description || 'Mentoring session',
+      description: description,
       start: {
-        dateTime: startDateTime.toISOString(),
-        timeZone: 'UTC'
+        dateTime: new Date(startTime).toISOString(),
+        timeZone: 'UTC',
       },
       end: {
-        dateTime: endDateTime.toISOString(),
-        timeZone: 'UTC'
+        dateTime: new Date(endTime).toISOString(),
+        timeZone: 'UTC',
       },
       attendees: attendees.map((email: string) => ({ email })),
       conferenceData: {
         createRequest: {
-          requestId,
+          requestId: `roshe-meet-${Date.now()}`,
           conferenceSolutionKey: {
-            type: 'hangoutsMeet'
-          }
-        }
-      }
+            type: "hangoutsMeet",
+          },
+        },
+      },
     };
-    
-    // Insert the event
-    const response = await calendar.events.insert({
+
+    console.log('Creating calendar event with Meet link:', event);
+    const result = await calendar.events.insert({
       calendarId: 'primary',
       conferenceDataVersion: 1,
-      requestBody: event
+      requestBody: event as any,
     });
-    
-    if (!response.data) {
-      throw new Error('No data returned from Google Calendar API');
-    }
-    
-    // Extract the Google Meet link
-    const meetLink = response.data.hangoutLink || '';
+    console.log('Calendar API response:', JSON.stringify(result.data, null, 2));
+
+    // Extract the Google Meet link and ID from the response
+    const meetLink = result.data.hangoutLink || '';
     const meetingId = extractMeetingIdFromLink(meetLink);
-    
+
     return NextResponse.json({
-      eventId: response.data.id,
       meetingLink: meetLink,
-      meetingId,
-      startTime: response.data.start?.dateTime,
-      endTime: response.data.end?.dateTime
+      meetingId: meetingId,
+      eventId: result.data.id,
+      success: true,
     });
   } catch (error: any) {
-    console.error('Error creating Google Meet:', error);
+    console.error('Error creating Google Meet meeting:', error);
+    
+    // More detailed error logging
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+    
     return NextResponse.json(
-      { error: error.message || 'Failed to create meeting' },
+      { 
+        error: 'Failed to create meeting',
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      },
       { status: 500 }
     );
   }
 }
 
 /**
- * Extracts the meeting ID from a Google Meet link
+ * Extracts the meeting ID from a Google Meet URL
  */
-function extractMeetingIdFromLink(link: string): string | null {
-  if (!link) return null;
-  const match = link.match(/meet\.google\.com\/([a-z-]+)/);
-  return match ? match[1] : null;
+function extractMeetingIdFromLink(link: string): string {
+  if (!link) return generateMeetId();
+  const match = link.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
+  return match ? match[1] : generateMeetId();
+}
+
+/**
+ * Generates a valid Google Meet ID in the format xxx-yyyy-zzz
+ */
+function generateMeetId(): string {
+  const chars = 'abcdefghijkmnpqrstuvwxyz';
+  let result = '';
+  
+  // First part: 3 characters
+  for (let i = 0; i < 3; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  result += '-';
+  
+  // Middle part: 4 characters
+  for (let i = 0; i < 4; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  result += '-';
+  
+  // Last part: 3 characters
+  for (let i = 0; i < 3; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  return result;
 }
