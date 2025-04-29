@@ -1,100 +1,82 @@
 // Callback route to receive the authorization code and exchange it for tokens
-import { NextRequest, NextResponse } from 'next/server';
-import { OAuth2Client } from 'google-auth-library';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
-const REDIRECT_URI = process.env.GOOGLE_CALENDAR_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/google-calendar';
-
-// Log environment variables for debugging
-console.log('Callback Route - Environment Variables:');
-console.log('GOOGLE_CLIENT_ID exists:', !!process.env.GOOGLE_CLIENT_ID);
-console.log('GOOGLE_CLIENT_SECRET exists:', !!process.env.GOOGLE_CLIENT_SECRET);
-console.log('REDIRECT_URI:', REDIRECT_URI);
-
-const oauth2Client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  REDIRECT_URI
-);
-
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
+  const state = searchParams.get('state');
   const error = searchParams.get('error');
-  
-  console.log('Callback received - Parameters:');
-  console.log('Code present:', !!code);
-  console.log('Error:', error);
-  console.log('All params:', Object.fromEntries(searchParams.entries()));
-  
-  if (!code) {
-    return NextResponse.json({ 
-      error: 'No authorization code received from Google', 
-      details: 'This usually happens if you denied permission or there was an issue with the OAuth request',
-      receivedParams: Object.fromEntries(searchParams.entries()) 
-    }, { status: 400 });
+
+  // If there was an error during OAuth, redirect to dashboard with error
+  if (error) {
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=calendar_oauth_failed&message=${error}`
+    );
+  }
+
+  // Verify that we have the required parameters
+  if (!code || !state) {
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=invalid_oauth_response`
+    );
   }
 
   try {
-    // Exchange the code for tokens
-    const { tokens } = await oauth2Client.getToken(code);
+    // Exchange the authorization code for access and refresh tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback/google-calendar`,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      console.error('Failed to exchange code for token:', tokenData);
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=token_exchange_failed`
+      );
+    }
+
+    // Get user info from cookies (server-side only)
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+
+    // Get user session
+    const { data: { session } } = await supabase.auth.getSession();
     
-    // Directly display the tokens in a format that's easy to copy
-    // This is for development only - in production, you'd save this securely
-    return new NextResponse(
-      `<html>
-        <head>
-          <title>Google Calendar Authorization Complete</title>
-          <style>
-            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
-            .success { color: green; }
-            .copy-button { margin-top: 10px; padding: 8px 16px; background: #4285f4; color: white; 
-                          border: none; border-radius: 4px; cursor: pointer; }
-            .token-section { margin-bottom: 30px; }
-          </style>
-        </head>
-        <body>
-          <h1 class="success">✅ Authorization Successful!</h1>
-          <p>Here is your refresh token. <strong>Copy it now</strong> and add it to your .env.local file as GOOGLE_REFRESH_TOKEN:</p>
-          
-          <div class="token-section">
-            <h3>Refresh Token:</h3>
-            <pre id="refresh-token">${tokens.refresh_token || "No refresh token received. Try again with prompt=consent"}</pre>
-            <button class="copy-button" onclick="copyToClipboard('refresh-token')">Copy Refresh Token</button>
-          </div>
-          
-          <div class="token-section">
-            <h3>Next Steps:</h3>
-            <ol>
-              <li>Copy the refresh token above</li>
-              <li>Add it to your .env.local file as: <pre>GOOGLE_REFRESH_TOKEN=${tokens.refresh_token || "your-token-here"}</pre></li>
-              <li>Restart your Next.js server</li>
-              <li>Your Google Calendar integration should now work!</li>
-            </ol>
-          </div>
-          
-          <script>
-            function copyToClipboard(elementId) {
-              const el = document.getElementById(elementId);
-              const text = el.textContent;
-              navigator.clipboard.writeText(text)
-                .then(() => alert('Copied to clipboard!'))
-                .catch(err => console.error('Error copying: ', err));
-            }
-          </script>
-        </body>
-      </html>`,
-      {
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      }
-    );
+    if (!session) {
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/signin?error=not_authenticated`
+      );
+    }
+
+    // Get user role and ID from the client-supplied state
+    // In a production app, you should verify this with a secure method
+    // For simplicity, we're using localStorage via a script in the redirected page
+    
+    // For now, we'll redirect to a processing page that will handle database updates
+    const redirectUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/process-calendar-oauth`);
+    redirectUrl.searchParams.set('access_token', tokenData.access_token);
+    redirectUrl.searchParams.set('refresh_token', tokenData.refresh_token);
+    redirectUrl.searchParams.set('expires_in', tokenData.expires_in);
+    redirectUrl.searchParams.set('state', state);
+    
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
-    console.error('Error getting tokens:', error);
-    return NextResponse.json({ 
-      error: 'Failed to exchange code for tokens', 
-      details: error instanceof Error ? error.message : String(error) 
-    }, { status: 500 });
+    console.error('Error processing Google Calendar OAuth callback:', error);
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=calendar_integration_failed`
+    );
   }
 }

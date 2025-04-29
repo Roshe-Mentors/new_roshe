@@ -1,28 +1,68 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../../../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
+
+// Create admin client with service role to bypass RLS
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  {
+    auth: {
+      persistSession: false,
+    }
+  }
+);
 
 export async function GET(
   request: Request,
   context: any
 ) {
   const { mentorId } = context.params;
+  console.log('API: Fetching availability for mentor ID:', mentorId);
 
   // Get current time to filter out past slots
   const now = new Date().toISOString();
+  console.log('API: Current time for filtering:', now);
 
-  const { data, error } = await supabase
-    .from('availability')
-    .select('id, start_time, end_time')
-    .eq('mentor_id', mentorId)
-    .eq('status', 'available')
-    .gt('start_time', now)
-    .order('start_time', { ascending: true });
+  try {
+    // First get ALL availability records for this mentor (for debugging)
+    const { data: allData, error: allError } = await supabaseAdmin
+      .from('availability')
+      .select('id, start_time, end_time, status, mentor_id')
+      .eq('mentor_id', mentorId);
+      
+    if (allError) {
+      console.error('API: Error fetching all availability records:', allError);
+    }
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.log('API: ALL availability records for this mentor:', allData);
+    console.log('API: Status values found:', [...new Set(allData?.map(item => item.status) || [])]);
+    console.log('API: Date ranges:', {
+      earliest: allData?.length ? new Date(Math.min(...allData.map(i => new Date(i.start_time).getTime()))).toISOString() : 'none',
+      latest: allData?.length ? new Date(Math.max(...allData.map(i => new Date(i.start_time).getTime()))).toISOString() : 'none',
+    });
+
+    // Then get the filtered ones as before (only difference is logging the SQL filter values)
+    console.log('API: Filtering with mentor_id =', mentorId, ', status = available, start_time >', now);
+    const { data, error } = await supabaseAdmin
+      .from('availability')
+      .select('id, start_time, end_time, status, mentor_id')
+      .eq('mentor_id', mentorId)
+      .eq('status', 'available')
+      .gt('start_time', now)
+      .order('start_time', { ascending: true });
+
+    console.log('API: Filtered availability results:', data);
+
+    if (error) {
+      console.error('Error fetching availability:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data || []);
+  } catch (err) {
+    console.error('API: Unexpected error in availability endpoint:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return NextResponse.json(data || []);
 }
 
 export async function POST(request: Request, context: any) {
@@ -34,20 +74,27 @@ export async function POST(request: Request, context: any) {
     return NextResponse.json({ error: 'Missing start_time or end_time' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from('availability')
-    .insert([
-      {
-        mentor_id: mentorId,
-        start_time,
-        end_time,
-        status: 'available',
-      },
-    ]);
+  try {
+    // Use admin client for inserting availability
+    const { data, error } = await supabaseAdmin
+      .from('availability')
+      .insert([
+        {
+          mentor_id: mentorId,
+          start_time,
+          end_time,
+          status: 'available',
+        },
+      ]);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('API: Error creating availability:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data });
+  } catch (err) {
+    console.error('API: Unexpected error creating availability:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true, data });
 }

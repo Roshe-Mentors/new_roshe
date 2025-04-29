@@ -28,7 +28,7 @@ interface AvailabilityRecord {
   mentor_id: string;
   start_time: string;
   end_time: string;
-  recurrence: unknown;
+  
   created_at: string;
 }
 
@@ -45,6 +45,17 @@ interface SocialLinkRecord {
 export interface CalendarOAuthRecord {
   id: string;
   mentor_id: string;
+  provider: string;
+  access_token: string;
+  refresh_token: string;
+  expires_at: string;
+  created_at: string;
+}
+
+// User Calendar OAuth row (for all users)
+export interface UserCalendarOAuthRecord {
+  id: string;
+  user_id: string;
   provider: string;
   access_token: string;
   refresh_token: string;
@@ -100,9 +111,11 @@ export async function createAvailability(slot: Omit<AvailabilityRecord, 'id' | '
   const { data, error } = await supabase
     .from('availability')
     .insert(slot)
+    .select()
     .single();
+  
   if (error) throw error;
-  return data;
+  return { data, error }; // Return an object with data and error properties
 }
 
 export async function updateAvailability(id: string, updates: Partial<AvailabilityRecord>) {
@@ -254,6 +267,48 @@ export interface MentorStats {
   sessionsCompleted: number;
   activeMentees: number;
   rating: number;
+}
+
+// User Calendar OAuth functions
+export async function getUserCalendarOAuth(userId: string) {
+  const { data, error } = await supabase
+    .from('user_calendar_oauth')
+    .select('*')
+    .eq('user_id', userId);
+  if (error) throw error;
+  return data?.[0] || null;
+}
+
+export async function saveUserCalendarOAuth(record: Omit<UserCalendarOAuthRecord, 'id' | 'created_at'>) {
+  const { data, error } = await supabase
+    .from('user_calendar_oauth')
+    .upsert(record)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteUserCalendarOAuth(userId: string) {
+  const { error } = await supabase
+    .from('user_calendar_oauth')
+    .delete()
+    .eq('user_id', userId);
+  if (error) throw error;
+}
+
+// Helper function to get calendar OAuth tokens for any user type
+export async function getCalendarOAuthForUser(userId: string, isMentor: boolean = false) {
+  if (isMentor) {
+    // Try to find mentor record first
+    const mentor = await getMentorProfileByUser(userId);
+    if (mentor) {
+      const mentorOAuth = await getCalendarOAuth(mentor.id);
+      if (mentorOAuth) return mentorOAuth;
+    }
+  }
+  
+  // Fall back to user-level OAuth
+  return await getUserCalendarOAuth(userId);
 }
 
 export async function getMentorStats(mentorId: string): Promise<MentorStats> {

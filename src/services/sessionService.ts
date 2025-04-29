@@ -5,7 +5,8 @@ interface SessionData {
   mentor_id: string;
   mentee_id: string;
   title: string;
-  description?: string;
+  description?: string; // Client-side code uses description
+  agenda?: string;      // Database uses agenda
   status: 'upcoming' | 'active' | 'completed' | 'cancelled';
   start_time: string;
   end_time: string;
@@ -14,22 +15,51 @@ interface SessionData {
 
 // Create a new session
 export async function createSession(data: SessionData) {
-  const { data: session, error } = await supabase
-    .from('mentoring_sessions')
-    .insert(data)
-    .select()
-    .single();
+  try {
+    // First prepare session data to match database schema
+    const sessionData = {
+      ...data,
+      agenda: data.description, // Map description to agenda field for the database
+    };
+    
+    // First try to use direct client (for mentors with permissions)
+    const { data: session, error } = await supabase
+      .from('mentoring_sessions')
+      .insert(sessionData)
+      .select()
+      .single();
 
-  if (error) {
-    // Detailed logging of Supabase error
+    if (!error) {
+      return session;
+    }
+    
+    console.log('Direct session creation failed, trying API endpoint:', error);
+    
+    // If direct approach fails due to RLS, try using an API endpoint
+    const response = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(sessionData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API session creation failed:', response.status, errorText);
+      throw new Error(`API session creation failed: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error: any) {
+    // Detailed logging of error
     console.error('Error creating session:', error);
-    // Throw a native Error with supabase error details
+    // Throw a native Error with error details
     throw new Error(
-      `Supabase createSession failed: ${error.message}${error.code ? ` (code: ${error.code})` : ''}${error.details ? ` - ${error.details}` : ''}`
+      `Session creation failed: ${error.message || JSON.stringify(error)}`
     );
   }
-
-  return session;
 }
 
 // Get sessions for a mentee

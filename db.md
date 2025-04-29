@@ -4,18 +4,18 @@
 
 1. [Introduction](#introduction)
 2. [Database Schema Overview](#database-schema-overview)
-   - [User_Info Table](#user_info-table)
+   - [User Info Table](#user-info-table)
    - [Users Table](#users-table)
    - [Availability Table](#availability-table)
    - [Bookings Table](#bookings-table)
-   - [Expertise_Tags Table](#expertise_tags-table)
+   - [Expertise Tags Table](#expertise-tags-table)
    - [Mentees Table](#mentees-table)
-   - [Mentor_Availability Table](#mentor_availability-table)
-   - [Mentor_Calendar_OAuth Table](#mentor_calendar_oauth-table)
-   - [Mentor_Expertise Table](#mentor_expertise-table)
-   - [Mentor_Reviews Table](#mentor_reviews-table)
-   - [Mentor_Social_Links Table](#mentor_social_links-table)
-   - [Mentoring_Sessions Table](#mentoring_sessions-table)
+   - [Mentor Availability Table](#mentor-availability-table)
+   - [Mentor Calendar OAuth Table](#mentor-calendar-oauth-table)
+   - [Mentor Expertise Table](#mentor-expertise-table)
+   - [Mentor Reviews Table](#mentor-reviews-table)
+   - [Mentor Social Links Table](#mentor-social-links-table)
+   - [Mentoring Sessions Table](#mentoring-sessions-table)
    - [Mentors Table](#mentors-table)
 3. [Row-Level Security (RLS) Policies](#row-level-security-rls-policies)
 4. [Functions and Procedures](#functions-and-procedures)
@@ -23,13 +23,13 @@
 6. [Data Flow](#data-flow)
 7. [Version Control](#version-control)
 
-## 1. Introduction
+## Introduction
 
 This document provides a comprehensive overview of the database schema for the project, including tables, relationships, security policies, functions, and sample queries.
 
-## 2. Database Schema Overview
+## Database Schema Overview
 
-### User_Info Table
+### User Info Table
 
 - **Purpose**: Stores basic user information.
 - **Columns**:
@@ -79,7 +79,7 @@ This document provides a comprehensive overview of the database schema for the p
   - `status` (text): Status of the booking (default is 'confirmed').
   - `created_at` (timestamp with time zone): Timestamp of when the booking was created.
 
-### Expertise_Tags Table
+### Expertise Tags Table
 
 - **Purpose**: Stores tags for mentor expertise.
 - **Columns**:
@@ -103,7 +103,7 @@ This document provides a comprehensive overview of the database schema for the p
   - `role` (text): Role of the user (default is 'mentee').
   - `profile_image_url` (text): URL for the mentee's profile image.
 
-### Mentor_Availability Table
+### Mentor Availability Table
 
 - **Purpose**: Stores availability information for mentors.
 - **Columns**:
@@ -113,7 +113,7 @@ This document provides a comprehensive overview of the database schema for the p
   - `end_time` (timestamp with time zone): End time of the availability.
   - `recurrence` (jsonb): Recurrence information for the availability.
 
-### Mentor_Calendar_OAuth Table
+### Mentor Calendar OAuth Table
 
 - **Purpose**: Stores OAuth information for mentor calendars.
 - **Columns**:
@@ -124,14 +124,14 @@ This document provides a comprehensive overview of the database schema for the p
   - `refresh_token` (text): Refresh token for the calendar.
   - `expires_at` (timestamp with time zone): Expiration time of the access token.
 
-### Mentor_Expertise Table
+### Mentor Expertise Table
 
 - **Purpose**: Links mentors to their expertise tags.
 - **Columns**:
   - `mentor_id` (uuid): Identifier for the mentor.
   - `tag_id` (uuid): Identifier for the expertise tag.
 
-### Mentor_Reviews Table
+### Mentor Reviews Table
 
 - **Purpose**: Stores reviews for mentors.
 - **Columns**:
@@ -142,7 +142,7 @@ This document provides a comprehensive overview of the database schema for the p
   - `rating` (integer): Rating given by the mentee (1-5).
   - `feedback` (text): Feedback provided by the mentee.
 
-### Mentor_Social_Links Table
+### Mentor Social Links Table
 
 - **Purpose**: Stores social media links for mentors.
 - **Columns**:
@@ -151,7 +151,7 @@ This document provides a comprehensive overview of the database schema for the p
   - `platform` (text): Name of the social media platform.
   - `url` (text): URL for the social media profile.
 
-### Mentoring_Sessions Table
+### Mentoring Sessions Table
 
 - **Purpose**: Stores information about mentoring sessions.
 - **Columns**:
@@ -169,4 +169,42 @@ This document provides a comprehensive overview of the database schema for the p
 - **Purpose**: Stores information about mentors.
 - **Columns**:
   - `id` (uuid, primary key): Unique identifier for each mentor.
-  - `user_id` (
+  - `user_id` (uuid): Identifier for the user.
+  - `name` (text): Mentor's name.
+  - `email` (text): Mentor's email address.
+  - `created_at` (timestamp with time zone): Timestamp of when the mentor was created.
+  - `bio` (text): Biography of the mentor.
+  - `linkedin` (text): Mentor's LinkedIn profile link.
+  - `profile_image_url` (text): URL for the mentor's profile image.
+  - `role` (text): Role of the user (default is 'mentor').
+
+## Row-Level Security (RLS) Policies
+
+- **Purpose**: To ensure that users can only access data that they are authorized to view.
+- **Policies**:
+  - **Users**: Only the user themselves can access their data.
+  - **Mentees**: Only mentors can access mentee data.
+  - **Mentors**: Only admins can access mentor data.
+
+## Functions and Procedures
+
+- **Purpose**: To encapsulate business logic at the database level.
+- **Examples**:
+  - Function to book a mentoring session.
+  - Procedure to send confirmation emails for bookings.
+
+## Sample Queries
+
+- **Purpose**: To provide examples of common queries run against the database.
+- **Examples**:
+  - Query to find all available time slots for a given mentor.
+  - Query to retrieve all feedback for a specific mentor.
+
+## Data Flow
+
+- **Purpose**: To describe how data moves through the system.
+- **Description**: Data is collected through the user interface, processed by the application logic, and stored in the database. Reports are generated by querying the database and are sent to users via email.
+
+## Version Control
+
+- **Version 1.0**: Initial version of the database documentation.

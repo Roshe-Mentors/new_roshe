@@ -10,6 +10,7 @@ import { supabase } from '../../../../lib/supabaseClient';
 
 type Slot = {
   id: string;
+  mentor_id: string;
   start_time: string;
   end_time: string;
 };
@@ -83,21 +84,34 @@ export default function AvailabilityPage() {
       setFormError('Start and end time are required');
       return;
     }
+    
     const startDate = new Date(start);
     const endDate = new Date(end);
+    
     if (endDate <= startDate) {
       setFormError('End time must be after start time');
       return;
     }
+
     setFormError(null);
     setBusy(true);
+    
     try {
-      await createAvailability({ mentor_id: user.id, start_time: start, end_time: end, recurrence: null });
-      setStart(''); setEnd('');
-      await loadSlots();
-    } catch (err) {
-      console.warn('Error adding availability slot:', err);
-      setFormError('Failed to add slot');
+      const newSlot = {
+        mentor_id: user.id,
+        start_time: startDate.toISOString(),
+        end_time: endDate.toISOString()
+      };
+      
+      await createAvailability(newSlot);
+      
+      // Reset form on success
+      setStart('');
+      setEnd('');
+      // No need to call loadSlots since we have real-time subscription
+    } catch (err: any) {
+      console.error('Error adding availability slot:', err.message || err);
+      setFormError('Failed to add slot: ' + (err.message || 'Unknown error'));
     } finally {
       setBusy(false);
     }

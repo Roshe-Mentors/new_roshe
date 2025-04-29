@@ -5,7 +5,7 @@ import { Mentor } from '../common/types';
 import { createSession } from '../../../../services/sessionService';
 import { toast } from 'react-toastify';
 import { createGoogleMeetMeeting } from '../../../../services/googleMeetService';
-import { getAvailability } from '../../../../services/profileService';
+
 import { supabase } from '../../../../lib/supabaseClient';
 
 // Availability slot from mentor profile
@@ -30,8 +30,8 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
-  const [sessionType, setSessionType] = useState<'video' | 'audio'>('video');
-  const [sessionDuration, setSessionDuration] = useState<30 | 45 | 60>(30);
+  // Fixed video call sessions, 30-minute duration
+  const sessionDuration = 30;
   const [agenda, setAgenda] = useState<string>('');
   const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
   const [isBooking, setIsBooking] = useState(false);
@@ -51,20 +51,38 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   useEffect(() => {
     let channel: any;
     if (selectedMentorId) {
-      // initial fetch
-      getAvailability(selectedMentorId)
-        .then(data => setAvailabilitySlots(data || []))
+      console.log('Loading availability for mentor:', selectedMentorId);
+      
+      // Fetch availability directly from API
+      fetch(`/api/mentors/${selectedMentorId}/availability`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Fetched availability slots:', data);
+          setAvailabilitySlots(data || []);
+          
+          if (!data || data.length === 0) {
+            console.log('No availability slots found for this mentor');
+          }
+        })
         .catch(err => console.error('Error fetching availability:', err));
-      // subscribe to INSERT/DELETE on mentor_availability for this mentor
+      
+      // Subscribe to real-time changes for this mentor's availability
       channel = supabase
         .channel(`availability_${selectedMentorId}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
           const newSlot = (payload as any).record as AvailabilitySlot;
+          console.log('Realtime: New availability slot:', newSlot);
           setAvailabilitySlots(prev => [...prev, newSlot]);
         })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'mentor_availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
           const oldSlot = (payload as any).record as AvailabilitySlot;
+          console.log('Realtime: Deleted availability slot:', oldSlot);
           setAvailabilitySlots(prev => prev.filter(s => s.id !== oldSlot.id));
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
+          const updatedSlot = (payload as any).record as AvailabilitySlot;
+          console.log('Realtime: Updated availability slot:', updatedSlot);
+          setAvailabilitySlots(prev => prev.map(s => s.id === updatedSlot.id ? updatedSlot : s));
         })
         .subscribe();
     } else {
@@ -76,7 +94,8 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   }, [selectedMentorId]);
 
   // Compute available dates from availability slots
-  const uniqueDates = Array.from(new Set(availabilitySlots.map(s => s.start_time.split('T')[0])));
+  const futureSlots = availabilitySlots.filter(s => new Date(s.end_time) > new Date());
+  const uniqueDates = Array.from(new Set(futureSlots.map(s => s.start_time.split('T')[0])));
   const availableDates = uniqueDates.sort().map(date => {
     const d = new Date(date);
     return {
@@ -84,6 +103,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       formattedDate: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     };
   });
+
   // Compute time slots for selected date based on availability and current session duration
   const timeSlots = selectedDate
     ? availabilitySlots
@@ -94,12 +114,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
           const end = new Date(slot.end_time);
           const interval = 30; // minutes step
           const cursor = new Date(start);
+          
           while (cursor.getTime() + sessionDuration * 60000 <= end.getTime()) {
             const hh = cursor.getHours().toString().padStart(2, '0');
             const mm = cursor.getMinutes().toString().padStart(2, '0');
             const time = `${hh}:${mm}`;
             const formattedTime = cursor.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-            slots.push({ time, formattedTime });
+            // Create a unique key by combining time with slot ID and position
+            const uniqueKey = `${slot.id}-${time}`;
+            slots.push({ time, formattedTime, uniqueKey });
             cursor.setMinutes(cursor.getMinutes() + interval);
           }
           return slots;
@@ -121,8 +144,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   };
   
   const formatSessionTitle = (mentorName: string) => {
-    const sessionTypeText = sessionType === 'video' ? 'Video Session' : 'Audio Session';
-    return `${sessionTypeText} with ${mentorName}`;
+    return `Video Session with ${mentorName}`;
   };
   
   const handleBookSession = async () => {
@@ -139,22 +161,19 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       const endTime = calculateEndTime(selectedTimeSlot, sessionDuration);
       const endDateTime = `${selectedDate}T${endTime}:00`;
       
-      // Create Google Meet link if it's a video session
+      // Always create Google Meet link for video call
       let meetingLink = '';
-      if (sessionType === 'video') {
-        try {
-          const meetResult = await createGoogleMeetMeeting({
-            title: formatSessionTitle(selectedMentor.name),
-            startTime: startDateTime,
-            endTime: endDateTime,
-            description: agenda || `Mentoring session with ${selectedMentor.name}`,
-            attendees: [] // Would typically include mentor's email
-          });
-          meetingLink = meetResult?.meetingLink || '';
-        } catch (err) {
-          console.error('Failed to create Google Meet link:', err);
-          // Continue without meeting link
-        }
+      try {
+        const meetResult = await createGoogleMeetMeeting({
+          title: formatSessionTitle(selectedMentor.name),
+          startTime: startDateTime,
+          endTime: endDateTime,
+          description: agenda || `Mentoring session with ${selectedMentor.name}`,
+          attendees: [] // Would typically include mentor's email
+        });
+        meetingLink = meetResult?.meetingLink || '';
+      } catch (err) {
+        console.error('Failed to create Google Meet link:', err);
       }
       
       await createSession({
@@ -257,17 +276,19 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const renderTimeSelection = () => {
     return (
       <div className="space-y-6">
-        <div className="flex items-center">
-          <button
-            onClick={() => setBookingStep('select-mentor')}
-            className="mr-4 text-indigo-600 hover:text-indigo-800"
-            aria-label="Go back to mentor selection"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">Select Date & Time</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <button
+              onClick={() => setBookingStep('select-mentor')}
+              className="mr-4 text-indigo-600 hover:text-indigo-800"
+              aria-label="Go back to mentor selection"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800">Select Date & Time</h2>
+          </div>
         </div>
         
         {selectedMentor && (
@@ -298,38 +319,54 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Select Date</h3>
             <div className="space-y-2 h-60 overflow-y-auto pr-2 border rounded-lg p-2">
-              {availableDates.map(({ date, formattedDate }) => (
-                <div
-                  key={date}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                    selectedDate === date
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-200 hover:border-indigo-300'
-                  }`}
-                  onClick={() => setSelectedDate(date)}
-                >
-                  <p className="text-sm font-medium">{formattedDate}</p>
+              {availableDates.length > 0 ? (
+                availableDates.map(({ date, formattedDate }) => (
+                  <div
+                    key={date}
+                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                      selectedDate === date
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 hover:border-indigo-300'
+                    }`}
+                    onClick={() => setSelectedDate(date)}
+                  >
+                    <p className="text-sm font-medium">{formattedDate}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
+                  <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p>No availability found for this mentor.</p>
+                  <p className="text-sm mt-1">Please check back later or select a different mentor.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
           
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Select Time</h3>
             <div className="grid grid-cols-2 gap-2 h-60 overflow-y-auto pr-2 border rounded-lg p-2">
-              {timeSlots.map(slot => (
-                <div
-                  key={slot.time}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                    selectedTimeSlot === slot.time
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-gray-200 hover:border-indigo-300'
-                  }`}
-                  onClick={() => setSelectedTimeSlot(slot.time)}
-                >
-                  <p className="text-sm font-medium text-center">{slot.formattedTime}</p>
+              {timeSlots.length > 0 ? (
+                timeSlots.map(slot => (
+                  <div
+                    key={slot.uniqueKey}
+                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                      selectedTimeSlot === slot.time
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 hover:border-indigo-300'
+                    }`}
+                    onClick={() => setSelectedTimeSlot(slot.time)}
+                  >
+                    <p className="text-sm font-medium text-center">{slot.formattedTime}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-4 col-span-2 text-center text-gray-500">
+                  <p>Select a date to view available time slots</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -412,78 +449,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         )}
         
         <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Session Type</h3>
-            <div className="flex gap-2">
-              <button
-                className={`flex-1 py-3 rounded-lg border ${
-                  sessionType === 'video'
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
-                }`}
-                onClick={() => setSessionType('video')}
-              >
-                <div className="flex items-center justify-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Video Call
-                </div>
-              </button>
-              <button
-                className={`flex-1 py-3 rounded-lg border ${
-                  sessionType === 'audio'
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
-                }`}
-                onClick={() => setSessionType('audio')}
-              >
-                <div className="flex items-center justify-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                  </svg>
-                  Audio Call
-                </div>
-              </button>
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Session Duration</h3>
-            <div className="flex gap-2">
-              <button
-                className={`flex-1 py-2 rounded-lg border ${
-                  sessionDuration === 30
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
-                }`}
-                onClick={() => setSessionDuration(30)}
-              >
-                30 minutes
-              </button>
-              <button
-                className={`flex-1 py-2 rounded-lg border ${
-                  sessionDuration === 45
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
-                }`}
-                onClick={() => setSessionDuration(45)}
-              >
-                45 minutes
-              </button>
-              <button
-                className={`flex-1 py-2 rounded-lg border ${
-                  sessionDuration === 60
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : 'border-gray-200 text-gray-700 hover:border-indigo-300'
-                }`}
-                onClick={() => setSessionDuration(60)}
-              >
-                60 minutes
-              </button>
-            </div>
-          </div>
-          
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Session Agenda</h3>
             <textarea
@@ -578,7 +543,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
               </div>
               <div className="flex">
                 <div className="w-20 font-medium">Type:</div>
-                <div className="capitalize">{sessionType} call</div>
+                <div className="capitalize">video call</div>
               </div>
             </div>
           </div>
