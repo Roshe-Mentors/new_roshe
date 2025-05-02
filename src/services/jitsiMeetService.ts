@@ -21,7 +21,6 @@ interface MeetingResult {
  * Jitsi Meet is an open-source video conferencing solution that doesn't require authentication
  */
 export async function createJitsiMeetMeeting(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options: MeetingOptions
 ): Promise<MeetingResult> {
   try {
