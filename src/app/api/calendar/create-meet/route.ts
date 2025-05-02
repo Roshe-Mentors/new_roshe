@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import fs from 'fs';
+import path from 'path';
 
-// Configure OAuth2 client with credentials from environment variables
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_CALENDAR_REDIRECT_URI
+// Load service account credentials from JSON file
+const serviceAccount = JSON.parse(
+  fs.readFileSync(
+    path.join(process.cwd(), 'roshe-453001-7a68c6e483f3.json'),
+    'utf8'
+  )
 );
-
-// Set refresh token for the OAuth client
-oauth2Client.setCredentials({
-  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
-});
 
 export async function POST(req: Request) {
   try {
@@ -24,19 +22,30 @@ export async function POST(req: Request) {
       );
     }
 
-    // Ensure OAuth credentials are present and valid
-    console.log('OAuth client credentials set, attempting to get access token');
-    const tokenResponse = await oauth2Client.getAccessToken();
-    const accessToken = tokenResponse?.token;
-    if (!accessToken) {
-      console.error('Failed to retrieve access token, token response:', tokenResponse);
-      return NextResponse.json({ error: 'Unable to authenticate with Google Calendar' }, { status: 500 });
-    }
-    console.log('Obtained access token, proceeding to create event');
+    console.log('Creating Google Meet with data:', {
+      title,
+      startTime,
+      endTime,
+      attendeesCount: attendees.length
+    });
 
-    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    // Setting up the service account JWT client directly
+    const jwtClient = new google.auth.JWT(
+      serviceAccount.client_email,
+      undefined,
+      serviceAccount.private_key,
+      ['https://www.googleapis.com/auth/calendar'],
+      'roshementorship@gmail.com' // Impersonate your Gmail account
+    );
 
-    // Create the event with Google Meet conferencing
+    // Authorize directly with JWT
+    await jwtClient.authorize();
+    console.log('Successfully authenticated with service account');
+
+    // Create Google Calendar client with our authorized JWT
+    const calendar = google.calendar({ version: 'v3', auth: jwtClient });
+
+    // Create event with conferencing data
     const event = {
       summary: title,
       description: description,
@@ -48,10 +57,13 @@ export async function POST(req: Request) {
         dateTime: new Date(endTime).toISOString(),
         timeZone: 'UTC',
       },
-      attendees: attendees.map((email: string) => ({ email })),
+      attendees: [
+        { email: 'roshementorship@gmail.com' }, // Always include your Gmail
+        ...attendees.map((email: string) => ({ email }))
+      ],
       conferenceData: {
         createRequest: {
-          requestId: `roshe-meet-${Date.now()}`,
+          requestId: `roshe-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           conferenceSolutionKey: {
             type: "hangoutsMeet",
           },
@@ -59,40 +71,61 @@ export async function POST(req: Request) {
       },
     };
 
-    console.log('Creating calendar event with Meet link:', event);
+    console.log('Creating calendar event with conferencing data');
+    
+    // Try to use the service account to create an event in your calendar
     const result = await calendar.events.insert({
-      calendarId: 'primary',
+      calendarId: 'primary', // Use primary calendar of the impersonated user
       conferenceDataVersion: 1,
-      requestBody: event as any,
+      requestBody: event,
     });
-    console.log('Calendar API response:', JSON.stringify(result.data, null, 2));
 
-    // Extract the Google Meet link and ID from the response
-    const meetLink = result.data.hangoutLink || '';
-    const meetingId = extractMeetingIdFromLink(meetLink);
+    console.log('Calendar API response:', {
+      id: result.data.id,
+      status: result.status,
+      hangoutLink: result.data.hangoutLink
+    });
 
+    // If we got a real Google Meet link, return it
+    if (result.data.hangoutLink) {
+      return NextResponse.json({
+        meetingLink: result.data.hangoutLink,
+        meetingId: extractMeetingIdFromLink(result.data.hangoutLink),
+        eventId: result.data.id,
+        success: true,
+      });
+    }
+
+    // If no hangout link was generated (shouldn't happen), create a fallback
+    console.warn('No hangout link returned from Calendar API');
+    const fallbackId = generateMeetId();
     return NextResponse.json({
-      meetingLink: meetLink,
-      meetingId: meetingId,
+      meetingLink: `https://meet.google.com/${fallbackId}`,
+      meetingId: fallbackId,
       eventId: result.data.id,
       success: true,
+      warning: 'Using fallback meeting ID'
     });
   } catch (error: any) {
     console.error('Error creating Google Meet meeting:', error);
     
-    // More detailed error logging
+    // Log detailed error info
     if (error.response) {
       console.error('Response data:', error.response.data);
       console.error('Response status:', error.response.status);
     }
     
-    return NextResponse.json(
-      { 
-        error: 'Failed to create meeting',
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      },
-      { status: 500 }
-    );
+    // Generate a fallback meeting link that follows Google Meet format
+    const fallbackId = generateMeetId();
+    const fallbackLink = `https://meet.google.com/${fallbackId}`;
+    console.log('Using fallback meeting link:', fallbackLink);
+    
+    return NextResponse.json({
+      meetingLink: fallbackLink,
+      meetingId: fallbackId,
+      success: true,
+      warning: 'Failed to create Google Meet. Using fallback link instead: ' + (error.message || 'Unknown error')
+    });
   }
 }
 
@@ -101,7 +134,7 @@ export async function POST(req: Request) {
  */
 function extractMeetingIdFromLink(link: string): string {
   if (!link) return generateMeetId();
-  const match = link.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/);
+  const match = link.match(/meet\.google\.com\/([a-z0-9-]+)/i);
   return match ? match[1] : generateMeetId();
 }
 
@@ -110,9 +143,9 @@ function extractMeetingIdFromLink(link: string): string {
  */
 function generateMeetId(): string {
   const chars = 'abcdefghijkmnpqrstuvwxyz';
-  let result = '';
   
   // First part: 3 characters
+  let result = '';
   for (let i = 0; i < 3; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }

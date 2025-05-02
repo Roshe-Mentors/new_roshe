@@ -4,11 +4,12 @@ import Image from 'next/image';
 import { Mentor } from '../common/types';
 import { createSession } from '../../../../services/sessionService';
 import { toast } from 'react-toastify';
-import { createGoogleMeetMeeting } from '../../../../services/googleMeetService';
+import { createJitsiMeetMeeting } from '../../../../services/jitsiMeetService';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
 import { supabase } from '../../../../lib/supabaseClient';
+import { deleteAvailability } from '../../../../services/profileService';
 
 // Availability slot from mentor profile
 interface AvailabilitySlot {
@@ -17,6 +18,13 @@ interface AvailabilitySlot {
   end_time: string;
   status?: string; // Making the status field explicit
   mentor_id?: string;
+}
+
+interface TimeSlot {
+  time: string;
+  formattedTime: string;
+  uniqueKey: string;
+  availabilityId: string;
 }
 
 interface MenteeBookingsProps {
@@ -41,7 +49,9 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
   const [isBooking, setIsBooking] = useState(false);
   const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
-  
+  const [selectedAvailabilityId, setSelectedAvailabilityId] = useState<string>('');
+  const [bookingResult, setBookingResult] = useState<any>(null);
+
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
 
   // Reset form when mentor changes
@@ -122,28 +132,27 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     };
   });
 
-  // Compute time slots for selected date based on availability and current session duration
-  const timeSlots = selectedDate
+  // Compute time slots for selected date
+  const timeSlots: TimeSlot[] = selectedDate
     ? availabilitySlots
         .filter(s => s.start_time.startsWith(`${selectedDate}T`))
         .flatMap((slot, slotIndex) => {
-          const slots = [];
+          const slots: TimeSlot[] = [];
           const start = new Date(slot.start_time);
           const end = new Date(slot.end_time);
-          const interval = 30; // minutes step
+          const interval = sessionDuration;
           const cursor = new Date(start);
-          let timeIndex = 0; // Counter to ensure uniqueness
+          let timeIndex = 0;
           
-          while (cursor.getTime() + sessionDuration * 60000 <= end.getTime()) {
-            const hh = cursor.getHours().toString().padStart(2, '0');
-            const mm = cursor.getMinutes().toString().padStart(2, '0');
+          while (cursor.getTime() + interval * 60000 <= end.getTime()) {
+            const hh = cursor.getHours().toString().padStart(2,'0');
+            const mm = cursor.getMinutes().toString().padStart(2,'0');
             const time = `${hh}:${mm}`;
-            const formattedTime = cursor.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-            // Create a truly unique key by combining time with slot ID, slotIndex and timeIndex
+            const formattedTime = cursor.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
             const uniqueKey = `${slot.id}-${slotIndex}-${timeIndex}-${time}`;
-            slots.push({ time, formattedTime, uniqueKey });
+            slots.push({ time, formattedTime, uniqueKey, availabilityId: slot.id });
             cursor.setMinutes(cursor.getMinutes() + interval);
-            timeIndex++; // Increment the counter
+            timeIndex++;
           }
           return slots;
         })
@@ -168,35 +177,24 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   };
   
   const handleBookSession = async () => {
-    if (!selectedMentor || !user.id || !selectedDate || !selectedTimeSlot) {
-      toast.error('Missing required booking information');
-      return;
-    }
-    
+    if (!selectedMentor || !user.id || !selectedDate || !selectedTimeSlot) return;
     setIsBooking(true);
-    
     try {
-      // Format start and end times
       const startDateTime = `${selectedDate}T${selectedTimeSlot}:00`;
       const endTime = calculateEndTime(selectedTimeSlot, sessionDuration);
       const endDateTime = `${selectedDate}T${endTime}:00`;
-      
-      // Always create Google Meet link for video call
       let meetingLink = '';
       try {
-        const meetResult = await createGoogleMeetMeeting({
+        const meetResult = await createJitsiMeetMeeting({
           title: formatSessionTitle(selectedMentor.name),
           startTime: startDateTime,
           endTime: endDateTime,
           description: agenda || `Mentoring session with ${selectedMentor.name}`,
           attendees: [] // Would typically include mentor's email
         });
-        meetingLink = meetResult?.meetingLink || '';
-      } catch (err) {
-        console.error('Failed to create Google Meet link:', err);
-      }
-      
-      await createSession({
+        meetingLink = meetResult.meetingLink;
+      } catch {};
+      const session = await createSession({
         mentor_id: selectedMentor.id,
         mentee_id: user.id as string,
         title: formatSessionTitle(selectedMentor.name),
@@ -206,7 +204,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         end_time: endDateTime,
         meeting_link: meetingLink
       });
-      
+      setBookingResult(session);
+      // remove booked availability
+      if (selectedAvailabilityId) {
+        try {
+          await deleteAvailability(selectedAvailabilityId);
+        } catch (err) {
+          console.error('Failed to remove booked availability:', err);
+        }
+      }
       setBookingStep('confirmation');
       toast.success('Session booked successfully!');
     } catch (error: any) {
@@ -393,7 +399,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
                         ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                         : 'border-gray-200 hover:border-indigo-300'
                     }`}
-                    onClick={() => setSelectedTimeSlot(slot.time)}
+                    onClick={() => {
+                      setSelectedTimeSlot(slot.time);
+                      setSelectedAvailabilityId(slot.availabilityId);
+                    }}
                   >
                     <div className="flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-2 ${selectedTimeSlot === slot.time ? 'text-indigo-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -599,7 +608,18 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
             </div>
           </div>
         )}
-        
+        {bookingResult && (
+          <div className="mt-4 text-center">
+            <a
+              href={bookingResult.meeting_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:underline"
+            >
+              Join Jitsi Meet Session
+            </a>
+          </div>
+        )}
         <div className="pt-6">
           <button
             onClick={() => {

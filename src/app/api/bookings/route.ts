@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGoogleMeetMeeting } from '../../../services/googleMeetService';
+import { createJitsiMeetMeeting } from '../../../services/jitsiMeetService';
 import { saveBooking, checkTimeSlotAvailability } from '../../../services/zoomService';
 
 export async function POST(request: NextRequest) {
@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Google Meet meeting
+    // Create Jitsi Meet meeting
     try {
-      const meeting = await createGoogleMeetMeeting({
+      const meeting = await createJitsiMeetMeeting({
         title: bookingData.sessionType,
         startTime: `${bookingData.date} ${bookingData.time}`,
         endTime: `${bookingData.date} ${bookingData.time}`,
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
       // Generate fallback values for required fields
       const defaultMeetingId = `default-${Date.now()}`;
-      const defaultMeetingUrl = `https://meet.google.com/default-${Date.now()}`;
+      const defaultMeetingUrl = `https://meet.jit.si/default-${Date.now()}`;
 
       // Prepare booking data for database
       const fullBookingData = {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         session_type: bookingData.sessionType,
         meeting_id: meeting.meetingId || defaultMeetingId,
         meeting_url: meeting.meetingLink || defaultMeetingUrl,
-        // No password for Google Meet
+        // No password for Jitsi Meet
       };
 
       // Save to database and then update slot status
@@ -84,10 +84,10 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('Error processing booking:', error);
       
-      // For development/demo purposes, create a mock meeting if Google API fails
+      // For development/demo purposes, create a mock meeting if Jitsi API fails
       if (process.env.NODE_ENV !== 'production') {
         const mockMeetingId = `mock-${Math.floor(Math.random() * 1000000000)}`;
-        const mockMeetingUrl = 'https://meet.google.com/abc-defg-hij';
+        const mockMeetingUrl = 'https://meet.jit.si/abc-defg-hij';
         
         const mockMeeting = {
           meetingId: mockMeetingId,
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         // Return success with mock data
         return NextResponse.json({
           success: true,
-          message: 'Mock booking created (Google Meet API unavailable)',
+          message: 'Mock booking created (Jitsi Meet API unavailable)',
           meeting: mockMeeting
         });
       }
