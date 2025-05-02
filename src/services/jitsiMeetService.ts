@@ -22,17 +22,21 @@ interface MeetingResult {
  */
 export async function createJitsiMeetMeeting(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _options: MeetingOptions
+  options: MeetingOptions
 ): Promise<MeetingResult> {
   try {
     // Generate a unique room ID based on unique strings to ensure no conflicts
     const roomId = generateRoomId();
     
-    // Create a meeting URL using the public Jitsi Meet instance
-    // Adding parameters to bypass authentication requirements
-    const meetingLink = `https://meet.jit.si/${roomId}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
+    // Create a meeting URL using the public Jitsi Meet instance with stronger authentication bypass parameters
+    // Use direct room access with userInfo to avoid authentication prompt
+    const userName = options.userRole === 'mentor' ? 'Mentor' : 'Mentee';
+    const displayName = encodeURIComponent(userName);
     
-    console.log('Created Jitsi Meet link:', meetingLink);
+    // Combine multiple approaches to bypass authentication requirement
+    const meetingLink = `https://meet.jit.si/${roomId}#userInfo.displayName=${displayName}&interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATIONS=true&config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.p2p.enabled=true&config.requireDisplayName=false&config.disableDeepLinking=true`;
+    
+    console.log('Created Jitsi Meet link with enhanced auth bypass:', meetingLink);
     
     return {
       meetingLink,
@@ -45,7 +49,7 @@ export async function createJitsiMeetMeeting(
     // Even in case of error, return a valid link to ensure the app doesn't break
     const fallbackRoomId = generateRoomId();
     return {
-      meetingLink: `https://meet.jit.si/${fallbackRoomId}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`,
+      meetingLink: `https://meet.jit.si/${fallbackRoomId}#userInfo.displayName=Participant&interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATIONS=true&config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.p2p.enabled=true&config.requireDisplayName=false&config.disableDeepLinking=true`,
       meetingId: fallbackRoomId,
       success: true
     };
