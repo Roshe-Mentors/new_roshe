@@ -1,5 +1,4 @@
 // JitsiMeet integration for video conferencing
-import { v4 as uuidv4 } from 'uuid';
 
 interface MeetingOptions {
   title: string;
@@ -21,13 +20,17 @@ interface MeetingResult {
  * Creates a Jitsi Meet conference URL
  * Jitsi Meet is an open-source video conferencing solution that doesn't require authentication
  */
-export async function createJitsiMeetMeeting(options: MeetingOptions): Promise<MeetingResult> {
+export async function createJitsiMeetMeeting(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _options: MeetingOptions
+): Promise<MeetingResult> {
   try {
-    // Generate a unique room ID based on UUID to ensure no conflicts
+    // Generate a unique room ID based on unique strings to ensure no conflicts
     const roomId = generateRoomId();
     
     // Create a meeting URL using the public Jitsi Meet instance
-    const meetingLink = `https://meet.jit.si/${roomId}`;
+    // Adding parameters to bypass authentication requirements
+    const meetingLink = `https://meet.jit.si/${roomId}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
     
     console.log('Created Jitsi Meet link:', meetingLink);
     
@@ -42,7 +45,7 @@ export async function createJitsiMeetMeeting(options: MeetingOptions): Promise<M
     // Even in case of error, return a valid link to ensure the app doesn't break
     const fallbackRoomId = generateRoomId();
     return {
-      meetingLink: `https://meet.jit.si/${fallbackRoomId}`,
+      meetingLink: `https://meet.jit.si/${fallbackRoomId}#config.prejoinPageEnabled=false&config.startWithAudioMuted=false&config.startWithVideoMuted=false`,
       meetingId: fallbackRoomId,
       success: true
     };
@@ -51,11 +54,15 @@ export async function createJitsiMeetMeeting(options: MeetingOptions): Promise<M
 
 /**
  * Generates a readable room ID that is URL-friendly
- * Format: 'roshe-meeting-[random-uuid]'
+ * Format: 'roshe-xxxxxx' where x is alphanumeric
  */
 function generateRoomId(): string {
-  // Create a UUID and use it to generate a unique but readable room name
-  // The format 'roshe-meeting-[uuid]' makes it clear this is a Roshe mentorship meeting
-  const uniqueId = uuidv4().substring(0, 8);
-  return `roshe-meeting-${uniqueId}`;
+  // Create a more concise room ID that's still unique
+  // Format: roshe-xxxx where x is alphanumeric
+  const uniqueChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'roshe-';
+  for (let i = 0; i < 6; i++) {
+    result += uniqueChars.charAt(Math.floor(Math.random() * uniqueChars.length));
+  }
+  return result;
 }
