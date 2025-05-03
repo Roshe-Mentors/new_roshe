@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useUser } from '../../../../lib/auth';
+import { useRouter } from 'next/navigation';
 import { 
   getMentorProfileByUser, 
   updateMentorProfile, 
@@ -27,6 +28,7 @@ type FormData = {
 
 export default function GeneralPage() {
   const { user, loading: userLoading } = useUser();
+  const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -152,6 +154,7 @@ export default function GeneralPage() {
         
         toast.success('Profile updated successfully!');
         setSelectedImage(null);
+        router.push('/dashboard');
       } catch (error) {
         console.error('Detailed error updating profile:', error);
         if (error instanceof Error) {

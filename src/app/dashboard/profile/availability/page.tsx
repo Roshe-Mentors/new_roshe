@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from '../../../../lib/auth';
+import { useRouter } from 'next/navigation';
 import {
   getAvailability,
   createAvailability,
@@ -19,6 +20,7 @@ type Slot = {
 
 export default function AvailabilityPage() {
   const { user, loading } = useUser();
+  const router = useRouter();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -107,7 +109,8 @@ export default function AvailabilityPage() {
       // Reset form on success
       setStartDate(null);
       setEndDate(null);
-      // No need to call loadSlots since we have real-time subscription
+      // Redirect back to dashboard
+      router.push('/dashboard');
     } catch (err: any) {
       console.error('Error adding availability slot:', err.message || err);
       setFormError('Failed to add slot: ' + (err.message || 'Unknown error'));

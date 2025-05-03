@@ -16,6 +16,7 @@ export interface Mentor {
   categories?: string[];
   uniqueId?: string; // Added uniqueId for distinguishing mentors in lists
   email?: string;  // Add email field for mentor contact
+  bio?: string; // Add bio field stored in mentors table
 }
 
 export interface NavItemProps {

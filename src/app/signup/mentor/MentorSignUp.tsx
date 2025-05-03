@@ -324,7 +324,7 @@ const MentorSignUp = () => {
                   Signing Up...
                 </>
               ) : (
-                'Join the waiting list'
+                'Register'
               )}
             </button>
 

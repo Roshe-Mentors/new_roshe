@@ -32,6 +32,7 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
         <h3 className="font-semibold text-gray-800 mb-1">{mentor.name}</h3>
         <p className="text-sm text-gray-600 mb-1">{mentor.role} at {mentor.company}</p>
         <p className="text-xs text-gray-500 mb-3">{mentor.location}</p>
+        {mentor.bio && <p className="text-sm text-gray-600 mb-3">{mentor.bio}</p>}
         
         {/* Mentor Stats */}
         <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3">
