@@ -6,8 +6,8 @@ const supabaseAdmin = createAdminClient();
 
 export async function GET(
   request: NextRequest,
-  { params }
-) {
+  { params }: { params: { mentorId: string } }
+): Promise<NextResponse> {
   const mentorId = params.mentorId;
   console.log('API: Fetching availability for mentor ID:', mentorId);
 
@@ -65,8 +65,8 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }
-) {
+  { params }: { params: { mentorId: string } }
+): Promise<NextResponse> {
   const mentorId = params.mentorId;
   const body = await request.json();
   const { start_time, end_time } = body;
