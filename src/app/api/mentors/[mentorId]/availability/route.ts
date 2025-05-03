@@ -6,9 +6,9 @@ const supabaseAdmin = createAdminClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { mentorId: string } }
+  context: any
 ): Promise<NextResponse> {
-  const mentorId = params.mentorId;
+  const mentorId = context.params.mentorId as string;
   console.log('API: Fetching availability for mentor ID:', mentorId);
 
   // Get current time to filter out past slots
@@ -65,9 +65,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { mentorId: string } }
+  context: any
 ): Promise<NextResponse> {
-  const mentorId = params.mentorId;
+  const mentorId = context.params.mentorId as string;
   const body = await request.json();
   const { start_time, end_time } = body;
 
