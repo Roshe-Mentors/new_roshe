@@ -4,11 +4,15 @@ import { createAdminClient } from '../../../../../../lib/supabaseClient';
 // Use shared admin client helper that picks up the service-role key
 const supabaseAdmin = createAdminClient();
 
+export interface MentorIdRouteContext {
+  params: { mentorId: string };
+}
+
 export async function GET(
   request: NextRequest,
-  context: { params: { mentorId: string } }
+  { params }: MentorIdRouteContext
 ) {
-  const mentorId = context.params.mentorId;
+  const mentorId = params.mentorId;
   console.log('API: Fetching availability for mentor ID:', mentorId);
 
   // Get current time to filter out past slots
@@ -65,9 +69,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  context: { params: { mentorId: string } }
+  { params }: MentorIdRouteContext
 ) {
-  const mentorId = context.params.mentorId;
+  const mentorId = params.mentorId;
   const body = await request.json();
   const { start_time, end_time } = body;
 
