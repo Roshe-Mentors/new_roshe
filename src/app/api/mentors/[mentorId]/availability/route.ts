@@ -4,13 +4,9 @@ import { createAdminClient } from '../../../../../../lib/supabaseClient';
 // Use shared admin client helper that picks up the service-role key
 const supabaseAdmin = createAdminClient();
 
-export interface MentorIdRouteContext {
-  params: { mentorId: string };
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: MentorIdRouteContext
+  { params }
 ) {
   const mentorId = params.mentorId;
   console.log('API: Fetching availability for mentor ID:', mentorId);
@@ -69,7 +65,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: MentorIdRouteContext
+  { params }
 ) {
   const mentorId = params.mentorId;
   const body = await request.json();
