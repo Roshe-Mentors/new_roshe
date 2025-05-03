@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { createJitsiMeetMeeting } from '../../../../services/jitsiMeetService';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { saveAs } from 'file-saver';
 
 import { supabase } from '../../../../lib/supabaseClient';
 import { deleteAvailability } from '../../../../services/profileService';
@@ -176,6 +177,29 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     return `Video Session with ${mentorName}`;
   };
   
+  const formatDateTime = (dateStr: string) => new Date(dateStr).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const generateICS = (session: any) => {
+    const dtstart = formatDateTime(session.start_time);
+    const dtend = formatDateTime(session.end_time);
+    const lines = [
+      'BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',
+      `DTSTART:${dtstart}`,`DTEND:${dtend}`,
+      `SUMMARY:${session.title}`,
+      `DESCRIPTION:${session.description || ''}`,
+      `URL:${session.meeting_link}`,
+      'END:VEVENT','END:VCALENDAR'
+    ];
+    return new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  };
+  const generateGoogleLink = (session: any) => {
+    const start = formatDateTime(session.start_time);
+    const end = formatDateTime(session.end_time);
+    const text = encodeURIComponent(session.title);
+    const details = encodeURIComponent(session.description || '');
+    const location = encodeURIComponent(session.meeting_link || '');
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
+  };
+
   const handleBookSession = async () => {
     if (!selectedMentor || !user.id || !selectedDate || !selectedTimeSlot) return;
     setIsBooking(true);
@@ -205,6 +229,29 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         meeting_link: meetingLink
       });
       setBookingResult(session);
+
+      // Automatically sync to Google Calendar for both mentee and mentor
+      try {
+        await fetch('/api/calendar/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session, userId: user.id, userRole: 'mentee' })
+        });
+      } catch (err) {
+        console.error('Failed to sync mentee event:', err);
+      }
+      if (selectedMentor) {
+        try {
+          await fetch('/api/calendar/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session, userId: selectedMentor.id, userRole: 'mentor' })
+          });
+        } catch (err) {
+          console.error('Failed to sync mentor event:', err);
+        }
+      }
+
       // remove booked availability
       if (selectedAvailabilityId) {
         try {
@@ -536,42 +583,41 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     );
   };
   
-  const renderConfirmation = () => {
-    return (
-      <div className="text-center space-y-6 py-10">
-        <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-          {/* ...success icon... */}
-        </div>
-        <h2 className="text-2xl font-semibold text-gray-800">Session Booked!</h2>
-        <p className="mt-2 text-gray-600">Your session has been scheduled successfully.</p>
-        {bookingResult && (
-          <div className="mt-4 text-center">
-            <a
-              href={bookingResult.meeting_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            >
-              Join Session
-            </a>
-          </div>
-        )}
-        <div className="pt-6">
-          <button
-            onClick={() => {
-              setBookingStep('select-mentor');
-              setSelectedDate('');
-              setSelectedTimeSlot('');
-              setAgenda('');
-            }}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-          >
-            Book Another Session
+  const renderConfirmation = () => (
+    <div className="text-center space-y-6 py-10">
+      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+        {/* ...success icon... */}
+      </div>
+      <h2 className="text-2xl font-semibold text-gray-800">Session Booked!</h2>
+      <p className="mt-2 text-gray-600">Your session has been scheduled successfully.</p>
+      {bookingResult && (
+        <div className="mt-4 flex flex-col space-y-2 items-center">
+          <a href={bookingResult.meeting_link} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            Join Session
+          </a>
+          <a href={generateGoogleLink(bookingResult)} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+            Add to Google Calendar
+          </a>
+          <button onClick={() => saveAs(generateICS(bookingResult), `session-${bookingResult.id}.ics`)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+            Add to Calendar (.ics)
           </button>
         </div>
+      )}
+      <div className="pt-6">
+        <button
+          onClick={() => {
+            setBookingStep('select-mentor');
+            setSelectedDate('');
+            setSelectedTimeSlot('');
+            setAgenda('');
+          }}
+          className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+        >
+          Book Another Session
+        </button>
       </div>
-    );
-  };
+    </div>
+  );
   
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">

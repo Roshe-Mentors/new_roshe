@@ -5,6 +5,28 @@ import { getMentorSessions, startSession, completeSession, cancelSession } from 
 import { getMentorReviews } from '../../../../services/reviewService';
 import { toast } from 'react-toastify';
 import { FaVideo, FaPhoneAlt, FaCalendarCheck, FaClock, FaStar } from 'react-icons/fa';
+import { saveAs } from 'file-saver';
+
+const formatICSDate = (dateString: string) => new Date(dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+const generateICSString = (session: any) => {
+  const dtStamp = formatICSDate(new Date().toISOString());
+  const dtStart = formatICSDate(session.start_time);
+  const dtEnd = formatICSDate(session.end_time);
+  return [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Roshe Mentorship//EN','BEGIN:VEVENT',
+    `UID:session-${session.id}@roshe`,`DTSTAMP:${dtStamp}`,`DTSTART:${dtStart}`,`DTEND:${dtEnd}`,
+    `SUMMARY:${session.title}`,`DESCRIPTION:${session.description || ''}`,`URL:${session.meeting_link || ''}`,
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+};
+const generateGoogleLink = (session: any) => {
+  const start = formatICSDate(session.start_time);
+  const end = formatICSDate(session.end_time);
+  const text = encodeURIComponent(session.title);
+  const details = encodeURIComponent(session.description || '');
+  const location = encodeURIComponent(session.meeting_link || '');
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
+};
 
 interface MentorSessionsProps {
   mentorId: string;
@@ -485,6 +507,23 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
                             ) : (
                               <span>No meeting link</span>
                             )}
+                          </div>
+                          
+                          <div className="mt-2 flex space-x-2">
+                            <a
+                              href={generateGoogleLink(session)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                            >
+                              Add to Google Calendar
+                            </a>
+                            <button
+                              onClick={() => saveAs(new Blob([generateICSString(session)], { type: 'text/calendar;charset=utf-8' }), `session-${session.id}.ics`)}
+                              className="px-2 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                            >
+                              Add to Calendar (.ics)
+                            </button>
                           </div>
                           
                           {session.description && (

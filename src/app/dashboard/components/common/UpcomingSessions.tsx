@@ -35,6 +35,29 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ userRole }) => {
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const formatICSDate = (dateString: string) => new Date(dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const generateICSString = (session: SessionData) => {
+    const dtStamp = formatICSDate(new Date().toISOString());
+    const dtStart = formatICSDate(session.start_time);
+    const dtEnd = formatICSDate(session.end_time);
+    return [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Roshe Mentorship//EN','BEGIN:VEVENT',
+      `UID:session-${session.id}@roshe`,`DTSTAMP:${dtStamp}`,`DTSTART:${dtStart}`,`DTEND:${dtEnd}`,
+      `SUMMARY:${session.title}`,`DESCRIPTION:${session.description}`,`URL:${session.meeting_link}`,
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+  };
+
+  const generateGoogleLink = (session: SessionData) => {
+    const start = formatICSDate(session.start_time);
+    const end = formatICSDate(session.end_time);
+    const text = encodeURIComponent(session.title);
+    const details = encodeURIComponent(session.description);
+    const location = encodeURIComponent(session.meeting_link);
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
+  };
+
   useEffect(() => {
     if (!user?.id || loading) return;
 
@@ -162,7 +185,7 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ userRole }) => {
                   </div>
                 </div>
                 
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col items-end space-y-2">
                   {session.meeting_link && (
                     <a 
                       href={session.meeting_link} 
@@ -173,6 +196,23 @@ const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({ userRole }) => {
                       Join Meeting
                     </a>
                   )}
+                  <div className="space-x-1">
+                    <a
+                      href={generateGoogleLink(session)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-green-500 text-white hover:bg-green-600"
+                    >
+                      Add to Google Calendar
+                    </a>
+                    <a
+                      href={`data:text/calendar;charset=utf-8,${encodeURIComponent(generateICSString(session))}`}
+                      download={`session-${session.id}.ics`}
+                      className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600"
+                    >
+                      Add to Calendar (.ics)
+                    </a>
+                  </div>
                   <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     {session.status}
                   </span>
