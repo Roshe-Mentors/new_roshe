@@ -540,90 +540,20 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     return (
       <div className="text-center space-y-6 py-10">
         <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          {/* ...success icon... */}
         </div>
-        
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-800">Session Booked!</h2>
-          <p className="mt-2 text-gray-600">
-            Your session has been scheduled successfully.
-          </p>
-        </div>
-        
-        {selectedMentor && selectedDate && selectedTimeSlot && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-md mx-auto">
-            <div className="flex items-center mb-4">
-              <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4 overflow-hidden">
-                {selectedMentor.imageUrl ? (
-                  <Image 
-                    src={selectedMentor.imageUrl} 
-                    alt={selectedMentor.name} 
-                    className="h-full w-full object-cover"
-                    width={48}
-                    height={48}
-                  />
-                ) : (
-                  <span className="text-indigo-600 font-medium text-lg">
-                    {selectedMentor.name.charAt(0)}
-                  </span>
-                )}
-              </div>
-              <div className="text-left">
-                <h3 className="text-sm font-medium text-gray-900">Session with {selectedMentor.name}</h3>
-                <p className="text-xs text-gray-500">{selectedMentor.role} at {selectedMentor.company}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-2 text-left text-sm text-gray-600">
-              <div className="flex">
-                <div className="w-20 font-medium">Date:</div>
-                <div>
-                  {new Date(selectedDate).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </div>
-              </div>
-              <div className="flex">
-                <div className="w-20 font-medium">Time:</div>
-                <div>
-                  {new Date(`2000-01-01T${selectedTimeSlot}:00`).toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: 'numeric',
-                    hour12: true
-                  })}
-                </div>
-              </div>
-              <div className="flex">
-                <div className="w-20 font-medium">Duration:</div>
-                <div>{sessionDuration} minutes</div>
-              </div>
-              <div className="flex">
-                <div className="w-20 font-medium">Type:</div>
-                <div className="capitalize">video call</div>
-              </div>
-            </div>
-          </div>
-        )}
+        <h2 className="text-2xl font-semibold text-gray-800">Session Booked!</h2>
+        <p className="mt-2 text-gray-600">Your session has been scheduled successfully.</p>
         {bookingResult && (
           <div className="mt-4 text-center">
             <a
-              href={`${bookingResult.meeting_link}&userInfo.displayName=${encodeURIComponent((user.name as string) || 'Mentee')}`}
+              href={bookingResult.meeting_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 inline-flex items-center"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Join Jitsi Meet Session
+              Join Session
             </a>
-            <p className="mt-2 text-sm text-gray-500">
-              You'll join as {(user.name as string) || 'Mentee'}
-            </p>
           </div>
         )}
         <div className="pt-6">
@@ -634,7 +564,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
               setSelectedTimeSlot('');
               setAgenda('');
             }}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
           >
             Book Another Session
           </button>
