@@ -28,6 +28,17 @@ const generateGoogleLink = (session: any) => {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
 };
 
+// Sync session to Google Calendar via API route
+async function syncSessionToGoogle(session: any, userId: string, userRole: 'mentor') {
+  const response = await fetch('/api/calendar/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session, userId, userRole })
+  });
+  if (!response.ok) throw new Error('Failed to sync event');
+  return await response.json();
+}
+
 interface MentorSessionsProps {
   mentorId: string;
 }
@@ -510,13 +521,28 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
                           </div>
                           
                           <div className="mt-2 flex space-x-2">
+                            {/* Sync via API if connected, else fallback to link */}
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await syncSessionToGoogle(session, mentorId, 'mentor');
+                                  toast.success('Event synced to Google Calendar');
+                                } catch (e) {
+                                  console.error(e);
+                                  toast.error('Failed to sync event');
+                                }
+                              }}
+                              className="px-2 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                            >
+                              Sync to Google Calendar
+                            </button>
                             <a
                               href={generateGoogleLink(session)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
                             >
-                              Add to Google Calendar
+                              Add via Link
                             </a>
                             <button
                               onClick={() => saveAs(new Blob([generateICSString(session)], { type: 'text/calendar;charset=utf-8' }), `session-${session.id}.ics`)}
