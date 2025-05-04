@@ -6,6 +6,7 @@ import { getMentorReviews } from '../../../../services/reviewService';
 import { toast } from 'react-toastify';
 import { FaVideo, FaPhoneAlt, FaCalendarCheck, FaClock, FaStar } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
+import { supabase } from '../../../../lib/supabaseClient';
 
 const formatICSDate = (dateString: string) => new Date(dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 const generateICSString = (session: any) => {
@@ -93,6 +94,25 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     if (mentorId) {
       loadData();
     }
+  }, [mentorId]);
+
+  // Subscribe to real-time new session bookings for this mentor
+  useEffect(() => {
+    let channel: any;
+    if (mentorId) {
+      channel = supabase
+        .channel(`mentor_sessions_${mentorId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
+          try {
+            const newSession = (payload as any).record;
+            setSessions(prev => [...prev, newSession]);
+          } catch (err) {
+            console.warn('Real-time session insert error:', err);
+          }
+        })
+        .subscribe();
+    }
+    return () => { if (channel) supabase.removeChannel(channel); };
   }, [mentorId]);
   
   const handleCancelSession = async () => {
