@@ -4,6 +4,7 @@ import { Tab } from '@headlessui/react';
 import { useEffect, useState } from "react";
 import { useUser } from "../../../lib/auth";
 import { fetchAllMentors } from "../../../lib/mentors";
+import MenteeSessions from './MenteeSessions';
 
 // Define types
 interface Mentor {
@@ -59,15 +60,6 @@ const MenteeBookings = ({
     )}
   </div>
 );
-
-const UpcomingSessions = ({ userRole }: { userRole: string }) => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold mb-4">Upcoming Sessions ({userRole})</h3>
-    <p>Your upcoming sessions will be displayed here</p>
-  </div>
-);
-
-// Note: GoogleCalendarConnect component implementation will be added in future tasks
 
 export default function MenteeDashboard() {
   const { user, loading } = useUser();
@@ -143,7 +135,7 @@ export default function MenteeDashboard() {
               
               {/* Recently added upcoming sessions section */}
               <div className="mt-8">
-                <UpcomingSessions userRole="mentee" />
+                <MenteeSessions menteeId={String(user.id)} />
               </div>
             </div>
             
@@ -166,7 +158,7 @@ export default function MenteeDashboard() {
         <Tab.Panel>
           {/* My Sessions Tab */}
           <div className="space-y-8">
-            <UpcomingSessions userRole="mentee" />
+            <MenteeSessions menteeId={String(user.id)} />
           </div>
         </Tab.Panel>
         
