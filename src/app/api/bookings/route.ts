@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createJitsiMeetMeeting } from '../../../services/jitsiMeetService';
-import { saveBooking, checkTimeSlotAvailability } from '../../../services/zoomService';
+import { checkTimeSlotAvailability } from '../../../services/zoomService';
+import { createAdminClient } from '../../../lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,31 +43,30 @@ export async function POST(request: NextRequest) {
       });
 
       // Generate fallback values for required fields
-      const defaultMeetingId = `default-${Date.now()}`;
+    
       const defaultMeetingUrl = `https://meet.jit.si/default-${Date.now()}`;
 
-      // Prepare booking data for database
-      const fullBookingData = {
-        slot_id: bookingData.slotId,
+      // Create mentoring session record
+      const supabaseAdmin = createAdminClient();
+      const startISO = new Date(`${bookingData.date}T${bookingData.time}`).toISOString();
+      const endDate = new Date(startISO);
+      endDate.setMinutes(endDate.getMinutes() + 30);
+      const endISO = endDate.toISOString();
+      await supabaseAdmin.from('mentoring_sessions').insert([{ 
         mentor_id: bookingData.mentorId,
-        mentor_name: bookingData.mentorName,
-        mentor_email: bookingData.mentorEmail,
-        user_id: bookingData.userId,
-        user_email: bookingData.userEmail, 
-        date: bookingData.date,
-        time: bookingData.time,
-        session_type: bookingData.sessionType,
-        meeting_id: meeting.meetingId || defaultMeetingId,
-        meeting_url: meeting.meetingLink || defaultMeetingUrl,
-        // No password for Jitsi Meet
-      };
+        mentee_id: bookingData.userId,
+        status: 'upcoming',
+        start_time: startISO,
+        end_time: endISO,
+        title: bookingData.sessionType,
+        meeting_link: meeting.meetingLink || defaultMeetingUrl,
+        description: bookingData.sessionType
+      }]);
 
-      // Save to database and then update slot status
-      const bookingResult = await saveBooking(fullBookingData);
       // Mark the availability slot as booked
       try {
-        const supabaseAdmin = (await import('../../../lib/supabaseClient')).createAdminClient();
-        await supabaseAdmin
+        const supabaseAdminSlot = (await import('../../../lib/supabaseClient')).createAdminClient();
+        await supabaseAdminSlot
           .from('availability')
           .update({ status: 'booked' })
           .eq('id', bookingData.slotId);
@@ -77,9 +77,8 @@ export async function POST(request: NextRequest) {
       // Return success response with meeting details
       return NextResponse.json({
         success: true,
-        message: 'Booking created successfully',
-        meeting,
-        booking: bookingResult
+        message: 'Session booked successfully',
+        meeting
       });
     } catch (error) {
       console.error('Error processing booking:', error);
@@ -98,25 +97,26 @@ export async function POST(request: NextRequest) {
         
         // Attempt to save the mock booking to database
         try {
-          const fullBookingData = {
-            slot_id: bookingData.slotId,
+          const supabaseAdmin = createAdminClient();
+          const startISO = new Date(`${bookingData.date}T${bookingData.time}`).toISOString();
+          const endDate = new Date(startISO);
+          endDate.setMinutes(endDate.getMinutes() + 30);
+          const endISO = endDate.toISOString();
+          await supabaseAdmin.from('mentoring_sessions').insert([{ 
             mentor_id: bookingData.mentorId,
-            mentor_name: bookingData.mentorName || 'Mock Mentor',
-            mentor_email: bookingData.mentorEmail || 'mentor@example.com',
-            user_id: bookingData.userId,
-            user_email: bookingData.userEmail || 'user@example.com', 
-            date: bookingData.date,
-            time: bookingData.time,
-            session_type: bookingData.sessionType,
-            meeting_id: mockMeetingId,  // Using the already defined string value
-            meeting_url: mockMeetingUrl  // Using the already defined string value
-          };
-          
-          await saveBooking(fullBookingData);
+            mentee_id: bookingData.userId,
+            status: 'upcoming',
+            start_time: startISO,
+            end_time: endISO,
+            title: bookingData.sessionType,
+            meeting_link: mockMeetingUrl,
+            description: bookingData.sessionType
+          }]);
+
           // Mark the availability slot as booked
           try {
-            const supabaseAdmin = (await import('../../../lib/supabaseClient')).createAdminClient();
-            await supabaseAdmin
+            const supabaseAdminSlot = (await import('../../../lib/supabaseClient')).createAdminClient();
+            await supabaseAdminSlot
               .from('availability')
               .update({ status: 'booked' })
               .eq('id', bookingData.slotId);
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         // Return success with mock data
         return NextResponse.json({
           success: true,
-          message: 'Mock booking created (Jitsi Meet API unavailable)',
+          message: 'Mock session booked (Jitsi Meet API unavailable)',
           meeting: mockMeeting
         });
       }

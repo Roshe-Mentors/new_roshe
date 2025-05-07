@@ -52,6 +52,9 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
   const [cancelSessionId, setCancelSessionId] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState<string>('');
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
+  const [filterOption, setFilterOption] = useState<'all' | 'today' | 'thisWeek' | 'thisMonth'>('all');
+  const [sortOption, setSortOption] = useState<'newest' | 'oldest'>('newest');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
   useEffect(() => {
     const loadData = async () => {
@@ -67,13 +70,14 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
           reviewsPromise
         ]);
         
-        // Handle sessions result
+        let allSessions: any[] = [];
         if (sessionsResult.status === 'fulfilled') {
-          setSessions(sessionsResult.value);
+          allSessions = sessionsResult.value;
         } else {
           console.error('Failed to load sessions:', sessionsResult.reason);
           toast.error('Failed to load sessions');
         }
+        setSessions(allSessions);
         
         // Handle reviews result
         if (reviewsResult.status === 'fulfilled') {
@@ -98,21 +102,24 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
 
   // Subscribe to real-time new session bookings for this mentor
   useEffect(() => {
-    let channel: any;
+    let sessionChannel: any;
     if (mentorId) {
-      channel = supabase
+      sessionChannel = supabase
         .channel(`mentor_sessions_${mentorId}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
           try {
-            const newSession = (payload as any).record;
+            const newSession = (payload as any).new;
             setSessions(prev => [...prev, newSession]);
+            toast.info('A new session has been booked by a mentee');
           } catch (err) {
             console.warn('Real-time session insert error:', err);
           }
         })
         .subscribe();
     }
-    return () => { if (channel) supabase.removeChannel(channel); };
+    return () => {
+      if (sessionChannel) supabase.removeChannel(sessionChannel);
+    };
   }, [mentorId]);
   
   const handleCancelSession = async () => {
@@ -173,15 +180,57 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
   };
   
   const filterSessions = (status: 'upcoming' | 'past') => {
-    if (status === 'upcoming') {
-      return sessions.filter(session => 
-        ['upcoming', 'active'].includes(session.status) && !session.cancelled_at
-      );
-    } else {
-      return sessions.filter(session => 
-        session.status === 'completed' || session.status === 'cancelled' || session.cancelled_at
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisWeekStart = new Date(today);
+    thisWeekStart.setDate(today.getDate() - today.getDay());
+    const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    // First filter by status
+    let filtered = sessions.filter(session => {
+      if (status === 'upcoming') {
+        return ['upcoming', 'active'].includes(session.status) && !session.cancelled_at;
+      } else {
+        return session.status === 'completed' || session.status === 'cancelled' || session.cancelled_at;
+      }
+    });
+    
+    // Then apply time period filter if not 'all'
+    if (filterOption !== 'all') {
+      filtered = filtered.filter(session => {
+        const sessionDate = new Date(session.start_time);
+        
+        if (filterOption === 'today') {
+          return sessionDate >= today && sessionDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        } else if (filterOption === 'thisWeek') {
+          const nextWeekStart = new Date(thisWeekStart);
+          nextWeekStart.setDate(thisWeekStart.getDate() + 7);
+          return sessionDate >= thisWeekStart && sessionDate < nextWeekStart;
+        } else if (filterOption === 'thisMonth') {
+          const nextMonthStart = new Date(thisMonthStart);
+          nextMonthStart.setMonth(thisMonthStart.getMonth() + 1);
+          return sessionDate >= thisMonthStart && sessionDate < nextMonthStart;
+        }
+        return true;
+      });
+    }
+    
+    // Apply search filter if there's a query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(session => 
+        (session.title?.toLowerCase().includes(query)) || 
+        (session.mentees?.name?.toLowerCase().includes(query)) ||
+        (session.description?.toLowerCase().includes(query))
       );
     }
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.start_time).getTime();
+      const dateB = new Date(b.start_time).getTime();
+      return sortOption === 'newest' ? dateA - dateB : dateB - dateA;
+    });
   };
   
   const formatDateTime = (dateString: string) => {
@@ -468,6 +517,37 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
           >
             Reviews
           </button>
+        </div>
+        
+        {/* Filter and Sort Options */}
+        <div className="p-4 flex items-center gap-4">
+          <select
+            aria-label="Filter sessions"
+            value={filterOption}
+            onChange={(e) => setFilterOption(e.target.value as 'all' | 'today' | 'thisWeek' | 'thisMonth')}
+            className="border border-gray-300 rounded-lg p-2 text-sm"
+          >
+            <option value="all">All</option>
+            <option value="today">Today</option>
+            <option value="thisWeek">This Week</option>
+            <option value="thisMonth">This Month</option>
+          </select>
+          <select
+            aria-label="Sort sessions"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as 'newest' | 'oldest')}
+            className="border border-gray-300 rounded-lg p-2 text-sm"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search sessions..."
+            className="border border-gray-300 rounded-lg p-2 text-sm flex-grow"
+          />
         </div>
         
         {/* Content */}

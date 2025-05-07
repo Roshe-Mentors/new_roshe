@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiArrowRight, FiCalendar, FiUsers, FiMessageCircle } from 'react-icons/fi';
+import { FiArrowRight, FiCalendar } from 'react-icons/fi';
 import { Mentor } from '../common/types';
 import { UserRole } from '../../../../lib/user';
 import { getMentorStats, MentorStats } from '../../../../services/profileService';
+import { getMentorSessions } from '../../../../services/sessionService';
 
 interface MentorHomeProps {
   user: Record<string, unknown>;
@@ -27,6 +28,7 @@ const MentorHome: React.FC<MentorHomeProps> = ({
     rating: 0
   });
   const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
+  const [recentSessions, setRecentSessions] = useState<any[]>([]);
 
   // Fetch mentor statistics when component mounts
   useEffect(() => {
@@ -49,34 +51,21 @@ const MentorHome: React.FC<MentorHomeProps> = ({
     fetchStats();
   }, [userRole, mentors]);
 
+  // Fetch recent sessions for Recent Activity
+  useEffect(() => {
+    if (mentors[0]?.id) {
+      getMentorSessions(mentors[0].id)
+        .then(sessions => {
+          const sorted = sessions.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+          setRecentSessions(sorted.slice(0, 5));
+        })
+        .catch(console.error);
+    }
+  }, [mentors]);
+
   // Featured mentors (just take the first 3 for demo)
   const featuredMentors = mentors.slice(0, 3);
   
-  // Recent activity data (static for demo)
-  const recentActivity = [
-    {
-      type: 'session',
-      title: 'Upcoming Session',
-      description: 'Character Animation Fundamentals with Chris Lee',
-      date: 'Tomorrow, 3:00 PM',
-      icon: <FiCalendar className="text-blue-500" size={20} />
-    },
-    {
-      type: 'community',
-      title: 'New Replies',
-      description: '3 new replies to your question about rigging techniques',
-      date: '2 hours ago',
-      icon: <FiUsers className="text-green-500" size={20} />
-    },
-    {
-      type: 'message',
-      title: 'New Message',
-      description: 'Jane Smith sent you feedback on your portfolio',
-      date: '5 hours ago',
-      icon: <FiMessageCircle className="text-purple-500" size={20} />
-    }
-  ];
-
   // Different content based on user role
   const renderRoleSpecificContent = () => {
     if (userRole === 'mentor') {
@@ -222,29 +211,24 @@ const MentorHome: React.FC<MentorHomeProps> = ({
       {/* Recent Activity Feed */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
         <h3 className="text-xl font-semibold text-gray-800 mb-6">Recent Activity</h3>
-        
         <div className="space-y-4">
-          {recentActivity.map((activity, index) => (
-            <div key={index} className="flex p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-              <div className="p-2 bg-gray-50 rounded-lg mr-4">
-                {activity.icon}
+          {recentSessions.length === 0 ? (
+            <p className="text-gray-500">No recent activity.</p>
+          ) : (
+            recentSessions.map((session) => (
+              <div key={session.id} className="flex p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+                <div className="p-2 bg-gray-50 rounded-lg mr-4">
+                  <FiCalendar className="text-blue-500" size={20} />
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-800">{session.title || `Session with ${session.mentees?.name}`}</h4>
+                  <p className="text-sm text-gray-600">{new Date(session.start_time).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mt-1">{session.status}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-medium text-gray-800">{activity.title}</h4>
-                <p className="text-sm text-gray-600">{activity.description}</p>
-                <p className="text-xs text-gray-500 mt-1">{activity.date}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
-        
-        <button 
-          className="mt-4 text-blue-600 text-sm flex items-center hover:underline"
-          aria-label="View all activity"
-          title="View all activity"
-        >
-          View all activity <FiArrowRight className="ml-1" size={14} />
-        </button>
       </div>
       
       {/* Featured Mentors - Only show to mentees */}

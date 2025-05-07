@@ -100,6 +100,23 @@ export async function getMentorSessions(mentorId: string) {
   return data || [];
 }
 
+// Get bookings for a mentor
+export async function getMentorBookings(mentorId: string) {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(`*`)
+    .eq('mentor_id', mentorId)
+    .order('booking_date', { ascending: true })
+    .order('booking_time', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching mentor bookings:', error);
+    throw error;
+  }
+
+  return data || [];
+}
+
 // Get a specific session by ID
 export async function getSessionById(sessionId: string) {
   const { data, error } = await supabase
