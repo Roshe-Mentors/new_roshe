@@ -9,19 +9,38 @@ import {
   FaYoutube,
   FaLinkedinIn,
   FaTiktok,
+  FaUserFriends,
+  FaChalkboardTeacher,
+  FaUsers,
+  FaBlog,
+  FaUserPlus,
+  FaQuestionCircle,
+  FaHandshake,
 } from "react-icons/fa";
 import { usePathname } from 'next/navigation';
+import { motion } from "framer-motion";
 
 const Footer: React.FC = () => {
   const pathname = usePathname();
-  // Do not render Footer on dashboard pages
   if (pathname.startsWith('/dashboard')) return null;
 
   return (
-    <footer className="bg-white border-t border-gray-200 py-12 relative z-20">
-      <div className="container mx-auto px-6">
+    <footer className="bg-white border-t border-gray-200 py-12 relative z-20 overflow-hidden">
+      <motion.div
+        className="container mx-auto px-6"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
         {/* Logo Section */}
-        <div className="flex justify-center md:justify-start mb-6">
+        <motion.div
+          className="flex justify-center md:justify-start mb-6"
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+        >
           <Link href="/" className="flex items-center space-x-2">
             <Image
               src="/images/roshementorship.png"
@@ -32,131 +51,130 @@ const Footer: React.FC = () => {
             />
             <span className="text-xl font-montserrat text-black font-bold">Roshe Mentorship</span>
           </Link>
-        </div>
+        </motion.div>
 
         {/* Mission Statement and Social Icons */}
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start space-y-6 md:space-y-0 mb-8">
-          {/* Left Section: Mission Statement */}
-          <div className="text-center md:text-left md:w-2/3">
+          {/* Mission */}
+          <motion.div
+            className="text-center md:text-left md:w-2/3"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
             <p className="text-sm text-black">
-              To inspire powerful conversation and collaborations among members <br />worldwide so together we can change the world with creativity.
+              To inspire powerful conversations and collaborations among members <br />
+              worldwide so together we can change the world with creativity.
             </p>
-          </div>
+          </motion.div>
 
-          {/* Right Section: Social Media Icons */}
-          <div className="flex justify-center md:justify-end space-x-6">
-            <a
-              href="https://www.linkedin.com/company/roshe-mentorship/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black transition font-bold"
-              title="Visit Roshe Mentorship on LinkedIn"
-            >
-              <FaLinkedinIn size={20} />
-            </a>
-            <a
-              href="https://www.instagram.com/roshe_mentorship/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black transition font-bold"
-              title="Follow Roshe Mentorship on Instagram"
-            >
-              <FaInstagram size={20} />
-            </a>
-            <a
-              href="https://x.com/roshementorship?s=21&t=TN5-Nr3z-NoaUxp_TbMOVA"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black transition font-bold"
-              title="Follow Roshe Mentorship on Twitter"
-            >
-              <FaTwitter size={20} />
-            </a>
-            <a
-              href="https://www.facebook.com/share/1BCqU9R9Pc/?mibextid=LQQJ4d"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black transition font-bold"
-              title="Follow Roshe Mentorship on Facebook"
-            >
-              <FaFacebookF size={20} />
-            </a>
-            <a
-              href="https://www.youtube.com/@RosheMentorship"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black transition font-bold"
-              title="Subscribe to Roshe Mentorship on YouTube"
-            >
-              <FaYoutube size={20} />
-            </a>
-            <a
-              href="https://www.tiktok.com/@roshementorship?is_from_webapp=1&sender_device=pc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-black hover:text-black transition font-bold"
-              title="Follow Roshe Mentorship on TikTok"
-            >
-              <FaTiktok size={20} />
-            </a>
-          </div>
+          {/* Social Icons */}
+          <motion.div
+            className="flex justify-center md:justify-end space-x-4"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            {[
+              { href: "https://www.linkedin.com/company/roshe-mentorship/", Icon: FaLinkedinIn },
+              { href: "https://www.instagram.com/roshe_mentorship/", Icon: FaInstagram },
+              { href: "https://x.com/roshementorship?s=21&t=TN5-Nr3z-NoaUxp_TbMOVA", Icon: FaTwitter },
+              { href: "https://www.facebook.com/share/1BCqU9R9Pc/?mibextid=LQQJ4d", Icon: FaFacebookF },
+              { href: "https://www.youtube.com/@RosheMentorship", Icon: FaYoutube },
+              { href: "https://www.tiktok.com/@roshementorship?is_from_webapp=1&sender_device=pc", Icon: FaTiktok },
+            ].map(({ href, Icon }, idx) => (
+              <motion.a
+                key={idx}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-[#9898FA] text-white rounded-full p-4 hover:scale-110 transition-transform duration-300 shadow-md"
+                whileHover={{ scale: 1.2 }}
+              >
+                <Icon size={28} />
+              </motion.a>
+            ))}
+          </motion.div>
         </div>
 
-        {/* Navigation Links - Split into two groups */}
-        <div className="flex flex-col md:flex-row justify-between">
-          {/* Left Side Navigation Links */}
-          <div className="text-center md:text-left mb-4 md:mb-0">
-            <ul className="flex flex-wrap justify-center md:justify-start space-x-6 text-black text-sm">
-              <li>
-                <Link href="/signIn" className="hover:text-black transition font-bold">
-                  find mentors
-                </Link>
-              </li>
-              <li>
-                <Link href="/signup/mentor" className="hover:text-black transition font-bold">
-                  become a mentor
-                </Link>
-              </li>
-              <li>
-                <Link href="/" className="hover:text-black transition font-bold">
-                  community
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="hover:text-black transition font-bold">
-                  blog
-                </Link>
-              </li>
-            </ul>
-          </div>
+        {/* Navigation Links */}
+        <div className="flex flex-col md:flex-row justify-between gap-6">
+          {/* Left Links */}
+          <motion.ul
+            className="flex flex-col sm:flex-row sm:flex-wrap justify-center md:justify-start gap-4 text-black text-sm"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <li className="flex items-center gap-2">
+              <FaUserFriends className="text-[#9898FA]" size={18} />
+              <Link href="/signIn" className="hover:text-[#9898FA] transition font-bold">
+                Find mentors
+              </Link>
+            </li>
+            <li className="flex items-center gap-2">
+              <FaChalkboardTeacher className="text-[#9898FA]" size={18} />
+              <Link href="/signup/mentor" className="hover:text-[#9898FA] transition font-bold">
+                Become a mentor
+              </Link>
+            </li>
+            <li className="flex items-center gap-2">
+              <FaUsers className="text-[#9898FA]" size={18} />
+              <Link href="/" className="hover:text-[#9898FA] transition font-bold">
+                Community
+              </Link>
+            </li>
+            <li className="flex items-center gap-2">
+              <FaBlog className="text-[#9898FA]" size={18} />
+              <Link href="/blog" className="hover:text-[#9898FA] transition font-bold">
+                Blog
+              </Link>
+            </li>
+          </motion.ul>
 
-          {/* Right Side Navigation Links */}
-          <div className="text-center md:text-right">
-            <ul className="flex flex-wrap justify-center md:justify-end space-x-6 text-black text-sm">
-              <li>
-                <Link href="/signIn" className="hover:text-black transition font-bold">
-                  join roshe mentorship
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:text-black transition font-bold">
-                  FAQs
-                </Link>
-              </li>
-              <li>
-                <a href="mailto:roshementorship@gmail.com" className="hover:text-black transition font-bold">
-                  partnerships
-                </a>
-              </li>
-            </ul>
-          </div>
+          {/* Right Links */}
+          <motion.ul
+            className="flex flex-col sm:flex-row sm:flex-wrap justify-center md:justify-end gap-4 text-black text-sm"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            <li className="flex items-center gap-2">
+              <FaUserPlus className="text-[#9898FA]" size={18} />
+              <Link href="/signIn" className="hover:text-[#9898FA] transition font-bold">
+                Join Roshe Mentorship
+              </Link>
+            </li>
+            <li className="flex items-center gap-2">
+              <FaQuestionCircle className="text-[#9898FA]" size={18} />
+              <Link href="/faq" className="hover:text-[#9898FA] transition font-bold">
+                FAQs
+              </Link>
+            </li>
+            <li className="flex items-center gap-2">
+              <FaHandshake className="text-[#9898FA]" size={18} />
+              <a href="mailto:roshementorship@gmail.com" className="hover:text-[#9898FA] transition font-bold">
+                Partnerships
+              </a>
+            </li>
+          </motion.ul>
         </div>
 
-        {/* Copyright Line */}
-        <div className="text-sm text-black mt-6 text-center md:text-left">
-          © Roshe Mentorship, all rights reserved.
-        </div>
-      </div>
+        {/* Copyright */}
+        <motion.div
+          className="text-sm text-black mt-6 text-center md:text-left"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          © {new Date().getFullYear()} Roshe Mentorship, all rights reserved.
+        </motion.div>
+      </motion.div>
     </footer>
   );
 };

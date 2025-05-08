@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from 'next/image';
-import { useUser } from '../lib/auth';
-import { supabase } from '../lib/supabaseClient';
-import { useRouter } from 'next/navigation';
+import Image from "next/image";
+import { useUser } from "../lib/auth";
+import { supabase } from "../lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,16 +15,21 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/signIn');
+    router.push("/signIn");
   };
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
-      <div className="container mx-auto flex items-center justify-between p-2">
+      <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo Section */}
-        <Link href="/" className="flex items-center space-x-2">
-          
-            <Image 
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center space-x-4"
+        >
+          <Link href="/" className="flex items-center space-x-4">
+            <Image
               src="/images/roshementorship.png"
               alt="Roshe Mentorship Logo"
               width={35}
@@ -33,11 +39,16 @@ const Navbar: React.FC = () => {
             <span className="text-xl font-bold font-montserrat text-gray-800">
               Roshe Mentorship
             </span>
-        
-        </Link>
+          </Link>
+        </motion.div>
 
         {/* Desktop Buttons */}
-        <div className="hidden md:flex space-x-4">
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="hidden md:flex space-x-6"
+        >
           {!loading && user ? (
             <>
               {/* Logout button removed from here */}
@@ -45,20 +56,39 @@ const Navbar: React.FC = () => {
           ) : (
             <>
               <Link legacyBehavior href="/signIn">
-                <a target="_blank" rel="noopener noreferrer" className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
-                   style={{ borderColor: "#010114", borderWidth: "2px" }}>
+                <motion.a
+                  whileHover={{
+                    y: [-4, 4, -4],
+                    transition: { repeat: Infinity, duration: 0.5 },
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 text-gray-800 rounded hover:bg-gray-100 transition"
+                  style={{
+                    borderColor: "#9898FA", 
+                    borderWidth: "2px",      
+                    borderStyle: "solid",   
+                  }}
+                >
                   Log in
-                </a>
+                </motion.a>
               </Link>
               <Link legacyBehavior href="/user">
-                <a target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
-                   style={{ background: "bg-gradient-to-r from-gray-800 to-gray-500" }}>
+                <motion.a
+                  whileHover={{
+                    y: [-4, 4, -4],
+                    transition: { repeat: Infinity, duration: 0.5 },
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded bg-[#9898FA] text-white hover:opacity-90 transition"
+                >
                   Get Started
-                </a>
+                </motion.a>
               </Link>
             </>
           )}
-        </div>
+        </motion.div>
 
         {/* Hamburger Menu */}
         <button
@@ -77,7 +107,11 @@ const Navbar: React.FC = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+              d={
+                isMenuOpen
+                  ? "M6 18L18 6M6 6l12 12"
+                  : "M4 6h16M4 12h16M4 18h16"
+              }
             />
           </svg>
         </button>
@@ -85,20 +119,42 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Dropdown */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-md">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden bg-white shadow-md"
+        >
           {!loading && user ? (
-            <button onClick={handleLogout} className="block text-black px-4 py-2 hover:bg-gray-100 text-left w-full">Log out</button>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-black px-4 py-3 text-center hover:bg-gray-100"
+            >
+              Log out
+            </button>
           ) : (
             <>
               <Link legacyBehavior href="/signIn">
-                <a target="_blank" rel="noopener noreferrer" className="block text-black px-4 py-2 border-b hover:bg-gray-100">Log in</a>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-black px-4 py-3 text-center border-b hover:bg-gray-100"
+                >
+                  Log in
+                </a>
               </Link>
               <Link legacyBehavior href="/user">
-                <a target="_blank" rel="noopener noreferrer" className="block text-black px-4 py-2 hover:bg-gray-100">Get Started</a>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-black px-4 py-3 text-center hover:bg-gray-100"
+                >
+                  Get Started
+                </a>
               </Link>
             </>
           )}
-        </div>
+        </motion.div>
       )}
     </nav>
   );

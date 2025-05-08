@@ -19,9 +19,21 @@ const logos = [
 
 export default function LogosShowcase() {
   return (
-    <div className="bg-white pt-12 pb-8 overflow-hidden">
-      <div className="container mx-auto px-4 text-center">
-        <p className="text-black mb-8 text-lg md:text-xl">Proven success with 20+ top studios</p>
+    <div className="bg-white pt-12 pb-8 overflow-hidden relative">
+      
+      {/* LEFT Gradient */}
+      <div className="absolute top-0 left-0 h-full w-24 bg-gradient-to-r from-white to-transparent z-20 pointer-events-none" />
+
+      {/* RIGHT Gradient */}
+      <div className="absolute top-0 right-0 h-full w-24 bg-gradient-to-l from-white to-transparent z-20 pointer-events-none" />
+
+      <div className="container mx-auto px-4 text-center relative z-10">
+        
+        {/* Animated Text */}
+        <p className="text-black mb-8 text-lg md:text-xl font-semibold animate-fade-slide">
+          Proven success with <span className="text-[#9898FA] font-bold">20+ top studios</span>
+        </p>
+
         <div className="relative w-full overflow-hidden">
           <div className="flex animate-marquee-fast whitespace-nowrap min-w-full">
             {/* First set of logos */}
