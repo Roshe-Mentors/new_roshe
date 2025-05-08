@@ -7,9 +7,10 @@ import Footer from "../components/Footer";
 import { UserProvider } from "../lib/auth";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Head from 'next/head';
 
 const poppins = Poppins({
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  weight: ['400', '700'],
   subsets: ['latin'],
   variable: '--font-poppins',
   display: 'swap'
@@ -48,6 +49,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${poppins.variable}`}>
+      <Head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="preload" href="/images/rosheBackground.jpg" as="image" />
+      </Head>
       <body className={`${poppins.className}`}>
         <UserProvider>
           <Navbar />

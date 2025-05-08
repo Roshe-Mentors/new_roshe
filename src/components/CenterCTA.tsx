@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 const CenterCTA = () => {
   const [email, setEmail] = useState('');
@@ -23,20 +24,17 @@ const CenterCTA = () => {
 
   return (
     <section className="w-full relative flex justify-center items-center py-16 px-4 overflow-hidden">
-      {/* Background with gradient overlay */}
-      <div
-        className="absolute inset-0 w-full h-full"
-        style={{
-          backgroundImage: `
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)),
-            url("/images/rosheBackground.jpg")
-          `,
-          backgroundPosition: 'center top',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          zIndex: -1,
-        }}
-      />
+      {/* Optimized background using Next Image with gradient overlay */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/rosheBackground.jpg"
+          alt="Background"
+          fill
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-white/70" />
+      </div>
 
       <div className="w-full max-w-3xl px-4 py-4 text-center relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900  mb-4">

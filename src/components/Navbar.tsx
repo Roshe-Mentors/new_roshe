@@ -28,6 +28,7 @@ const Navbar: React.FC = () => {
               alt="Roshe Mentorship Logo"
               width={35}
               height={35}
+              priority
               className="rounded-full"
             />
             <span className="text-xl font-bold font-montserrat text-gray-800">
@@ -44,17 +45,13 @@ const Navbar: React.FC = () => {
             </>
           ) : (
             <>
-              <Link legacyBehavior href="/signIn">
-                <a target="_blank" rel="noopener noreferrer" className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
+              <Link href="/signIn" prefetch={false} className="px-3 py-2 border text-gray-800 rounded hover:bg-gray-100 transition"
                    style={{ borderColor: "#010114", borderWidth: "2px" }}>
-                  Log in
-                </a>
+                Log in
               </Link>
-              <Link legacyBehavior href="/user">
-                <a target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
+              <Link href="/user" prefetch={false} className="px-4 py-2 rounded bg-gradient-to-r from-gray-800 to-gray-500 text-white hover:opacity-90 transition"
                    style={{ background: "bg-gradient-to-r from-gray-800 to-gray-500" }}>
-                  Get Started
-                </a>
+                Get Started
               </Link>
             </>
           )}
@@ -90,12 +87,8 @@ const Navbar: React.FC = () => {
             <button onClick={handleLogout} className="block text-black px-4 py-2 hover:bg-gray-100 text-left w-full">Log out</button>
           ) : (
             <>
-              <Link legacyBehavior href="/signIn">
-                <a target="_blank" rel="noopener noreferrer" className="block text-black px-4 py-2 border-b hover:bg-gray-100">Log in</a>
-              </Link>
-              <Link legacyBehavior href="/user">
-                <a target="_blank" rel="noopener noreferrer" className="block text-black px-4 py-2 hover:bg-gray-100">Get Started</a>
-              </Link>
+              <Link href="/signIn" prefetch={false} className="block text-black px-4 py-2 border-b hover:bg-gray-100">Log in</Link>
+              <Link href="/user" prefetch={false} className="block text-black px-4 py-2 hover:bg-gray-100">Get Started</Link>
             </>
           )}
         </div>
