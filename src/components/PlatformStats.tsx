@@ -80,23 +80,23 @@ const PlatformStats = () => {
   return (
     <section
       ref={sectionRef}
-      className="w-full py-10 flex flex-col items-center"
+      className="w-full py-10 px-4 sm:px-8 flex flex-col items-center"
       style={{
         background: 'linear-gradient(90deg, #9898FA 0%, #65658D 100%)',
       }}
     >
-      <h2 className="text-3xl font-bold text-white mb-10 text-center">
+      <h2 className="text-2xl sm:text-3xl capitalize font-bold text-white mb-10 text-center max-w-xl mx-auto">
         A platform that delivers results
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full max-w-6xl px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 w-full max-w-6xl">
         {stats.map((item, idx) => (
           <div
             key={idx}
-            className="flex flex-col justify-between items-center bg-white rounded-lg p-5 w-[258px] h-[230px] mx-auto text-center shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+            className="flex flex-col justify-between items-center bg-white rounded-lg p-5 sm:p-6 w-full max-w-[258px] h-[230px] mx-auto text-center shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl"
           >
             <p className="text-sm text-gray-600 mb-4">{item.preText}</p>
-            <h3 className="text-4xl font-bold text-[#65658D] mb-2">
+            <h3 className="text-3xl sm:text-4xl font-bold text-[#65658D] mb-2">
               {counts[idx]}
               {item.suffix}
             </h3>

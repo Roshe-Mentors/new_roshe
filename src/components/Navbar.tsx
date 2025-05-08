@@ -34,6 +34,7 @@ const Navbar: React.FC = () => {
               alt="Roshe Mentorship Logo"
               width={35}
               height={35}
+              priority
               className="rounded-full"
             />
             <span className="text-xl font-bold font-montserrat text-gray-800">
@@ -50,42 +51,39 @@ const Navbar: React.FC = () => {
           className="hidden md:flex space-x-6"
         >
           {!loading && user ? (
-            <>
-              {/* Logout button removed from here */}
-            </>
+            <></>
           ) : (
             <>
-              <Link legacyBehavior href="/signIn">
-                <motion.a
-                  whileHover={{
-                    y: [-4, 4, -4],
-                    transition: { repeat: Infinity, duration: 0.5 },
-                  }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-2 text-gray-800 rounded hover:bg-gray-100 transition"
-                  style={{
-                    borderColor: "#9898FA", 
-                    borderWidth: "2px",      
-                    borderStyle: "solid",   
-                  }}
+              <>
+                <style>
+                  {`
+      @keyframes jiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(3deg); }
+        50% { transform: rotate(-3deg); }
+        75% { transform: rotate(3deg); }
+      }
+      .jiggle-hover:hover {
+        animation: jiggle 0.5s ease-in-out;
+      }
+    `}
+                </style>
+
+                <Link
+                  href="/signIn"
+                  prefetch={false}
+                  className="px-3 py-2 text-gray-800 rounded hover:bg-gray-100 transition border-2 border-purple-300 jiggle-hover"
                 >
                   Log in
-                </motion.a>
-              </Link>
-              <Link legacyBehavior href="/user">
-                <motion.a
-                  whileHover={{
-                    y: [-4, 4, -4],
-                    transition: { repeat: Infinity, duration: 0.5 },
-                  }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded bg-[#9898FA] text-white hover:opacity-90 transition"
+                </Link>
+                <Link
+                  href="/user"
+                  prefetch={false}
+                  className="px-4 py-2 rounded bg-purple-300 text-gray-800 hover:bg-purple-400 transition jiggle-hover"
                 >
                   Get Started
-                </motion.a>
-              </Link>
+                </Link>
+              </>
             </>
           )}
         </motion.div>
@@ -134,23 +132,11 @@ const Navbar: React.FC = () => {
             </button>
           ) : (
             <>
-              <Link legacyBehavior href="/signIn">
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-black px-4 py-3 text-center border-b hover:bg-gray-100"
-                >
-                  Log in
-                </a>
+              <Link href="/signIn" prefetch={false} className="block text-black px-4 py-3 text-center border-b hover:bg-gray-100">
+                Log in
               </Link>
-              <Link legacyBehavior href="/user">
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-black px-4 py-3 text-center hover:bg-gray-100"
-                >
-                  Get Started
-                </a>
+              <Link href="/user" prefetch={false} className="block text-black px-4 py-3 text-center hover:bg-gray-100">
+                Get Started
               </Link>
             </>
           )}

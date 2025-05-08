@@ -1,23 +1,49 @@
-// components/ExplainerVideo.tsx
+"use client";
 import React from 'react';
+import { motion } from 'framer-motion'; // Named import
 
 const ExplainerVideo = () => {
   return (
-    <section className="w-full py-16 bg-white flex flex-col items-center animate-fade-slide">
+    <motion.section
+      className="w-full py-16 px-4 sm:px-8 bg-white flex flex-col items-center"
+      // ✅ Added px-4 for mobile and sm:px-8 for small screens and above
+    >
       {/* Header */}
-      <header className="text-center mb-10">
-        <h1 className="text-4xl text-black font-bold animate-zoom-in">
+      <header className="text-center mb-10 max-w-2xl mx-auto">
+        {/* ✅ Added max-w and mx-auto to keep text neat */}
+        <motion.h1
+          className="text-3xl sm:text-4xl capitalize text-black font-bold"
+          initial={{ x: -100, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           Unlock your potential
-        </h1>
-        <p className="text-lg text-black mt-4 animate-fade-in">
-          Become the best version of yourself by accessing the perspectives and industry<br />
+        </motion.h1>
+        <motion.p
+          className="text-base sm:text-lg text-black mt-4"
+          initial={{ x: 100, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          Become the best version of yourself by accessing the perspectives and industry
+          <br />
           experiences of others who&apos;ve been there, done that.
-        </p>
+        </motion.p>
       </header>
 
       {/* Video */}
-      <div className="w-full flex justify-center">
-        <div className="w-full sm:w-3/4 lg:w-2/3 relative group rounded-xl overflow-hidden">
+      <motion.div
+        className="w-full flex justify-center"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <div className="w-full sm:w-3/4 lg:w-2/3 relative group rounded-xl overflow-hidden px-2 sm:px-0">
+          {/* ✅ Added px-2 on mobile to prevent video from touching edges */}
+
           {/* Gradient Border */}
           <div className="absolute inset-0 rounded-xl p-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-spin z-0"></div>
 
@@ -35,8 +61,8 @@ const ExplainerVideo = () => {
             </video>
           </div>
         </div>
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 };
 

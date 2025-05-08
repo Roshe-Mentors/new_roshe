@@ -63,6 +63,11 @@ export interface RecommendedGoal {
 
 // Fetch a user's achievements
 export const fetchUserAchievements = async (userId: string, role: 'mentor' | 'mentee'): Promise<Achievement[]> => {
+  if (!userId) {
+    console.warn('fetchUserAchievements called without a valid userId');
+    return [];
+  }
+  
   try {
     const { data, error } = await supabase
       .from('achievements')
@@ -84,29 +89,37 @@ export const fetchUserAchievements = async (userId: string, role: 'mentor' | 'me
 
 // Fetch mentor stats
 export const fetchMentorStats = async (mentorId: string): Promise<MentorStats> => {
+  if (!mentorId) {
+    console.warn('fetchMentorStats called without a valid mentorId');
+    return { sessionsCompleted: 0, hoursMentored: 0, menteesHelped: 0, averageRating: 0 };
+  }
+
   try {
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from('mentor_stats')
       .select('*')
       .eq('mentor_id', mentorId)
-      .single();
-      
-    if (error) throw error;
-    
+      .maybeSingle();
+
+    if (error && status !== 406) {
+      // 406 indicates no rows found, treat as empty stats
+      throw error;
+    }
+
+    if (!data) {
+      console.warn(`No mentor_stats record found for mentor_id=${mentorId}`);
+      return { sessionsCompleted: 0, hoursMentored: 0, menteesHelped: 0, averageRating: 0 };
+    }
+
     return {
-      sessionsCompleted: data?.sessions_completed || 0,
-      hoursMentored: data?.hours_mentored || 0,
-      menteesHelped: data?.mentees_helped || 0,
-      averageRating: data?.average_rating || 0,
+      sessionsCompleted: data.sessions_completed ?? 0,
+      hoursMentored: data.hours_mentored ?? 0,
+      menteesHelped: data.mentees_helped ?? 0,
+      averageRating: data.average_rating ?? 0,
     };
-  } catch (error) {
-    console.error('Error fetching mentor stats:', error);
-    return {
-      sessionsCompleted: 0,
-      hoursMentored: 0,
-      menteesHelped: 0,
-      averageRating: 0,
-    };
+  } catch (err: any) {
+    console.error('Error fetching mentor stats:', err.message || err);
+    return { sessionsCompleted: 0, hoursMentored: 0, menteesHelped: 0, averageRating: 0 };
   }
 };
 

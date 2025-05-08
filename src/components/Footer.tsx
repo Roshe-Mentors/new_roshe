@@ -77,7 +77,7 @@ const Footer: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            {[
+            {[ 
               { href: "https://www.linkedin.com/company/roshe-mentorship/", Icon: FaLinkedinIn },
               { href: "https://www.instagram.com/roshe_mentorship/", Icon: FaInstagram },
               { href: "https://x.com/roshementorship?s=21&t=TN5-Nr3z-NoaUxp_TbMOVA", Icon: FaTwitter },
@@ -90,20 +90,20 @@ const Footer: React.FC = () => {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group bg-[#9898FA] text-white rounded-full p-4 hover:scale-110 transition-transform duration-300 shadow-md"
+                className="group bg-[#9898FA] text-white rounded-full p-3 sm:p-4 hover:scale-110 transition-transform duration-300 shadow-md"
                 whileHover={{ scale: 1.2 }}
               >
-                <Icon size={28} />
+                <Icon size={24} />
               </motion.a>
             ))}
           </motion.div>
         </div>
 
         {/* Navigation Links */}
-        <div className="flex flex-col md:flex-row justify-between gap-6">
+        <div className="flex flex-col md:flex-row justify-center md:justify-between gap-6">
           {/* Left Links */}
           <motion.ul
-            className="flex flex-col sm:flex-row sm:flex-wrap justify-center md:justify-start gap-4 text-black text-sm"
+            className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 text-black text-sm"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -137,7 +137,7 @@ const Footer: React.FC = () => {
 
           {/* Right Links */}
           <motion.ul
-            className="flex flex-col sm:flex-row sm:flex-wrap justify-center md:justify-end gap-4 text-black text-sm"
+            className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 text-black text-sm"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

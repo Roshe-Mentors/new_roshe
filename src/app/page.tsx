@@ -5,11 +5,9 @@ import ThreeFeatures from "../components/ThreeFeatures";
 import MentorsSection from "../components/MentorsSection";
 import PlatformStats from "../components/PlatformStats";
 import CenterCTA from "../components/CenterCTA"
-import {Spinner} from "@heroui/spinner";
 export default function Home() {
   return (
-   
-   <div>
+    <div>
       <ToggleSection />
       <LogosShowcase />
       <VideoExplainer />

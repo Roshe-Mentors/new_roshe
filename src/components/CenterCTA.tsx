@@ -1,7 +1,8 @@
-"use client";
-import React, { useState } from "react";
+'use client';
+import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import Image from 'next/image';
 
 const CenterCTA = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +26,7 @@ const CenterCTA = () => {
   const controls = useAnimation();
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (inView) {
       controls.start("visible");
     }
@@ -36,7 +37,7 @@ const CenterCTA = () => {
       ref={ref}
       className="w-full relative flex justify-center items-center py-16 px-4 overflow-hidden bg-white"
     >
-      {/* Bigger Stacked Carousel Background */}
+      {/* Carousel Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden z-0 flex flex-col justify-center items-center space-y-6">
         <motion.img
           src="/images/carousel1.png"
@@ -68,9 +69,9 @@ const CenterCTA = () => {
         />
       </div>
 
-      {/* CTA Form: Solid white center + Gradient only at edges */}
+      {/* CTA Form */}
       <motion.div
-        className="relative z-20 w-full max-w-5xl px-6 py-10 overflow-hidden shadow-lg"
+        className="relative z-20 w-full max-w-6xl px-6 py-10 overflow-hidden shadow-lg"
         variants={{
           hidden: { opacity: 0, y: 30 },
           visible: { opacity: 1, y: 0 },
@@ -83,7 +84,6 @@ const CenterCTA = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
             Get Started for Free <span className="block md:inline">Under 1 Minute</span>
           </h2>
-
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-lg leading-relaxed text-center">
             Our goal is to help you craft an extraordinary career with the guidance of expert mentors.
             Whether you're starting out or stepping into leadership, we're here to support you.
@@ -123,11 +123,7 @@ const CenterCTA = () => {
                   if (error) setError("");
                 }}
                 placeholder="Enter your email"
-                className={`w-full pl-10 pr-4 py-3 text-gray-800 border ${
-                  error ? "border-red-500" : "border-gray-300"
-                } rounded-lg md:rounded-r-none outline-none focus:ring-2 ${
-                  error ? "focus:ring-red-300" : "focus:ring-gray-700"
-                } transition-all`}
+                className={`w-full pl-10 pr-4 py-3 text-gray-800 border ${error ? "border-red-500" : "border-gray-300"} rounded-lg md:rounded-r-none outline-none focus:ring-2 ${error ? "focus:ring-red-300" : "focus:ring-gray-700"} transition-all`}
                 aria-invalid={!!error ? "true" : "false"}
                 aria-describedby="error-message"
               />
