@@ -8,8 +8,13 @@ import {
   deleteAvailability
 } from '../../../../services/profileService';
 import { supabase } from '../../../../lib/supabaseClient';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import dynamic from 'next/dynamic';
+import 'react-datepicker/dist/react-datepicker.css';
+
+const DatePicker = dynamic<any>(
+  () => import('react-datepicker').then((mod) => mod.default as any),
+  { ssr: false, loading: () => <div>Loading calendar...</div> }
+);
 
 type Slot = {
   id: string;
@@ -198,7 +203,7 @@ export default function AvailabilityPage() {
               <div className="relative">
                 <DatePicker
                   selected={startDate}
-                  onChange={(date) => setStartDate(date)}
+                  onChange={(date: Date | null) => setStartDate(date)}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
@@ -215,7 +220,7 @@ export default function AvailabilityPage() {
               <div className="relative">
                 <DatePicker
                   selected={endDate}
-                  onChange={(date) => setEndDate(date)}
+                  onChange={(date: Date | null) => setEndDate(date)}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
