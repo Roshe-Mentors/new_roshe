@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import Image from 'next/image';
 
 const CenterCTA = () => {
   const [email, setEmail] = useState("");
@@ -124,7 +123,7 @@ const CenterCTA = () => {
                 }}
                 placeholder="Enter your email"
                 className={`w-full pl-10 pr-4 py-3 text-gray-800 border ${error ? "border-red-500" : "border-gray-300"} rounded-lg md:rounded-r-none outline-none focus:ring-2 ${error ? "focus:ring-red-300" : "focus:ring-gray-700"} transition-all`}
-                aria-invalid={!!error ? "true" : "false"}
+                {...(error ? { 'aria-invalid': 'true' } : {})}
                 aria-describedby="error-message"
               />
             </div>
