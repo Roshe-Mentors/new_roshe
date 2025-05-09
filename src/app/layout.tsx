@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -9,10 +9,10 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Head from 'next/head';
 
-const poppins = Poppins({
-  weight: ['400', '700'],
+const montserrat = Montserrat({
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
-  variable: '--font-poppins',
+  variable: '--font-montserrat',
   display: 'swap'
 });
 
@@ -48,13 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${poppins.variable}`}>
-      <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="preload" href="/images/rosheBackground.jpg" as="image" />
-      </Head>
-      <body className={`${poppins.className}`}>
+    <html lang="en" className={`${montserrat.variable}`}>
+      <body className={`${montserrat.className}`}>
         <UserProvider>
           <Navbar />
           <ToastContainer position="top-right" />

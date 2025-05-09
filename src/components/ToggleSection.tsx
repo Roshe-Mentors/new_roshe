@@ -188,25 +188,26 @@ const ToggleSection: React.FC = () => {
   }
 
   return (
-    <section className="bg-white py-12 md:py-24">
+    <section className="bg-white py-12 md:py-24 pt-20">
       <div className="container mx-auto px-4 md:px-0">
-        {/* Toggle Buttons */}
-        <div className="flex justify-center mb-12 space-x-4">
+        <div className="flex justify-center mb-16 sm:mb-10 space-x-4 px-4 sm:px-0">
           <button
             onClick={() => setSelectedView("mentee")}
-            className={`text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${
-              selectedView === "mentee" ? "text-black border-b border-black" : "text-gray-500"
-            } transition`}
-            style={{ borderBottomWidth: "1px" }}
+            className={`text-sm sm:text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${selectedView === "mentee"
+                ? "text-black border-b-2 border-black"
+                : "text-gray-600"
+              } transition`}
+            style={{ borderBottomWidth: "2px" }}
           >
             Mentee
           </button>
           <button
             onClick={() => setSelectedView("mentor")}
-            className={`text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${
-              selectedView === "mentor" ? "text-black border-b border-black" : "text-gray-500"
-            } transition`}
-            style={{ borderBottomWidth: "1px" }}
+            className={`text-sm sm:text-base md:text-lg font-semibold px-3 md:px-4 py-2 ${selectedView === "mentor"
+                ? "text-black border-b-2 border-black"
+                : "text-gray-600"
+              } transition`}
+            style={{ borderBottomWidth: "2px" }}
           >
             Mentor
           </button>
@@ -222,70 +223,70 @@ const ToggleSection: React.FC = () => {
               alt="Profile 1"
               width={120}
               height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
+              className="rounded-md object-cover w-24 h-[150px] animate-float-breathing"
             />
             <Image
               src="/images/2.jpg"
               alt="Profile 2"
               width={120}
               height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
+              className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-200"
             />
             <Image
               src="/images/3.jpg"
               alt="Profile 3"
               width={120}
               height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
+              className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-400"
             />
 
             {/* Second row - with left padding to offset */}
             <div className="col-span-3 pl-6 grid grid-cols-3 gap-3 md:gap-4">
               <Image
                 src="/images/4.jpg"
-                alt="Profile 1"
+                alt="Profile 4"
                 width={120}
                 height={150}
-                className="rounded-md object-cover w-24 h-[150px]"
+                className="rounded-md object-cover w-24 h-[150px] animate-float-breathing"
               />
               <Image
                 src="/images/5.jpg"
-                alt="Profile 1"
+                alt="Profile 5"
                 width={120}
                 height={150}
-                className="rounded-md object-cover w-24 h-[150px]"
+                className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-200"
               />
               <Image
                 src="/images/6.jpg"
-                alt="Profile 1"
+                alt="Profile 6"
                 width={120}
                 height={150}
-                className="rounded-md object-cover w-24 h-[150px]"
+                className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-400"
               />
             </div>
           </div>
 
           {/* Middle Section: Dynamic Content */}
-          <div className="text-center pt-0.2 lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0">
+          <div className="text-center pt-0.2 lg:mx-12 lg:flex-1 transition-all duration-300 mb-12 lg:mb-0 animate-fade-slide">
             {selectedView === "mentor" ? (
               <>
-                <h2 className="text-6xl md:text-5xl text-black font-medium leading-relaxed mb-3 mt-6 md:mb-5">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl text-black font-medium leading-relaxed mb-6 md:mb-8">
                   Change the world through mentorship
                 </h2>
-                <p className="text-gray-800 mb-5 md:mb-7 text-lg md:text-xl leading-relaxed px-1 md:px-0">
+                <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-8 md:px-0">
                   Enhance your leadership confidence, expand your <br />
                   connections, and shape your lasting impact.
                 </p>
                 <Link
                   href="/signup/mentor"
-                  className="inline-block w-full md:w-auto px-12 py-4 bg-gradient-to-r from-gray-800 to-gray-500 text-white rounded-md hover:opacity-90 transition text-lg mb-8 md:mb-0"
+                  className="relative flex justify-center inline-block w-full md:w-auto px-5 py-2.5 md:px-12 md:py-4 bg-[#9898FA] text-white rounded-md hover:bg-[#6B28D1] hover:animate-wiggle transition text-base md:text-lg mb-8 md:mb-0"
                 >
                   Become a Mentor
                 </Link>
               </>
             ) : (
               <>
-                <h2 className="text-4xl md:text-5xl text-black font-medium leading-relaxed mb-6 md:mb-8">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl text-black font-medium leading-relaxed mb-6 md:mb-8">
                   Get mentored by industry professionals
                 </h2>
                 <p className="text-gray-600 mb-6 md:mb-8 text-lg md:text-xl leading-relaxed px-8 md:px-0">
@@ -295,7 +296,7 @@ const ToggleSection: React.FC = () => {
                   <button
                     ref={buttonRef}
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-4/6 px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white flex items-center justify-between"
+                    className="w-4/6 px-4 md:px-6 py-3 md:py-4 border text-black border-gray-300 rounded-md shadow-sm text-base md:text-lg text-left bg-white flex items-center justify-between hover:shadow-lg transition duration-300 hover:animate-wiggle hover:border-[#6B28D1]"
                   >
                     <div className="flex items-center">
                       <svg
@@ -326,7 +327,7 @@ const ToggleSection: React.FC = () => {
                   {isOpen && (
                     <div
                       ref={mainMenuRef}
-                      className="absolute z-40 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden"
+                      className="absolute z-40 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden animate-fade-in"
                       style={{
                         width: buttonRef.current ? buttonRef.current.offsetWidth : "auto",
                         left: "50%",
@@ -334,25 +335,23 @@ const ToggleSection: React.FC = () => {
                         top: "calc(100% + 4px)",
                       }}
                     >
-                      {/* Menu items in a single column */}
                       <div className="w-full overflow-y-auto max-h-[300px] md:max-h-[40vh] transition-all duration-200">
                         {Object.entries(menuItems).map(([skill, subskills]) => (
                           <div key={skill} className="relative">
                             <button
                               ref={activeSubmenu === skill ? activeItemRef : null}
                               data-skill={skill}
-                              className={`w-full px-4 py-3 text-left hover:bg-[#f0ebff] flex justify-between items-center text-black ${
-                                activeSubmenu === skill ? "bg-[#f0ebff]" : ""
-                              }`}
+                              className={`w-full px-4 py-3 text-left hover:bg-[#f0ebff] flex justify-between items-center text-black ${activeSubmenu === skill ? "bg-[#f0ebff]" : ""}`}
                               onClick={() => handleParentClick(skill, subskills)}
                               onMouseEnter={(e) => handleParentHover(skill, subskills, e.currentTarget)}
                               onMouseLeave={handleParentLeave}
                             >
                               <span>{skill}</span>
-                              {subskills.length > 0 && <span className="ml-2 text-gray-500">›</span>}
+                              {subskills.length > 0 && (
+                                <span className="ml-2 text-gray-500">›</span>
+                              )}
                             </button>
 
-                            {/* Mobile submenu */}
                             {activeSubmenu === skill && subskills.length > 0 && isMobile && (
                               <div className="w-full bg-[#f8f7fc] transition-all duration-200 pl-4">
                                 {subskills.map((subskill) => (
@@ -377,28 +376,28 @@ const ToggleSection: React.FC = () => {
           </div>
 
           {/* Right Image Grid */}
-          <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto">
+          <div className="hidden lg:grid grid-cols-3 gap-3 md:gap-4 w-full lg:w-auto mb-8 lg:mb-0 lg:mr-8">
             {/* First row */}
             <Image
               src="/images/10.jpg"
               alt="Profile 7"
               width={120}
               height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
+              className="rounded-md object-cover w-24 h-[150px] animate-float-breathing"
             />
             <Image
               src="/images/11.jpg"
               alt="Profile 8"
               width={120}
               height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
+              className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-200"
             />
             <Image
               src="/images/18.jpg"
               alt="Profile 9"
               width={120}
               height={150}
-              className="rounded-md object-cover w-24 h-[150px]"
+              className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-400"
             />
 
             {/* Second row - with left padding to offset */}
@@ -408,21 +407,21 @@ const ToggleSection: React.FC = () => {
                 alt="Profile 10"
                 width={120}
                 height={150}
-                className="rounded-md object-cover w-24 h-[150px]"
+                className="rounded-md object-cover w-24 h-[150px] animate-float-breathing"
               />
               <Image
                 src="/images/17.jpg"
                 alt="Profile 11"
                 width={120}
                 height={150}
-                className="rounded-md object-cover w-24 h-[150px]"
+                className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-200"
               />
               <Image
                 src="/images/13.jpg"
                 alt="Profile 12"
                 width={120}
                 height={150}
-                className="rounded-md object-cover w-24 h-[150px]"
+                className="rounded-md object-cover w-24 h-[150px] animate-float-breathing delay-400"
               />
             </div>
           </div>
