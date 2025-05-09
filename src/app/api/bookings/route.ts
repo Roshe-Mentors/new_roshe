@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createJitsiMeetMeeting } from '../../../services/jitsiMeetService';
+import { createVideoSDKMeeting } from '../../../services/videoSDKService';
 import { checkTimeSlotAvailability } from '../../../services/zoomService';
 import { createAdminClient } from '../../../lib/supabaseClient';
 
@@ -34,11 +34,10 @@ export async function POST(request: NextRequest) {
 
     // Create Jitsi Meet meeting
     try {
-      const meeting = await createJitsiMeetMeeting({
+      const meeting = await createVideoSDKMeeting({
         title: bookingData.sessionType,
-        startTime: `${bookingData.date} ${bookingData.time}`,
-        endTime: `${bookingData.date} ${bookingData.time}`,
         description: bookingData.sessionType,
+        startTime: `${bookingData.date} ${bookingData.time}`,
         attendees: [bookingData.userEmail]
       });
 

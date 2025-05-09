@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Mentor } from '../common/types';
 import { createSession } from '../../../../services/sessionService';
 import { toast } from 'react-toastify';
-import { createJitsiMeetMeeting } from '../../../../services/jitsiMeetService';
+import { createVideoSDKMeeting } from '../../../../services/videoSDKService';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { saveAs } from 'file-saver';
@@ -209,12 +209,11 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       const endDateTime = `${selectedDate}T${endTime}:00`;
       let meetingLink = '';
       try {
-        const meetResult = await createJitsiMeetMeeting({
-          title: formatSessionTitle(selectedMentor.name),
-          startTime: startDateTime,
-          endTime: endDateTime,
-          description: agenda || `Mentoring session with ${selectedMentor.name}`,
-          attendees: [] // Would typically include mentor's email
+        const meetResult = await createVideoSDKMeeting({
+          title: sessionType,
+          description: sessionType,
+          startTime: `${selectedDateObj?.toISOString()}`,
+          attendees: [user.email as string]
         });
         meetingLink = meetResult.meetingLink;
       } catch {};
