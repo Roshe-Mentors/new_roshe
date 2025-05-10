@@ -1,12 +1,17 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useUser } from '../../../../lib/auth';
 import Image from 'next/image';
-import { getMentorSessions, startSession, completeSession, cancelSession } from '../../../../services/sessionService';
+import { startSession, completeSession, cancelSession } from '../../../../services/sessionService';
 import { getMentorReviews } from '../../../../services/reviewService';
 import { toast } from 'react-toastify';
 import { FaVideo, FaPhoneAlt, FaCalendarCheck, FaClock, FaStar } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
 import { supabase } from '../../../../lib/supabaseClient';
+
+// Dynamically load MeetingRoom on client only
+const MeetingRoom = dynamic(() => import('../../../../components/MeetingRoom'), { ssr: false });
 
 const formatICSDate = (dateString: string) => new Date(dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 const generateICSString = (session: any) => {
@@ -45,8 +50,12 @@ interface MentorSessionsProps {
 }
 
 const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sessions, setSessions] = useState<any[]>([]);
+  const [showMeetingRoom, setShowMeetingRoom] = useState(false);
+  const [currentMeetingId, setCurrentMeetingId] = useState<string>('');
+  const [meetingToken, setMeetingToken] = useState<string>('');
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'reviews'>('upcoming');
   const [cancelSessionId, setCancelSessionId] = useState<string | null>(null);
@@ -61,7 +70,7 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       setIsLoading(true);
       try {
         // Load both sessions and reviews
-        const sessionsPromise = getMentorSessions(mentorId);
+        const sessionsPromise = fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
         const reviewsPromise = getMentorReviews(mentorId);
         
         // Use Promise.allSettled instead of Promise.all to handle partial success
@@ -133,7 +142,7 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       setCancellationReason('');
       
       // Reload sessions
-      const sessionsData = await getMentorSessions(mentorId);
+      const sessionsData = await fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
       setSessions(sessionsData);
     } catch (error) {
       console.error('Error cancelling session:', error);
@@ -149,7 +158,7 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       toast.success('Session started successfully');
       
       // Reload sessions
-      const sessionsData = await getMentorSessions(mentorId);
+      const sessionsData = await fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
       setSessions(sessionsData);
     } catch (error) {
       console.error('Error starting session:', error);
@@ -163,7 +172,7 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       toast.success('Session completed successfully');
       
       // Reload sessions
-      const sessionsData = await getMentorSessions(mentorId);
+      const sessionsData = await fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
       setSessions(sessionsData);
     } catch (error) {
       console.error('Error completing session:', error);
@@ -171,9 +180,22 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     }
   };
   
-  const handleJoinSession = (session: any) => {
-    if (session.meeting_link) {
-      window.open(session.meeting_link, '_blank');
+  const handleJoinSession = async (session: any) => {
+    if (session.meeting_link && user) {
+      // Generate token for this meeting
+      try {
+        const res = await fetch('/api/video/token', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ meetingId: session.meeting_link, userName: user.email })
+        });
+        const data = await res.json();
+        setCurrentMeetingId(session.meeting_link);
+        setMeetingToken(data.token);
+        setShowMeetingRoom(true);
+      } catch {
+        toast.error('Unable to join session');
+      }
     } else {
       toast.info('This session has no meeting link. Please contact support.');
     }
@@ -480,6 +502,17 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     );
   };
   
+  // Render inline VideoSDK meeting if toggled
+  if (showMeetingRoom && currentMeetingId && meetingToken && user) {
+    return (
+      <MeetingRoom
+        meetingId={currentMeetingId}
+        token={meetingToken}
+        userName={user.email as string}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       {renderCancelSessionModal()}

@@ -1,16 +1,41 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '../../../lib/supabaseClient';
+
+export const runtime = 'nodejs';
 
 // Create admin client with service role to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  {
-    auth: {
-      persistSession: false,
+const supabaseAdmin = createAdminClient();
+
+// This endpoint handles session retrieval with admin privileges
+export async function GET(request: import('next/server').NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const mentorId = searchParams.get('mentorId');
+  const menteeId = searchParams.get('menteeId');
+  try {
+    if (mentorId) {
+      const { data, error } = await supabaseAdmin
+        .from('mentoring_sessions')
+        .select(`*, mentees:mentee_id(id, name, profile_image_url)`)
+        .eq('mentor_id', mentorId)
+        .order('start_time', { ascending: true });
+      if (error) throw error;
+      return NextResponse.json({ sessions: data });
     }
+    if (menteeId) {
+      const { data, error } = await supabaseAdmin
+        .from('mentoring_sessions')
+        .select(`*, mentors:mentor_id(id, name, role, company, profile_image_url)`)
+        .eq('mentee_id', menteeId)
+        .order('start_time', { ascending: true });
+      if (error) throw error;
+      return NextResponse.json({ sessions: data });
+    }
+    return NextResponse.json({ error: 'Missing mentorId or menteeId' }, { status: 400 });
+  } catch (err: any) {
+    console.error('API sessions GET error:', err);
+    return NextResponse.json({ error: err.message || String(err) }, { status: 500 });
   }
-);
+}
 
 // This endpoint handles session creation with admin privileges
 export async function POST(request: Request) {
@@ -59,6 +84,10 @@ export async function POST(request: Request) {
         
       if (userCheckError) {
         console.error('API: Error checking user:', userCheckError);
+        return NextResponse.json(
+          { error: 'Error checking user: ' + userCheckError.message },
+          { status: 500 }
+        );
       }
       
       if (!userExists) {

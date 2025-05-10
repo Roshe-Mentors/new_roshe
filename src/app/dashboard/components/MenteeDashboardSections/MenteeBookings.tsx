@@ -1,16 +1,16 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Mentor } from '../common/types';
-import { createSession } from '../../../../services/sessionService';
 import { toast } from 'react-toastify';
-import { createVideoSDKMeeting } from '../../../../services/videoSDKService';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { saveAs } from 'file-saver';
 
 import { supabase } from '../../../../lib/supabaseClient';
-import { deleteAvailability } from '../../../../services/profileService';
+import dynamic from 'next/dynamic';
+// Dynamically load VideoSDK MeetingRoom on client only
+const MeetingRoom = dynamic(() => import('../../../../components/MeetingRoom'), { ssr: false });
 
 // Availability slot from mentor profile
 interface AvailabilitySlot {
@@ -44,14 +44,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string>(''); // availability slot ID
   // Fixed video call sessions, 30-minute duration
   const sessionDuration = 30;
   const [agenda, setAgenda] = useState<string>('');
   const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
   const [isBooking, setIsBooking] = useState(false);
   const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
-  const [selectedAvailabilityId, setSelectedAvailabilityId] = useState<string>('');
   const [bookingResult, setBookingResult] = useState<any>(null);
+  const [showMeetingRoom, setShowMeetingRoom] = useState(false);
 
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
 
@@ -159,24 +160,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         })
     : [];
 
-  const calculateEndTime = (startTime: string, durationMinutes: number) => {
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(hours, minutes, 0, 0);
-    
-    const endDate = new Date(startDate);
-    endDate.setMinutes(startDate.getMinutes() + durationMinutes);
-    
-    const endHours = endDate.getHours().toString().padStart(2, '0');
-    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
-    
-    return `${endHours}:${endMinutes}`;
-  };
-  
-  const formatSessionTitle = (mentorName: string) => {
-    return `Video Session with ${mentorName}`;
-  };
-  
   const formatDateTime = (dateStr: string) => new Date(dateStr).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const generateICS = (session: any) => {
     const dtstart = formatDateTime(session.start_time);
@@ -204,68 +187,28 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     if (!selectedMentor || !user.id || !selectedDate || !selectedTimeSlot) return;
     setIsBooking(true);
     try {
-      const startDateTime = `${selectedDate}T${selectedTimeSlot}:00`;
-      const endTime = calculateEndTime(selectedTimeSlot, sessionDuration);
-      const endDateTime = `${selectedDate}T${endTime}:00`;
-      let meetingLink = '';
-      try {
-        const meetResult = await createVideoSDKMeeting({
-          title: sessionType,
-          description: sessionType,
-          startTime: `${selectedDateObj?.toISOString()}`,
-          attendees: [user.email as string]
-        });
-        meetingLink = meetResult.meetingLink;
-      } catch {};
-      const session = await createSession({
-        mentor_id: selectedMentor.id,
-        mentee_id: user.id as string,
-        title: formatSessionTitle(selectedMentor.name),
-        description: agenda,
-        status: 'upcoming',
-        start_time: startDateTime,
-        end_time: endDateTime,
-        meeting_link: meetingLink
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mentorId: selectedMentorId,
+          userId: user.id,
+          userEmail: user.email,
+          date: selectedDate,
+          time: selectedTimeSlot,
+          sessionType: agenda, // use agenda as sessionType
+          slotId: selectedTimeSlotId,
+        }),
       });
-      setBookingResult(session);
-
-      // Automatically sync to Google Calendar for both mentee and mentor
-      try {
-        await fetch('/api/calendar/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session, userId: user.id, userRole: 'mentee' })
-        });
-      } catch (err) {
-        console.error('Failed to sync mentee event:', err);
+      const data = await response.json();
+      if (data.success) {
+        setBookingResult(data.meeting);
+        setBookingStep('confirmation');
+      } else {
+        toast.error(data.error || 'Failed to book session');
       }
-      if (selectedMentor) {
-        try {
-          await fetch('/api/calendar/events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session, userId: selectedMentor.id, userRole: 'mentor' })
-          });
-        } catch (err) {
-          console.error('Failed to sync mentor event:', err);
-        }
-      }
-
-      // remove booked availability
-      if (selectedAvailabilityId) {
-        try {
-          await deleteAvailability(selectedAvailabilityId);
-        } catch (err) {
-          console.error('Failed to remove booked availability:', err);
-        }
-      }
-      setBookingStep('confirmation');
-      toast.success('Session booked successfully!');
-    } catch (error: any) {
-      console.error('Error booking session:', error);
-      // Show specific error message if available
-      const errMsg = error.message || JSON.stringify(error);
-      toast.error(`Booking failed: ${errMsg}`);
+    } catch {
+      toast.error('Failed to book session');
     } finally {
       setIsBooking(false);
     }
@@ -447,7 +390,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
                     }`}
                     onClick={() => {
                       setSelectedTimeSlot(slot.time);
-                      setSelectedAvailabilityId(slot.availabilityId);
+                      setSelectedTimeSlotId(slot.availabilityId); // Set the selected slot ID
                     }}
                   >
                     <div className="flex items-center">
@@ -591,15 +534,24 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       <p className="mt-2 text-gray-600">Your session has been scheduled successfully.</p>
       {bookingResult && (
         <div className="mt-4 flex flex-col space-y-2 items-center">
-          <a href={bookingResult.meeting_link} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+          <button onClick={() => setShowMeetingRoom(true)} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
             Join Session
-          </a>
+          </button>
           <a href={generateGoogleLink(bookingResult)} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
             Add to Google Calendar
           </a>
           <button onClick={() => saveAs(generateICS(bookingResult), `session-${bookingResult.id}.ics`)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
             Add to Calendar (.ics)
           </button>
+        </div>
+      )}
+      {showMeetingRoom && bookingResult && (
+        <div className="mt-6">
+          <MeetingRoom
+            meetingId={bookingResult.meetingId || bookingResult.meeting_link}
+            token={bookingResult.token}
+            userName={user.email as string}
+          />
         </div>
       )}
       <div className="pt-6">

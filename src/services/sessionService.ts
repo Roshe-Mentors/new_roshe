@@ -64,40 +64,28 @@ export async function createSession(data: SessionData) {
 
 // Get sessions for a mentee
 export async function getMenteeSessions(menteeId: string) {
-  const { data, error } = await supabase
-    .from('mentoring_sessions')
-    .select(`
-      *,
-      mentors:mentor_id(id, name, role, company, profile_image_url)
-    `)
-    .eq('mentee_id', menteeId)
-    .order('start_time', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching mentee sessions:', error);
-    throw error;
+  // Fetch sessions via server-side API to use admin privileges and bypass RLS
+  const res = await fetch(`/api/sessions?menteeId=${menteeId}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error('Error fetching mentee sessions via API:', err);
+    throw new Error('Failed to fetch mentee sessions');
   }
-
-  return data || [];
+  const json = await res.json();
+  return json.sessions || [];
 }
 
 // Get sessions for a mentor
 export async function getMentorSessions(mentorId: string) {
-  const { data, error } = await supabase
-    .from('mentoring_sessions')
-    .select(`
-      *,
-      mentees:mentee_id(id, name, profile_image_url)
-    `)
-    .eq('mentor_id', mentorId)
-    .order('start_time', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching mentor sessions:', error);
-    throw error;
+  // Fetch sessions via server-side API to use admin privileges and bypass RLS
+  const res = await fetch(`/api/sessions?mentorId=${mentorId}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error('Error fetching mentor sessions via API:', err);
+    throw new Error('Failed to fetch mentor sessions');
   }
-
-  return data || [];
+  const json = await res.json();
+  return json.sessions || [];
 }
 
 // Get bookings for a mentor

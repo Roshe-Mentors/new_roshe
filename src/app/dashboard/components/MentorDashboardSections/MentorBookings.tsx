@@ -1,9 +1,13 @@
 "use client"
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { FiArrowLeft, FiArrowRight, FiCheck, FiCopy, FiExternalLink } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import { BsLinkedin, BsGlobe } from 'react-icons/bs';
-import { Mentor, ZoomMeetingInfo } from '../common/types';
+import { Mentor } from '../common/types';
+import dynamic from 'next/dynamic';
+
+// Dynamically load VideoSDK MeetingRoom on client only
+const MeetingRoom = dynamic(() => import('../../../../components/MeetingRoom'), { ssr: false });
 import axios from 'axios';
 
 interface MentorBookingsProps {
@@ -26,8 +30,9 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
   const [isBooking, setIsBooking] = useState<boolean>(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
-  const [zoomMeetingInfo, setZoomMeetingInfo] = useState<ZoomMeetingInfo | null>(null);
-  const [linkCopied, setLinkCopied] = useState<boolean>(false);
+  const [showMeetingRoom, setShowMeetingRoom] = useState(false);
+  const [meetingId, setMeetingId] = useState<string>('');
+  const [meetingToken, setMeetingToken] = useState<string>('');
 
   // Get the selected mentor
   const selectedMentor = selectedMentorId
@@ -68,9 +73,12 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
         sessionType: sessionType
       });
 
-      // On success, set the meeting info
-      setZoomMeetingInfo(response.data.meeting);
+      // On success, set the VideoSDK meeting info and show inline meeting
+      const meeting = response.data.meeting;
+      setMeetingId(meeting.meetingId);
+      setMeetingToken(meeting.token);
       setBookingSuccess(true);
+      setShowMeetingRoom(true);
     } catch (error: unknown) {
       console.error('Booking error:', error);
       const errorResponse = error as { response?: { data?: { error?: string } } };
@@ -78,25 +86,6 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
     } finally {
       setIsBooking(false);
     }
-  };
-
-  // Function to copy meeting link to clipboard
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
-
-  // Function to reset booking form
-  const resetBookingForm = () => {
-    setSelectedTime(null);
-    setBookingSuccess(false);
-    setZoomMeetingInfo(null);
-    setBookingError(null);
   };
 
   return (
@@ -296,58 +285,9 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
             <div className="mt-4 text-red-500 text-sm">{bookingError}</div>
           )}
 
-          {/* Booking Success */}
-          {bookingSuccess && zoomMeetingInfo && (
-            <div className="mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-md">
-              <h4 className="font-bold">Booking Confirmed!</h4>
-              <p>Your session has been successfully booked.</p>
-              <div className="mt-4">
-                <p className="text-sm">
-                  <strong>Meeting ID:</strong> {zoomMeetingInfo.meetingId}
-                </p>
-                <p className="text-sm">
-                  <strong>Start Time:</strong> {zoomMeetingInfo.startTime}
-                </p>
-                <p className="text-sm">
-                  <strong>Password:</strong> {zoomMeetingInfo.password}
-                </p>
-                <div className="flex items-center mt-2">
-                  <a
-                    href={zoomMeetingInfo.meetingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline flex items-center"
-                  >
-                    <FiExternalLink className="mr-1" />
-                    Join Meeting
-                  </a>
-                  <button
-                    className="ml-4 text-gray-600 hover:text-gray-800 flex items-center"
-                    onClick={() => copyToClipboard(zoomMeetingInfo.meetingUrl)}
-                    title="Copy meeting link"
-                    aria-label="Copy meeting link to clipboard"
-                  >
-                    {linkCopied ? (
-                      <>
-                        <FiCheck className="mr-1" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <FiCopy className="mr-1" />
-                        Copy Link
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-              <button
-                className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                onClick={resetBookingForm}
-              >
-                Book another session
-              </button>
-            </div>
+          {/* Booking Success and Inline MeetingRoom */}
+          {bookingSuccess && showMeetingRoom && (
+            <MeetingRoom meetingId={meetingId} token={meetingToken} userName={user.email as string} />
           )}
         </div>
       </div>

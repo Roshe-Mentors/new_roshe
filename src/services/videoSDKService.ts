@@ -52,3 +52,27 @@ export async function createVideoSDKMeeting(options: CreateMeetingOptions) {
     token,
   };
 }
+
+/**
+ * Generate a VideoSDK token for an existing room
+ */
+export function generateVideoSDKToken(
+  roomId: string,
+  name: string,
+  permissions: string[] = ['allow_join']
+): string {
+  if (!API_KEY || !SECRET_KEY) {
+    throw new Error('VideoSDK API_KEY and SECRET_KEY must be set in environment variables');
+  }
+
+  const payload = {
+    apikey: API_KEY,
+    roomId,
+    name,
+    permissions,
+  };
+  return jwt.sign(payload, SECRET_KEY, {
+    algorithm: 'HS256',
+    expiresIn: '12h',
+  });
+}

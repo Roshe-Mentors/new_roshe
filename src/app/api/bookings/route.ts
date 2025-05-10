@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createVideoSDKMeeting } from '../../../services/videoSDKService';
-import { checkTimeSlotAvailability } from '../../../services/zoomService';
 import { createAdminClient } from '../../../lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
@@ -18,14 +17,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if time slot is available
-    const { available } = await checkTimeSlotAvailability(
-      bookingData.mentorId,
-      bookingData.date,
-      bookingData.time
-    );
-
-    if (!available) {
+    // Check if time slot is still available in database
+    const supabaseAdmin = createAdminClient();
+    const { data: slot, error: slotError } = await supabaseAdmin
+      .from('availability')
+      .select('status')
+      .eq('id', bookingData.slotId)
+      .maybeSingle();
+    if (slotError) {
+      console.error('Error checking availability slot:', slotError);
+    }
+    if (!slot || slot.status !== 'available') {
       return NextResponse.json(
         { error: 'This time slot is already booked' },
         { status: 409 }
@@ -46,7 +48,6 @@ export async function POST(request: NextRequest) {
       const defaultMeetingUrl = `https://meet.jit.si/default-${Date.now()}`;
 
       // Create mentoring session record
-      const supabaseAdmin = createAdminClient();
       const startISO = new Date(`${bookingData.date}T${bookingData.time}`).toISOString();
       const endDate = new Date(startISO);
       endDate.setMinutes(endDate.getMinutes() + 30);
