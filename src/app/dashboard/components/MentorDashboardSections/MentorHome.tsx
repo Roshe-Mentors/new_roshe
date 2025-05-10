@@ -7,6 +7,7 @@ import { Mentor } from '../common/types';
 import { UserRole } from '../../../../lib/user';
 import { getMentorStats, MentorStats } from '../../../../services/profileService';
 import { getMentorSessions } from '../../../../services/sessionService';
+import { Session } from '../../../../types/sessions';
 
 interface MentorHomeProps {
   user: Record<string, unknown>;
@@ -28,7 +29,7 @@ const MentorHome: React.FC<MentorHomeProps> = ({
     rating: 0
   });
   const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
-  const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [recentSessions, setRecentSessions] = useState<Session[]>([]);
 
   // Fetch mentor statistics when component mounts
   useEffect(() => {
@@ -56,7 +57,9 @@ const MentorHome: React.FC<MentorHomeProps> = ({
     if (mentors[0]?.id) {
       getMentorSessions(mentors[0].id)
         .then(sessions => {
-          const sorted = sessions.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+          const sorted = sessions.sort((a: Session, b: Session) => 
+            new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+          );
           setRecentSessions(sorted.slice(0, 5));
         })
         .catch(console.error);

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../../../lib/supabaseClient';
 
+export const runtime = 'nodejs';
+
 // Use shared admin client helper that picks up the service-role key
-const supabaseAdmin = createAdminClient();
+// Always instantiate inside the handler so env vars are read at runtime
 
 export async function GET(
   request: NextRequest,
   context: any
 ): Promise<NextResponse> {
+  const supabaseAdmin = createAdminClient();
   const mentorId = context.params.mentorId as string;
   console.log('API: Fetching availability for mentor ID:', mentorId);
 
@@ -67,6 +70,7 @@ export async function POST(
   request: NextRequest,
   context: any
 ): Promise<NextResponse> {
+  const supabaseAdmin = createAdminClient();
   const mentorId = context.params.mentorId as string;
   const body = await request.json();
   const { start_time, end_time } = body;

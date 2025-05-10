@@ -1,6 +1,6 @@
 // filepath: src/app/api/video/token/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { generateVideoSDKToken } from '../../../../../services/videoSDKService';
+import { generateVideoSDKToken } from '../../../../services/videoSDKService';
 
 export async function POST(request: NextRequest) {
   try {

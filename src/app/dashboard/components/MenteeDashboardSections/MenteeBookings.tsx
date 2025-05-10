@@ -68,24 +68,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   useEffect(() => {
     let channel: any;
     if (selectedMentorId) {
-      console.log('Loading availability for mentor:', selectedMentorId);
-      
       // Fetch availability directly from API
       fetch(`/api/mentors/${selectedMentorId}/availability`)
         .then(response => response.json())
         .then(data => {
-          console.log('Fetched availability slots:', data);
-          // Make sure we process all valid slots regardless of status format
-          const validSlots = Array.isArray(data) ? data.filter(slot => 
-            // Account for both 'available' and 'available ' with trim()
-            slot && (slot.status?.trim() === 'available')
-          ) : [];
-          console.log('Valid availability slots after filtering:', validSlots);
-          setAvailabilitySlots(validSlots);
-          
-          if (!validSlots.length) {
-            console.log('No availability slots found for this mentor');
-          }
+          // Exclude only slots explicitly marked as 'booked'
+          const validSlots = Array.isArray(data)
+            ? data.filter(slot => (slot.status?.trim().toLowerCase() !== 'booked'))
+            : [];
+           setAvailabilitySlots(validSlots);
         })
         .catch(err => console.error('Error fetching availability:', err));
       
@@ -94,17 +85,14 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         .channel(`availability_${selectedMentorId}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
           const newSlot = (payload as any).record as AvailabilitySlot;
-          console.log('Realtime: New availability slot:', newSlot);
           setAvailabilitySlots(prev => [...prev, newSlot]);
         })
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
           const oldSlot = (payload as any).record as AvailabilitySlot;
-          console.log('Realtime: Deleted availability slot:', oldSlot);
           setAvailabilitySlots(prev => prev.filter(s => s.id !== oldSlot.id));
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'availability', filter: `mentor_id=eq.${selectedMentorId}` }, payload => {
           const updatedSlot = (payload as any).record as AvailabilitySlot;
-          console.log('Realtime: Updated availability slot:', updatedSlot);
           setAvailabilitySlots(prev => prev.map(s => s.id === updatedSlot.id ? updatedSlot : s));
         })
         .subscribe();
@@ -122,8 +110,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     const endTime = new Date(s.end_time);
     return endTime > now; // Only include slots that end in the future
   });
-
-  console.log('Future slots available:', futureSlots.length);
   
   const uniqueDates = Array.from(new Set(futureSlots.map(s => s.start_time.split('T')[0])));
   const availableDates = uniqueDates.sort().map(date => {
@@ -160,7 +146,11 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         })
     : [];
 
-  const formatDateTime = (dateStr: string) => new Date(dateStr).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const formatDateTime = (dateStr: string) => {
+    const dt = new Date(dateStr);
+    if (isNaN(dt.getTime())) return '';
+    return dt.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
   const generateICS = (session: any) => {
     const dtstart = formatDateTime(session.start_time);
     const dtend = formatDateTime(session.end_time);
@@ -175,12 +165,14 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     return new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
   };
   const generateGoogleLink = (session: any) => {
-    const start = formatDateTime(session.start_time);
-    const end = formatDateTime(session.end_time);
+    // Prevent invalid dates
+    const startRaw = formatDateTime(session.start_time);
+    const endRaw = formatDateTime(session.end_time);
+    if (!startRaw || !endRaw) return '';
     const text = encodeURIComponent(session.title);
     const details = encodeURIComponent(session.description || '');
     const location = encodeURIComponent(session.meeting_link || '');
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startRaw}/${endRaw}&details=${details}&location=${location}`;
   };
 
   const handleBookSession = async () => {
@@ -366,6 +358,13 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
                     isDateAvailable(date) ? "react-datepicker__day--highlighted" : ""
                   }
                 />
+                {/* Legend for date picker highlights */}
+                <div className="mt-2 text-sm flex items-center space-x-4">
+                  <span className="inline-block w-3 h-3 bg-green-200 border border-green-400 rounded-full"></span>
+                  <span>Available</span>
+                  <span className="inline-block w-3 h-3 bg-blue-200 border border-blue-400 rounded-full ml-4"></span>
+                  <span>Selected</span>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center text-gray-500 border rounded-lg bg-gray-50">
@@ -527,7 +526,9 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     );
   };
   
-  const renderConfirmation = () => (
+  const renderConfirmation = () => {
+    const googleLink = generateGoogleLink(bookingResult);
+    return (
     <div className="text-center space-y-6 py-10">
       <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
         {/* ...success icon... */}
@@ -539,9 +540,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
           <button onClick={() => setShowMeetingRoom(true)} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
             Join Session
           </button>
-          <a href={generateGoogleLink(bookingResult)} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-            Add to Google Calendar
-          </a>
+          {googleLink ? (
+            <a href={googleLink} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+              Add to Google Calendar
+            </a>
+           ) : (
+            <button disabled className="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
+              Calendar Unavailable
+            </button>
+           )}
           <button onClick={() => saveAs(generateICS(bookingResult), `session-${bookingResult.id}.ics`)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
             Add to Calendar (.ics)
           </button>
@@ -570,8 +577,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         </button>
       </div>
     </div>
-  );
+    );
+  };
   
+  // Main render of the component
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       {bookingStep === 'select-mentor' && renderMentorSelection()}

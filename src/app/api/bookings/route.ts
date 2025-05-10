@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if time slot is still available in database
+    // Check if time slot is still available in database (case-insensitive)
     const supabaseAdmin = createAdminClient();
     const { data: slot, error: slotError } = await supabaseAdmin
       .from('availability')
@@ -27,7 +27,9 @@ export async function POST(request: NextRequest) {
     if (slotError) {
       console.error('Error checking availability slot:', slotError);
     }
-    if (!slot || slot.status !== 'available') {
+    const status = slot?.status?.trim().toLowerCase();
+    // Only treat 'booked' status as unavailable
+    if (status === 'booked') {
       return NextResponse.json(
         { error: 'This time slot is already booked' },
         { status: 409 }
@@ -44,8 +46,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Generate fallback values for required fields
-    
-      const defaultMeetingUrl = `https://meet.jit.si/default-${Date.now()}`;
+      const defaultMeetingUrl = `https://videosdk.live/default-${Date.now()}`;
 
       // Create mentoring session record
       const startISO = new Date(`${bookingData.date}T${bookingData.time}`).toISOString();
@@ -78,64 +79,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Session booked successfully',
-        meeting
+        meeting: { ...meeting, start_time: startISO, end_time: endISO }
       });
     } catch (error) {
       console.error('Error processing booking:', error);
-      
-      // For development/demo purposes, create a mock meeting if Jitsi API fails
-      if (process.env.NODE_ENV !== 'production') {
-        const mockMeetingId = `mock-${Math.floor(Math.random() * 1000000000)}`;
-        const mockMeetingUrl = 'https://meet.jit.si/abc-defg-hij';
-        
-        const mockMeeting = {
-          meetingId: mockMeetingId,
-          meetingUrl: mockMeetingUrl,
-          startTime: `${bookingData.date}, ${bookingData.time}, 2025`,
-          duration: 60
-        };
-        
-        // Attempt to save the mock booking to database
-        try {
-          const supabaseAdmin = createAdminClient();
-          const startISO = new Date(`${bookingData.date}T${bookingData.time}`).toISOString();
-          const endDate = new Date(startISO);
-          endDate.setMinutes(endDate.getMinutes() + 30);
-          const endISO = endDate.toISOString();
-          await supabaseAdmin.from('mentoring_sessions').insert([{ 
-            mentor_id: bookingData.mentorId,
-            mentee_id: bookingData.userId,
-            status: 'upcoming',
-            start_time: startISO,
-            end_time: endISO,
-            title: bookingData.sessionType,
-            meeting_link: mockMeetingUrl,
-            description: bookingData.sessionType
-          }]);
-
-          // Mark the availability slot as booked
-          try {
-            const supabaseAdminSlot = (await import('../../../lib/supabaseClient')).createAdminClient();
-            await supabaseAdminSlot
-              .from('availability')
-              .update({ status: 'booked' })
-              .eq('id', bookingData.slotId);
-          } catch (slotError) {
-            console.error('Failed to mark slot as booked:', slotError);
-          }
-        } catch (dbError) {
-          console.error('Failed to save mock booking to database:', dbError);
-          // Continue even if database save fails
-        }
-        
-        // Return success with mock data
-        return NextResponse.json({
-          success: true,
-          message: 'Mock session booked (Jitsi Meet API unavailable)',
-          meeting: mockMeeting
-        });
-      }
-      
       return NextResponse.json(
         { error: 'Failed to create booking' },
         { status: 500 }
