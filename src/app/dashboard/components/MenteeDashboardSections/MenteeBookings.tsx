@@ -196,8 +196,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
           userEmail: user.email,
           date: selectedDate,
           time: selectedTimeSlot,
-          sessionType: agenda, // use agenda as sessionType
+          // Ensure sessionType is non-empty for API validation
+          sessionType: agenda.trim() || 'General Mentoring Session',
           slotId: selectedTimeSlotId,
+          description: agenda.trim(),
         }),
       });
       const data = await response.json();

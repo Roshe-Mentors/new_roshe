@@ -22,7 +22,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export const createAdminClient = () => {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseServiceKey) {
-    console.warn('Warning: SUPABASE_SERVICE_ROLE_KEY is not set. Admin operations will fail.');
+    console.error('createAdminClient: SUPABASE_SERVICE_ROLE_KEY is undefined.');
     return supabase;
   }
   return createClient(supabaseUrl, supabaseServiceKey, {

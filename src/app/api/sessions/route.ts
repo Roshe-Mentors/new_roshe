@@ -3,11 +3,13 @@ import { createAdminClient } from '../../../lib/supabaseClient';
 
 export const runtime = 'nodejs';
 
-// Create admin client with service role to bypass RLS
-const supabaseAdmin = createAdminClient();
-
-// This endpoint handles session retrieval with admin privileges
+// Create admin client at request time so env vars are picked up
 export async function GET(request: import('next/server').NextRequest) {
+  console.log('API/sessions GET - NODE_ENV:', process.env.NODE_ENV);
+  console.log('API/sessions GET - SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('API/sessions GET - SUPABASE_SERVICE_ROLE_KEY present:', Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY));
+  console.log('API/sessions GET - service key snippet:', process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0,5) + '...' + process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-5));
+  const supabaseAdmin = createAdminClient();
   const { searchParams } = new URL(request.url);
   const mentorId = searchParams.get('mentorId');
   const menteeId = searchParams.get('menteeId');
@@ -39,6 +41,7 @@ export async function GET(request: import('next/server').NextRequest) {
 
 // This endpoint handles session creation with admin privileges
 export async function POST(request: Request) {
+  const supabaseAdmin = createAdminClient();
   try {
     const sessionData = await request.json();
     console.log('API: Creating session with data:', sessionData);
