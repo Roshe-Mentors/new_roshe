@@ -64,8 +64,9 @@ export async function createSession(data: SessionData) {
 
 // Get sessions for a mentee
 export async function getMenteeSessions(menteeId: string) {
-  // Fetch sessions via server-side API to use admin privileges and bypass RLS
-  const res = await fetch(`/api/sessions?menteeId=${menteeId}`);
+  const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/api/sessions?menteeId=${menteeId}`;
+  console.log('Fetching mentee sessions from URL:', url);
+  const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     console.error('Error fetching mentee sessions via API:', err);
@@ -77,8 +78,9 @@ export async function getMenteeSessions(menteeId: string) {
 
 // Get sessions for a mentor
 export async function getMentorSessions(mentorId: string) {
-  // Fetch sessions via server-side API to use admin privileges and bypass RLS
-  const res = await fetch(`/api/sessions?mentorId=${mentorId}`);
+  const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/api/sessions?mentorId=${mentorId}`;
+  console.log('Fetching mentor sessions from URL:', url);
+  const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     console.error('Error fetching mentor sessions via API:', err);

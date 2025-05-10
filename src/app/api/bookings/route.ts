@@ -81,17 +81,17 @@ export async function POST(request: NextRequest) {
         message: 'Session booked successfully',
         meeting: { ...meeting, start_time: startISO, end_time: endISO }
       });
-    } catch (error) {
-      console.error('Error processing booking:', error);
+    } catch (error: any) {
+      console.error('Error processing booking:', error.message, error.stack, error);
       return NextResponse.json(
-        { error: 'Failed to create booking' },
+        { error: `Failed to create booking: ${error.message}` },
         { status: 500 }
       );
     }
-  } catch (error) {
-    console.error('Error handling booking request:', error);
+  } catch (error: any) {
+    console.error('Error handling booking request:', error.message, error.stack, error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: `Internal server error: ${error.message}` },
       { status: 500 }
     );
   }

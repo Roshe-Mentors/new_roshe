@@ -16,19 +16,31 @@ export async function createVideoSDKMeeting(options: CreateMeetingOptions) {
     throw new Error('VideoSDK API_KEY and SECRET_KEY must be set in environment variables');
   }
 
+  // Generate a JWT token for API authentication (per VideoSDK docs)
+  const authPayload = {
+    apikey: API_KEY,
+    permissions: ['allow_join', 'allow_mod'],
+    version: 2
+  };
+  const authToken = jwt.sign(authPayload, SECRET_KEY, {
+    algorithm: 'HS256',
+    expiresIn: '12h',
+  });
+
   // Create a new room/meeting
   const roomRes = await fetch(`${VIDEOSDK_API_BASE}/rooms`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: API_KEY,
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify({ name: options.title }),
   });
 
   if (!roomRes.ok) {
-    const err = await roomRes.text();
-    throw new Error(`Failed to create VideoSDK room: ${err}`);
+    const errorText = await roomRes.text();
+    console.error("VideoSDK API Error Response:", errorText); // <-- ADDED
+    throw new Error(`Failed to create VideoSDK room: ${errorText}`);
   }
 
   const roomData = await roomRes.json();
