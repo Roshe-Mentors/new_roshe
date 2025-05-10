@@ -1,5 +1,6 @@
 {
   "name": "frontend",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -25,6 +26,7 @@
     "axios": "^1.7.9",
     "cookies-next": "^5.1.0",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.10.5",
     "google-auth-library": "^9.15.1",
@@ -32,6 +34,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.492.0",
     "next": "^15.2.4",
+    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-big-calendar": "^1.18.0",
     "react-country-flag": "^3.1.0",
