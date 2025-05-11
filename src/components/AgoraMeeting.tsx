@@ -6,7 +6,9 @@ import AgoraRTC, {
   IMicrophoneAudioTrack
 } from 'agora-rtc-sdk-ng';
 import { AGORA_CLIENT_APP_ID } from '../config/agoraConfig';
-import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash } from 'react-icons/fa';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools } from 'react-icons/fa';
+import MediaTest from './MediaTest';
+import VirtualBackground from './VirtualBackground';
 
 interface AgoraMeetingProps {
   channel: string;
@@ -30,6 +32,8 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [fullScreenUser, setFullScreenUser] = useState<IAgoraRTCRemoteUser | null>(null);
+  const [virtualBg, setVirtualBg] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     if (hasJoinedRef.current) return;
@@ -97,11 +101,20 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     };
     joinChannel();
 
+    // Listen to network state changes
+    const onConnectionStateChange = (cur: string) => {
+      if (cur === 'DISCONNECTED') setError('Connection lost. Reconnecting...');
+      else if (cur === 'RECONNECTING') setError('Reconnecting...');
+      else if (cur === 'CONNECTED') setError(null);
+    };
+    client.on('connection-state-change', onConnectionStateChange);
+
     // Clean up on unmount
     return () => {
       client.off('user-published', onUserPublished);
       client.off('user-unpublished', onUserUnpublished);
       client.off('user-left', onUserLeft);
+      client.off('connection-state-change', onConnectionStateChange);
       const tracks = localTracksRef.current;
       if (tracks) {
         tracks[0].close();
@@ -109,7 +122,6 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       }
       client.leave();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId, channel, token]);
 
   const toggleAudio = () => {
@@ -128,6 +140,11 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     }
   };
 
+  const toggleVirtualBg = () => {
+    setVirtualBg(prev => !prev);
+    // TODO: load and apply BodyPix segmentation for true background replacement
+  };
+
   const leaveCall = async () => {
     const client = clientRef.current;
     const tracks = localTracksRef.current;
@@ -137,6 +154,9 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     await client?.leave();
     window.location.reload();
   };
+
+  const openTest = () => setTesting(true);
+  const closeTest = () => setTesting(false);
 
   if (error) {
     return (
@@ -176,24 +196,44 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     );
   }
 
+  if (testing) {
+    return <MediaTest onClose={closeTest} />;
+  }
+
   return (
     <div className="rounded-lg overflow-hidden border border-gray-200">
       {/* Header */}
-      <div className="bg-gray-900 text-white p-3 flex justify-between items-center">
+      <div className="bg-gray-900 text-white p-3 flex justify-between items-center transition-colors duration-200">
         <h3 className="font-medium">{channel}</h3>
-        <button
-          className="bg-red-600 hover:bg-red-700 rounded-full p-2"
-          onClick={() => window.location.reload()}
-          title="Reload Meeting"
-          aria-label="Reload Meeting"
-        >
-          {/* reload icon */}
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path d="M4 3a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L20 6.161V5a2 2 0 00-2-2H4z" />
-            <path d="M18 8.672v5.328a2 2 0 01-2 2H4a2 2 0 01-2-2V8.672l8.105 4.053a2.5 2.5 0 002.79 0L18 8.672z" />
-          </svg>
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={toggleVirtualBg}
+            title={virtualBg ? 'Disable Virtual Background' : 'Enable Virtual Background'}
+            className="text-white p-2 rounded hover:bg-gray-700 transition-colors duration-200"
+          >
+            <FaImage />
+          </button>
+          <button
+            className="bg-red-600 hover:bg-red-700 rounded-full p-2 transition-colors duration-200"
+            onClick={() => window.location.reload()}
+            title="Reload Meeting"
+            aria-label="Reload Meeting"
+          >
+            {/* reload icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M4 3a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L20 6.161V5a2 2 0 00-2-2H4z" />
+              <path d="M18 8.672v5.328a2 2 0 01-2 2H4a2 2 0 01-2-2V8.672l8.105 4.053a2.5 2.5 0 002.79 0L18 8.672z" />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Network/Error Banner */}
+      {joined && error && (
+        <div className="bg-yellow-100 text-yellow-800 p-2 text-center">
+          {error}
+        </div>
+      )}
 
       {/* Controls */}
       <div className="bg-gray-800 p-2 flex justify-center space-x-4">
@@ -203,30 +243,50 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         <button onClick={toggleVideo} title={videoEnabled ? 'Hide Video' : 'Show Video'} className="text-white p-2 rounded hover:bg-gray-700">
           {videoEnabled ? <FaVideo /> : <FaVideoSlash />}
         </button>
+        <button onClick={openTest} title="Test Camera & Mic" className="text-white p-2 rounded hover:bg-gray-700">
+          <FaTools />
+        </button>
         <button onClick={leaveCall} title="End Call" className="text-red-500 p-2 rounded hover:bg-red-700 bg-white">
           <FaPhoneSlash />
         </button>
       </div>
 
       {/* Video Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100 transition-all duration-300 ease-in-out">
         {/* Local video */}
-        <div className="relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer" onClick={() => setFullScreenUser(localTracksRef.current ? { uid: 0 } as any : null)}>
-          {localTracksRef.current && (
-            <>
-              <LocalVideoView videoTrack={localTracksRef.current[1]} />
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                {userName || 'You'}
-              </div>
-            </>
-          )}
+        <div role="button" tabIndex={0}
+             aria-label="Full screen local video"
+             className={`relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200 ${virtualBg ? 'filter-blur-sm' : ''}`}
+             onClick={() => setFullScreenUser(localTracksRef.current ? { uid: 0 } as any : null)}>
+          {localTracksRef.current && (() => {
+            // only extract camera track for video playback
+            const cam = localTracksRef.current[1];
+             return (
+               <>
+                 {virtualBg ? (
+                   <VirtualBackground
+                     videoTrack={cam}
+                     enabled={virtualBg}
+                     backgroundImageUrl="/images/rosheBackground.jpg"
+                   />
+                 ) : (
+                  <LocalVideoView videoTrack={cam} />
+                 )}
+                 <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                   {userName || 'You'}
+                 </div>
+               </>
+             );
+           })()}
         </div>
 
         {/* Remote videos */}
         {remoteUsers.map(user => (
           <div
             key={user.uid}
-            className="relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer"
+            role="button" tabIndex={0}
+            aria-label={`Full screen video of user ${user.uid}`}
+            className={`relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200 ${virtualBg ? 'filter-blur-sm' : ''}`}
             onClick={() => setFullScreenUser(user)}
           >
             <RemoteVideoView user={user} />
@@ -247,28 +307,17 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   );
 };
 
-const LocalVideoView = ({ videoTrack }: { videoTrack: ICameraVideoTrack }) => {
-  const videoRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    if (videoRef.current) {
-      videoTrack.play(videoRef.current);
-    }
-    
-    return () => {
-      videoTrack.stop();
-    };
-  }, [videoTrack]);
-  
-  return <div ref={videoRef} className="h-full w-full"></div>;
-};
-
 const RemoteVideoView = ({ user }: { user: IAgoraRTCRemoteUser }) => {
   const videoRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    if (videoRef.current && user.videoTrack) {
-      user.videoTrack.play(videoRef.current);
+    const el = videoRef.current;
+    if (el && user.videoTrack) {
+      try {
+        user.videoTrack.play(el);
+      } catch (err) {
+        console.error('Error playing remote track', err);
+      }
     }
     
     return () => {
@@ -277,6 +326,24 @@ const RemoteVideoView = ({ user }: { user: IAgoraRTCRemoteUser }) => {
   }, [user]);
   
   return <div ref={videoRef} className="h-full w-full"></div>;
+};
+
+const LocalVideoView = ({ videoTrack }: { videoTrack: ICameraVideoTrack }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      try {
+        videoTrack.play(el);
+      } catch (err) {
+        console.error('Error playing local track', err);
+      }
+    }
+    return () => {
+      try { videoTrack.stop(); } catch {};
+    };
+  }, [videoTrack]);
+  return <div ref={containerRef} className="h-full w-full"></div>;
 };
 
 export default AgoraMeeting;
