@@ -6,6 +6,7 @@ import AgoraRTC, {
   IMicrophoneAudioTrack
 } from 'agora-rtc-sdk-ng';
 import { AGORA_CLIENT_APP_ID } from '../config/agoraConfig';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash } from 'react-icons/fa';
 
 interface AgoraMeetingProps {
   channel: string;
@@ -23,41 +24,40 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const localTracksRef = useRef<[IMicrophoneAudioTrack, ICameraVideoTrack] | null>(null);
   const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const clientRef = useRef<IAgoraRTCClient | null>(null);
+  const hasJoinedRef = useRef(false);
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(true);
+
   useEffect(() => {
+    if (hasJoinedRef.current) return;
+    hasJoinedRef.current = true;
+
     // Initialize Agora client
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     clientRef.current = client;
 
-    // Event listeners for remote users
-    client.on('user-published', async (user, mediaType) => {
+    // Define event handlers
+    const onUserPublished = async (user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio') => {
       await client.subscribe(user, mediaType);
-      if (mediaType === 'video') {
-        setRemoteUsers(prevUsers => {
-          // Only add user if they don't already exist in the list
-          return prevUsers.find(u => u.uid === user.uid) 
-            ? prevUsers 
-            : [...prevUsers, user];
-        });
-      }
-      if (mediaType === 'audio') {
-        user.audioTrack?.play();
-      }
-    });
+      if (mediaType === 'video') setRemoteUsers(prev => prev.find(u => u.uid === user.uid) ? prev : [...prev, user]);
+      if (mediaType === 'audio') user.audioTrack?.play();
+    };
+    const onUserUnpublished = (user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio') => {
+      if (mediaType === 'video') setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
+      if (mediaType === 'audio') user.audioTrack?.stop();
+    };
+    const onUserLeft = (user: IAgoraRTCRemoteUser) => {
+      setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
+    };
 
-    client.on('user-unpublished', (user, mediaType) => {
-      if (mediaType === 'video') {
-        setRemoteUsers(prevUsers => prevUsers.filter(u => u.uid !== user.uid));
-      }
-      if (mediaType === 'audio') {
-        user.audioTrack?.stop();
-      }
-    });
+    // Register listeners
+    client.on('user-published', onUserPublished);
+    client.on('user-unpublished', onUserUnpublished);
+    client.on('user-left', onUserLeft);
 
-    client.on('user-left', (user) => {
-      setRemoteUsers(prevUsers => prevUsers.filter(u => u.uid !== user.uid));
-    });// Join the channel when component mounts
+    // Join the channel when component mounts
     const joinChannel = async () => {
       let microphoneTrack: IMicrophoneAudioTrack;
       let cameraTrack: ICameraVideoTrack;
@@ -94,11 +94,13 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       localTracksRef.current = [microphoneTrack, cameraTrack];
       setJoined(true);
     };
-
     joinChannel();
 
     // Clean up on unmount
     return () => {
+      client.off('user-published', onUserPublished);
+      client.off('user-unpublished', onUserUnpublished);
+      client.off('user-left', onUserLeft);
       const tracks = localTracksRef.current;
       if (tracks) {
         tracks[0].close();
@@ -107,7 +109,33 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       client.leave();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appId, channel, token]); // removed localTracks and userName
+  }, [appId, channel, token]); // removed unused eslint-disable directive
+
+  const toggleAudio = () => {
+    const tracks = localTracksRef.current;
+    if (tracks) {
+      tracks[0].setEnabled(!audioEnabled);
+      setAudioEnabled(prev => !prev);
+    }
+  };
+
+  const toggleVideo = () => {
+    const tracks = localTracksRef.current;
+    if (tracks) {
+      tracks[1].setEnabled(!videoEnabled);
+      setVideoEnabled(prev => !prev);
+    }
+  };
+
+  const leaveCall = async () => {
+    const client = clientRef.current;
+    const tracks = localTracksRef.current;
+    if (tracks) {
+      tracks[0].close(); tracks[1].close();
+    }
+    await client?.leave();
+    window.location.reload();
+  };
 
   if (error) {
     return (
@@ -128,22 +156,38 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   }
 
   return (
-    <div className="rounded-lg overflow-hidden border border-gray-200">      <div className="bg-gray-900 text-white p-3 flex justify-between items-center">
+    <div className="rounded-lg overflow-hidden border border-gray-200">
+      {/* Header */}
+      <div className="bg-gray-900 text-white p-3 flex justify-between items-center">
         <h3 className="font-medium">{channel}</h3>
-        <div className="flex space-x-2">          <button 
-            className="bg-red-600 hover:bg-red-700 rounded-full p-2"
-            onClick={() => window.location.reload()}
-            title="Reload Meeting"
-            aria-label="Reload Meeting"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M4 3a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L20 6.161V5a2 2 0 00-2-2H4z" />
-              <path d="M18 8.672v5.328a2 2 0 01-2 2H4a2 2 0 01-2-2V8.672l8.105 4.053a2.5 2.5 0 002.79 0L18 8.672z" />
-            </svg>
-          </button>
-        </div>
+        <button
+          className="bg-red-600 hover:bg-red-700 rounded-full p-2"
+          onClick={() => window.location.reload()}
+          title="Reload Meeting"
+          aria-label="Reload Meeting"
+        >
+          {/* reload icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M4 3a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L20 6.161V5a2 2 0 00-2-2H4z" />
+            <path d="M18 8.672v5.328a2 2 0 01-2 2H4a2 2 0 01-2-2V8.672l8.105 4.053a2.5 2.5 0 002.79 0L18 8.672z" />
+          </svg>
+        </button>
       </div>
-      
+
+      {/* Controls */}
+      <div className="bg-gray-800 p-2 flex justify-center space-x-4">
+        <button onClick={toggleAudio} title={audioEnabled ? 'Mute' : 'Unmute'} className="text-white p-2 rounded hover:bg-gray-700">
+          {audioEnabled ? <FaMicrophone /> : <FaMicrophoneSlash />}
+        </button>
+        <button onClick={toggleVideo} title={videoEnabled ? 'Hide Video' : 'Show Video'} className="text-white p-2 rounded hover:bg-gray-700">
+          {videoEnabled ? <FaVideo /> : <FaVideoSlash />}
+        </button>
+        <button onClick={leaveCall} title="End Call" className="text-red-500 p-2 rounded hover:bg-red-700 bg-white">
+          <FaPhoneSlash />
+        </button>
+      </div>
+
+      {/* Video Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-100">
         {/* Local video */}
         <div className="relative rounded-lg overflow-hidden aspect-video bg-black">
@@ -156,18 +200,18 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* Remote videos */}
         {remoteUsers.map(user => (
           <div key={user.uid} className="relative rounded-lg overflow-hidden aspect-video bg-black">
             <RemoteVideoView user={user} />
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-              {user.uid.toString()}
+              {user.uid}
             </div>
           </div>
         ))}
 
-        {/* Placeholders for empty slots */}
+        {/* Placeholder when no remote user */}
         {remoteUsers.length === 0 && (
           <div className="rounded-lg bg-gray-200 aspect-video flex items-center justify-center text-gray-500">
             <p>Waiting for others to join...</p>
