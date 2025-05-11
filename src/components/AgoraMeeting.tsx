@@ -29,6 +29,7 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
+  const [fullScreenUser, setFullScreenUser] = useState<IAgoraRTCRemoteUser | null>(null);
 
   useEffect(() => {
     if (hasJoinedRef.current) return;
@@ -109,7 +110,7 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       client.leave();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appId, channel, token]); // removed unused eslint-disable directive
+  }, [appId, channel, token]);
 
   const toggleAudio = () => {
     const tracks = localTracksRef.current;
@@ -155,6 +156,26 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     );
   }
 
+  if (fullScreenUser) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+        <div className="relative w-full h-full max-w-4xl max-h-full">
+          <button
+            onClick={() => setFullScreenUser(null)}
+            className="absolute top-4 right-4 text-white bg-red-600 hover:bg-red-700 p-2 rounded-full"
+            title="Close Fullscreen"
+            aria-label="Close Fullscreen"
+          >
+            ✕
+          </button>
+          <div className="w-full h-full bg-black">
+            <RemoteVideoView user={fullScreenUser} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg overflow-hidden border border-gray-200">
       {/* Header */}
@@ -188,22 +209,26 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       </div>
 
       {/* Video Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100">
         {/* Local video */}
-        <div className="relative rounded-lg overflow-hidden aspect-video bg-black">
+        <div className="relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer" onClick={() => setFullScreenUser(localTracksRef.current ? { uid: 0 } as any : null)}>
           {localTracksRef.current && (
-            <div className="absolute inset-0">
+            <>
               <LocalVideoView videoTrack={localTracksRef.current[1]} />
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                You (Local)
+                {userName || 'You'}
               </div>
-            </div>
+            </>
           )}
         </div>
 
         {/* Remote videos */}
         {remoteUsers.map(user => (
-          <div key={user.uid} className="relative rounded-lg overflow-hidden aspect-video bg-black">
+          <div
+            key={user.uid}
+            className="relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer"
+            onClick={() => setFullScreenUser(user)}
+          >
             <RemoteVideoView user={user} />
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
               {user.uid}
