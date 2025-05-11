@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createVideoSDKMeeting } from '../../../services/videoSDKService';
+//import { createVideoSDKMeeting } from '../../../services/videoSDKService';
+import { createAgoraMeeting } from '../../../services/agoraService';
 import { createAdminClient } from '../../../lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
@@ -36,17 +37,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Jitsi Meet meeting
+    // Create Agora meeting server-side
     try {
-      const meeting = await createVideoSDKMeeting({
-        title: bookingData.sessionType,
-        description: bookingData.sessionType,
-        startTime: `${bookingData.date} ${bookingData.time}`,
-        attendees: [bookingData.userEmail]
-      });
-
-      // Generate fallback values for required fields
-      const defaultMeetingUrl = `https://videosdk.live/default-${Date.now()}`;
+      const { channel, token, appId } = createAgoraMeeting(bookingData.slotId);
 
       // Create mentoring session record
       const startISO = new Date(`${bookingData.date}T${bookingData.time}`).toISOString();
@@ -60,7 +53,7 @@ export async function POST(request: NextRequest) {
         start_time: startISO,
         end_time: endISO,
         title: bookingData.sessionType,
-        meeting_link: meeting.meetingLink || defaultMeetingUrl,
+        meeting_link: channel,
         description: bookingData.sessionType
       }]);
 
@@ -75,11 +68,11 @@ export async function POST(request: NextRequest) {
         console.error('Failed to mark slot as booked:', slotError);
       }
 
-      // Return success response with meeting details
+      // Return success response with Agora meeting credentials
       return NextResponse.json({
         success: true,
         message: 'Session booked successfully',
-        meeting: { ...meeting, start_time: startISO, end_time: endISO }
+        meeting: { channel, token, appId, start_time: startISO, end_time: endISO }
       });
     } catch (error: any) {
       console.error('Error processing booking:', error.message, error.stack, error);

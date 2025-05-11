@@ -1,6 +1,6 @@
 // filepath: src/app/api/video/token/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { generateVideoSDKToken } from '../../../../services/videoSDKService';
+import { createAgoraMeeting } from '../../../../services/agoraService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,10 +8,14 @@ export async function POST(request: NextRequest) {
     if (!meetingId || !userName) {
       return NextResponse.json({ error: 'Missing meetingId or userName' }, { status: 400 });
     }
-    const token = generateVideoSDKToken(meetingId, userName);
-    return NextResponse.json({ token });
+    
+    // With Agora, we'll use the existing meetingId as the channel name
+    // and generate a new token for this user to join the channel
+    const { token, appId, channel } = createAgoraMeeting(meetingId);
+    
+    return NextResponse.json({ token, appId, channel });
   } catch (err: any) {
-    console.error('Error generating VideoSDK token:', err);
+    console.error('Error generating Agora token:', err);
     return NextResponse.json({ error: err.message || String(err) }, { status: 500 });
   }
 }

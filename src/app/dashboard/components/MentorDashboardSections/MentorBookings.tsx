@@ -6,8 +6,8 @@ import { BsLinkedin, BsGlobe } from 'react-icons/bs';
 import { Mentor } from '../common/types';
 import dynamic from 'next/dynamic';
 
-// Dynamically load VideoSDK MeetingRoom on client only
-const MeetingRoom = dynamic(() => import('../../../../components/MeetingRoom'), { ssr: false });
+// Dynamically load Agora meeting component on client only
+const AgoraMeeting = dynamic(() => import('../../../../components/AgoraMeeting'), { ssr: false });
 import axios from 'axios';
 
 interface MentorBookingsProps {
@@ -28,11 +28,11 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [sessionType, setSessionType] = useState<'Mentorship' | 'Coaching'>('Mentorship');
   const [isBooking, setIsBooking] = useState<boolean>(false);
-  const [bookingError, setBookingError] = useState<string | null>(null);
-  const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);  const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
   const [showMeetingRoom, setShowMeetingRoom] = useState(false);
   const [meetingId, setMeetingId] = useState<string>('');
   const [meetingToken, setMeetingToken] = useState<string>('');
+  const [appId, setAppId] = useState<string>('');
 
   // Get the selected mentor
   const selectedMentor = selectedMentorId
@@ -71,12 +71,11 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
         date: selectedDate,
         time: selectedTime,
         sessionType: sessionType
-      });
-
-      // On success, set the VideoSDK meeting info and show inline meeting
+      });      // On success, set the Agora meeting info and show inline meeting
       const meeting = response.data.meeting;
-      setMeetingId(meeting.meetingId);
+      setMeetingId(meeting.channel || meeting.meetingId);
       setMeetingToken(meeting.token);
+      setAppId(meeting.appId);
       setBookingSuccess(true);
       setShowMeetingRoom(true);
     } catch (error: unknown) {
@@ -283,11 +282,14 @@ const MentorBookings: React.FC<MentorBookingsProps> = ({
           {/* Booking Error */}
           {bookingError && (
             <div className="mt-4 text-red-500 text-sm">{bookingError}</div>
-          )}
-
-          {/* Booking Success and Inline MeetingRoom */}
+          )}          {/* Booking Success and Inline AgoraMeeting */}
           {bookingSuccess && showMeetingRoom && (
-            <MeetingRoom meetingId={meetingId} token={meetingToken} userName={user.email as string} />
+            <AgoraMeeting 
+              channel={meetingId}
+              token={meetingToken}
+              appId={appId}
+              userName={user.email as string} 
+            />
           )}
         </div>
       </div>

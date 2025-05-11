@@ -10,8 +10,8 @@ import { FaVideo, FaPhoneAlt, FaCalendarCheck, FaClock, FaStar } from 'react-ico
 import { saveAs } from 'file-saver';
 import { supabase } from '../../../../lib/supabaseClient';
 
-// Dynamically load MeetingRoom on client only
-const MeetingRoom = dynamic(() => import('../../../../components/MeetingRoom'), { ssr: false });
+// Dynamically load AgoraMeeting on client only
+const AgoraMeeting = dynamic(() => import('../../../../components/AgoraMeeting'), { ssr: false });
 
 const formatICSDate = (dateString: string) => new Date(dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 const generateICSString = (session: any) => {
@@ -50,12 +50,12 @@ interface MentorSessionsProps {
 }
 
 const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
-  const { user } = useUser();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { user } = useUser();  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sessions, setSessions] = useState<any[]>([]);
   const [showMeetingRoom, setShowMeetingRoom] = useState(false);
   const [currentMeetingId, setCurrentMeetingId] = useState<string>('');
   const [meetingToken, setMeetingToken] = useState<string>('');
+  const [appId, setAppId] = useState<string>('');
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'reviews'>('upcoming');
   const [cancelSessionId, setCancelSessionId] = useState<string | null>(null);
@@ -179,8 +179,7 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       toast.error('Failed to complete session');
     }
   };
-  
-  const handleJoinSession = async (session: any) => {
+    const handleJoinSession = async (session: any) => {
     if (session.meeting_link && user) {
       // Generate token for this meeting
       try {
@@ -190,8 +189,9 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
           body: JSON.stringify({ meetingId: session.meeting_link, userName: user.email })
         });
         const data = await res.json();
-        setCurrentMeetingId(session.meeting_link);
+        setCurrentMeetingId(data.channel || session.meeting_link);
         setMeetingToken(data.token);
+        setAppId(data.appId);
         setShowMeetingRoom(true);
       } catch {
         toast.error('Unable to join session');
@@ -501,13 +501,13 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       </div>
     );
   };
-  
-  // Render inline VideoSDK meeting if toggled
-  if (showMeetingRoom && currentMeetingId && meetingToken && user) {
+  // Render inline Agora meeting if toggled
+  if (showMeetingRoom && currentMeetingId && meetingToken && appId && user) {
     return (
-      <MeetingRoom
-        meetingId={currentMeetingId}
+      <AgoraMeeting
+        channel={currentMeetingId}
         token={meetingToken}
+        appId={appId}
         userName={user.email as string}
       />
     );

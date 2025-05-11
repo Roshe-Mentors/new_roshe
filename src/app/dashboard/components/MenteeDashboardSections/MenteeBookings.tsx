@@ -9,8 +9,8 @@ import { saveAs } from 'file-saver';
 
 import { supabase } from '../../../../lib/supabaseClient';
 import dynamic from 'next/dynamic';
-// Dynamically load VideoSDK MeetingRoom on client only
-const MeetingRoom = dynamic(() => import('../../../../components/MeetingRoom'), { ssr: false });
+// Dynamically load Agora meeting component on client only
+const AgoraMeeting = dynamic(() => import('../../../../components/AgoraMeeting'), { ssr: false });
 
 // Availability slot from mentor profile
 interface AvailabilitySlot {
@@ -553,12 +553,12 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
             Add to Calendar (.ics)
           </button>
         </div>
-      )}
-      {showMeetingRoom && bookingResult && (
+      )}      {showMeetingRoom && bookingResult && (
         <div className="mt-6">
-          <MeetingRoom
-            meetingId={bookingResult.meetingId || bookingResult.meeting_link}
+          <AgoraMeeting
+            channel={bookingResult.channel || bookingResult.meeting_link}
             token={bookingResult.token}
+            appId={bookingResult.appId}
             userName={user.email as string}
           />
         </div>
