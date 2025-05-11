@@ -20,7 +20,7 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   appId = AGORA_CLIENT_APP_ID, 
   userName 
 }) => {
-  const [localTracks, setLocalTracks] = useState<[IMicrophoneAudioTrack, ICameraVideoTrack] | null>(null);
+  const localTracksRef = useRef<[IMicrophoneAudioTrack, ICameraVideoTrack] | null>(null);
   const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const [joined, setJoined] = useState(false);
@@ -59,33 +59,55 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       setRemoteUsers(prevUsers => prevUsers.filter(u => u.uid !== user.uid));
     });// Join the channel when component mounts
     const joinChannel = async () => {
+      let microphoneTrack: IMicrophoneAudioTrack;
+      let cameraTrack: ICameraVideoTrack;
+      // Request media tracks first to trigger permissions prompt
       try {
-        // Join the channel
+        [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+      } catch (trackError: any) {
+        console.warn('Track creation canceled or failed before join:', trackError);
+        return; // Abort if user cancels permissions
+      }
+
+      try {
+        // Join the channel after obtaining tracks
         await client.join(appId, channel, token, null);
-        
-        // Create local audio and video tracks
-        const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        
+      } catch (joinError: any) {
+        console.error('Error joining channel:', joinError);
+        setError(joinError.message || 'Failed to join meeting');
+        // Cleanup tracks
+        microphoneTrack.close();
+        cameraTrack.close();
+        return;
+      }
+
+      try {
         // Publish local tracks
         await client.publish([microphoneTrack, cameraTrack]);
-        
-        setLocalTracks([microphoneTrack, cameraTrack]);
-        setJoined(true);
-      } catch (err: any) {
-        console.error("Error joining channel:", err);
-        setError(err.message || "Failed to join meeting");
+      } catch (publishError: any) {
+        console.error('Error publishing tracks:', publishError);
+        setError(publishError.message || 'Failed to publish tracks');
+        return;
       }
+
+      // Store tracks in ref and mark joined
+      localTracksRef.current = [microphoneTrack, cameraTrack];
+      setJoined(true);
     };
 
-    joinChannel();    // Clean up on unmount
+    joinChannel();
+
+    // Clean up on unmount
     return () => {
-      if (localTracks) {
-        localTracks[0].close();
-        localTracks[1].close();
+      const tracks = localTracksRef.current;
+      if (tracks) {
+        tracks[0].close();
+        tracks[1].close();
       }
       client.leave();
     };
-  }, [appId, channel, token, userName, localTracks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appId, channel, token]); // removed localTracks and userName
 
   if (error) {
     return (
@@ -125,9 +147,9 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-100">
         {/* Local video */}
         <div className="relative rounded-lg overflow-hidden aspect-video bg-black">
-          {localTracks && (
+          {localTracksRef.current && (
             <div className="absolute inset-0">
-              <LocalVideoView videoTrack={localTracks[1]} />
+              <LocalVideoView videoTrack={localTracksRef.current[1]} />
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
                 You (Local)
               </div>
