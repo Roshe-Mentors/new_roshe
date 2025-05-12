@@ -115,14 +115,23 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     if (mentorId) {
       sessionChannel = supabase
         .channel(`mentor_sessions_${mentorId}`)
+        // New session booked
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
-          try {
-            const newSession = (payload as any).new;
-            setSessions(prev => [...prev, newSession]);
-            toast.info('A new session has been booked by a mentee');
-          } catch (err) {
-            console.warn('Real-time session insert error:', err);
-          }
+          const newSession = (payload as any).new;
+          setSessions(prev => [...prev, newSession]);
+          toast.info('A new session has been booked by a mentee');
+        })
+        // Session record updated (status, times, etc.)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
+          const updated = (payload as any).new;
+          setSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
+          toast.info('A session has been updated');
+        })
+        // Session deleted or cancelled at DB-level
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
+          const deleted = (payload as any).old;
+          setSessions(prev => prev.filter(s => s.id !== deleted.id));
+          toast.info('A session has been removed');
         })
         .subscribe();
     }
@@ -257,20 +266,16 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
   
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString('en-US', {
+    return date.toLocaleString(undefined, {
       weekday: 'short',
-      month: 'short', 
+      month: 'short',
       day: 'numeric',
-      year: 'numeric'
-    });
-    
-    const formattedTime = date.toLocaleTimeString('en-US', {
+      year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
+      timeZoneName: 'short'
     });
-    
-    return `${formattedDate} at ${formattedTime}`;
   };
   
   const calculateDuration = (start: string, end: string) => {
@@ -456,8 +461,8 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
                     />
                   ) : (
                     <span className="text-indigo-600 font-medium text-lg">
-                      {(review.mentees?.name?.charAt(0) || 'M').toUpperCase()}
-                    </span>
+                      {(review.mentees?.name?.charAt(0) || 'M').toUpperCase()
+                    }</span>
                   )}
                 </div>
                 <div className="flex-grow">
@@ -626,6 +631,32 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
                           <p className="text-xs text-gray-500">
                             {session.mentees?.name || 'Mentee'}
                           </p>
+                          {/* Show mentee email */}
+                          {session.mentees?.email && (
+                            <p className="text-xs text-gray-500">
+                              {session.mentees.email}
+                            </p>
+                          )}
+                          {/* Session description */}
+                          {session.description && (
+                            <p className="text-sm text-gray-700 mt-1">
+                              {session.description}
+                            </p>
+                          )}
+                          {/* Meeting link */}
+                          {session.meeting_link && (
+                            <div className="flex items-center text-xs text-indigo-600 mt-1">
+                              <FaVideo className="mr-1" />
+                              <a
+                                href={session.meeting_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:text-indigo-800"
+                              >
+                                Join Meeting
+                              </a>
+                            </div>
+                          )}
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                             <div className="flex items-center text-xs text-gray-600">
@@ -684,12 +715,6 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
                               Add to Calendar (.ics)
                             </button>
                           </div>
-                          
-                          {session.description && (
-                            <p className="text-xs text-gray-600 mt-2 border-t border-gray-100 pt-2">
-                              {session.description}
-                            </p>
-                          )}
                           
                           {renderSessionActions(session)}
                         </div>

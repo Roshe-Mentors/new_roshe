@@ -6,7 +6,7 @@ import AgoraRTC, {
   IMicrophoneAudioTrack
 } from 'agora-rtc-sdk-ng';
 import { AGORA_CLIENT_APP_ID } from '../config/agoraConfig';
-import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools } from 'react-icons/fa';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools, FaSpinner } from 'react-icons/fa';
 import MediaTest from './MediaTest';
 import VirtualBackground from './VirtualBackground';
 
@@ -33,7 +33,9 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [fullScreenUser, setFullScreenUser] = useState<IAgoraRTCRemoteUser | null>(null);
   const [virtualBg, setVirtualBg] = useState(false);
-  const [testing, setTesting] = useState(false);
+  const [showDeviceTest, setShowDeviceTest] = useState(false);
+  // Track connection state for UX
+  const [connectionState, setConnectionState] = useState<'CONNECTED'|'RECONNECTING'|'DISCONNECTED'>('CONNECTED');
 
   useEffect(() => {
     if (hasJoinedRef.current) return;
@@ -103,11 +105,20 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
 
     // Listen to network state changes
     const onConnectionStateChange = (cur: string) => {
-      if (cur === 'DISCONNECTED') setError('Connection lost. Reconnecting...');
-      else if (cur === 'RECONNECTING') setError('Reconnecting...');
-      else if (cur === 'CONNECTED') setError(null);
+      // Update connection state
+      if (cur === 'DISCONNECTED') {
+        setConnectionState('DISCONNECTED');
+      } else if (cur === 'RECONNECTING') {
+        setConnectionState('RECONNECTING');
+      } else if (cur === 'CONNECTED') {
+        setConnectionState('CONNECTED');
+        setError(null);
+      }
     };
     client.on('connection-state-change', onConnectionStateChange);
+    
+    // Helper to force reload the meeting on disconnect
+
 
     // Clean up on unmount
     return () => {
@@ -155,8 +166,9 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     window.location.reload();
   };
 
-  const openTest = () => setTesting(true);
-  const closeTest = () => setTesting(false);
+  const toggleDeviceTest = () => {
+    setShowDeviceTest(prev => !prev);
+  };
 
   if (error) {
     return (
@@ -196,10 +208,6 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     );
   }
 
-  if (testing) {
-    return <MediaTest onClose={closeTest} />;
-  }
-
   return (
     <div className="rounded-lg overflow-hidden border border-gray-200">
       {/* Header */}
@@ -228,28 +236,41 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         </div>
       </div>
 
-      {/* Network/Error Banner */}
-      {joined && error && (
-        <div className="bg-yellow-100 text-yellow-800 p-2 text-center">
-          {error}
+      {/* Connection State Banner */}
+      {joined && connectionState !== 'CONNECTED' && (
+        <div className={
+          connectionState === 'DISCONNECTED'
+            ? 'bg-red-100 text-red-800 p-2 text-center'
+            : 'bg-yellow-100 text-yellow-800 p-2 text-center'
+        }>
+          {connectionState === 'RECONNECTING' ? (
+            <span className="flex items-center justify-center">
+              <FaSpinner className="animate-spin mr-2" /> Reconnecting...
+            </span>
+          ) : (
+            <span>
+              Connection lost. <button onClick={() => window.location.reload()} className="underline">Reconnect</button>
+            </span>
+          )}
         </div>
       )}
 
       {/* Controls */}
       <div className="bg-gray-800 p-2 flex justify-center space-x-4">
-        <button onClick={toggleAudio} title={audioEnabled ? 'Mute' : 'Unmute'} className="text-white p-2 rounded hover:bg-gray-700">
+        <button onClick={toggleAudio} title={audioEnabled ? 'Mute' : 'Unmute'} className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'}>
           {audioEnabled ? <FaMicrophone /> : <FaMicrophoneSlash />}
         </button>
-        <button onClick={toggleVideo} title={videoEnabled ? 'Hide Video' : 'Show Video'} className="text-white p-2 rounded hover:bg-gray-700">
+        <button onClick={toggleVideo} title={videoEnabled ? 'Hide Video' : 'Show Video'} className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'}>
           {videoEnabled ? <FaVideo /> : <FaVideoSlash />}
         </button>
-        <button onClick={openTest} title="Test Camera & Mic" className="text-white p-2 rounded hover:bg-gray-700">
+        <button onClick={toggleDeviceTest} title="Test Camera & Mic" className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'}>
           <FaTools />
         </button>
         <button onClick={leaveCall} title="End Call" className="text-red-500 p-2 rounded hover:bg-red-700 bg-white">
           <FaPhoneSlash />
         </button>
       </div>
+      {showDeviceTest && <MediaTest onClose={toggleDeviceTest} />}
 
       {/* Video Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100 transition-all duration-300 ease-in-out">

@@ -10,8 +10,8 @@ const MediaTest: React.FC<MediaTestProps> = ({ onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoTrackRef = useRef<ICameraVideoTrack | null>(null);
   const audioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
-  const analyserRef = useRef<AnalyserNode>();
-  const rafRef = useRef<number>();
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     // start camera and mic tracks

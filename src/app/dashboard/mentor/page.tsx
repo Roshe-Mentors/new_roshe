@@ -10,6 +10,7 @@ import MentorSessions from '../../dashboard/components/MentorDashboardSections/M
 import MentorProfile from '../../dashboard/components/MentorDashboardSections/MentorProfile';
 import UpcomingSessions from "../components/common/UpcomingSessions";
 import GoogleCalendarConnect from "../components/common/GoogleCalendarConnect";
+import HomeOverview from "../components/common/HomeOverview";
 
 export default function MentorDashboard() {
   const { user, loading } = useUser();
@@ -92,24 +93,13 @@ export default function MentorDashboard() {
         
         <Tab.Panel>
           {/* Overview Tab */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-8">
-              <MentorStats mentor={mentorProfile} />
-              
-              {/* Recently added upcoming sessions section */}
-              <div className="mt-8">
-                <UpcomingSessions userRole="mentor" />
-              </div>
-            </div>
-            
-            <div className="space-y-8">
-              {/* Performance stats could go here */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">Latest Reviews</h3>
-                {/* Latest reviews would go here */}
-                <p className="text-gray-500 text-center py-8">No reviews yet.</p>
-              </div>
-            </div>
+          <div className="space-y-8">
+            {/* Key dashboard cards */}
+            <HomeOverview />
+            {/* Overall mentor stats */}
+            <MentorStats mentor={mentorProfile} />
+            {/* Upcoming sessions list */}
+            <UpcomingSessions userRole="mentor" />
           </div>
         </Tab.Panel>
         

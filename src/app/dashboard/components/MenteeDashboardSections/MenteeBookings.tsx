@@ -104,26 +104,33 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     };
   }, [selectedMentorId]);
 
-  // Compute available dates from availability slots, ensuring we only use future slots
+  // Compute available dates from availability slots with local date strings
   const now = new Date();
-  const futureSlots = availabilitySlots.filter(s => {
-    const endTime = new Date(s.end_time);
-    return endTime > now; // Only include slots that end in the future
-  });
-  
-  const uniqueDates = Array.from(new Set(futureSlots.map(s => s.start_time.split('T')[0])));
-  const availableDates = uniqueDates.sort().map(date => {
-    const d = new Date(date);
-    return {
-      date,
-      formattedDate: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    };
+  const futureSlots = availabilitySlots.filter(s => new Date(s.end_time) > now);
+  // Extract local YYYY-MM-DD to avoid timezone offsets
+  const uniqueDates = Array.from(new Set(futureSlots.map(s => {
+    const d = new Date(s.start_time);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })));
+  const availableDates = uniqueDates.sort().map(dateKey => {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    return { date: dateKey, formattedDate: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) };
   });
 
   // Compute time slots for selected date
   const timeSlots: TimeSlot[] = selectedDate
     ? availabilitySlots
-        .filter(s => s.start_time.startsWith(`${selectedDate}T`))
+        .filter(s => {
+          const d = new Date(s.start_time);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}` === selectedDate;
+        })
         .flatMap((slot, slotIndex) => {
           const slots: TimeSlot[] = [];
           const start = new Date(slot.start_time);
