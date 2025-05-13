@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 //import { createVideoSDKMeeting } from '../../../services/videoSDKService';
 import { createAgoraMeeting } from '../../../services/agoraService';

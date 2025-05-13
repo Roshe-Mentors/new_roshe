@@ -10,19 +10,14 @@ repository:
 
 deployment:
   tasks:
-    # Install deps, build app, and copy output to public_html
+    # Install deps and build the app
     - npm ci
-    # Build and export static site
     - npm run build
-    - npm run export
-    - export DEPLOYPATH=/home/${CPANEL_USER}/public_html
-    # Clean public_html and copy only static output
-    - rm -rf $DEPLOYPATH/*
-    - cp -R out/* $DEPLOYPATH
 
 application:
   type: "nodejs"
-  app_root: "public_html"  # serve from public_html
+  # Serve from built Next.js application directory
+  app_root: "."
   startup_file: "node_modules/.bin/next"
   startup_args: "start -p $PORT"
   environment:
