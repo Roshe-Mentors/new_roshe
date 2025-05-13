@@ -12,9 +12,13 @@ deployment:
   tasks:
     # Install deps, build app, and copy output to public_html
     - npm ci
+    # Build and export static site
     - npm run build
+    - npm run export
     - export DEPLOYPATH=/home/${CPANEL_USER}/public_html
-    - cp -R * $DEPLOYPATH
+    # Clean public_html and copy only static output
+    - rm -rf $DEPLOYPATH/*
+    - cp -R out/* $DEPLOYPATH
 
 application:
   type: "nodejs"
