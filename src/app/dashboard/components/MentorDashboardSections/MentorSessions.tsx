@@ -119,7 +119,19 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
           const newSession = (payload as any).new;
           setSessions(prev => [...prev, newSession]);
-          toast.info('A new session has been booked by a mentee');
+          toast.info(
+            <span>
+              A new session has been booked by a mentee.{' '}
+              <a
+                href={`/meeting/${newSession.meeting_link}`}
+                className="underline text-blue-600"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Join Now
+              </a>
+            </span>
+          );
         })
         // Session record updated (status, times, etc.)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {

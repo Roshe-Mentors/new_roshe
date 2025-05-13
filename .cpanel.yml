@@ -1,0 +1,32 @@
+---
+# cPanel Git Version Control configuration for Roshe Mentorship (inside new_roshe/)
+
+repository:
+  url: "git@github.com:Roshe-mentorship/new_roshe.git"
+  branch: "main"
+  depth: 1
+  deploy_on_update: true
+  path: "."  # work in this directory
+
+deployment:
+  tasks:
+    # Install deps, build app, and copy output to public_html
+    - npm ci
+    - npm run build
+    - export DEPLOYPATH=/home/${CPANEL_USER}/public_html
+    - cp -R * $DEPLOYPATH
+
+application:
+  type: "nodejs"
+  app_root: "public_html"  # serve from public_html
+  startup_file: "node_modules/.bin/next"
+  startup_args: "start -p $PORT"
+  environment:
+    NODE_ENV: "production"
+    AGORA_APP_ID: "${AGORA_APP_ID}"
+    AGORA_APP_CERTIFICATE: "${AGORA_APP_CERTIFICATE}"
+    SUPABASE_URL: "${SUPABASE_URL}"
+    SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY}"
+    NEXT_PUBLIC_SUPABASE_URL: "${NEXT_PUBLIC_SUPABASE_URL}"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "${NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+    # Add any other env vars here as needed
