@@ -11,15 +11,16 @@
 
 2. In the Node.js App settings page:
    - Set all environment variables manually:
-     ```
-     NODE_ENV=production
-     AGORA_APP_ID=your-agora-app-id
-     AGORA_APP_CERTIFICATE=your-agora-certificate
-     SUPABASE_URL=your-supabase-url
-     SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-     NEXT_PUBLIC_SUPABASE_URL=your-public-supabase-url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-     ```
+
+   ```bash
+   NODE_ENV=production
+   AGORA_APP_ID=your-agora-app-id
+   AGORA_APP_CERTIFICATE=your-agora-certificate
+   SUPABASE_URL=your-supabase-url
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   NEXT_PUBLIC_SUPABASE_URL=your-public-supabase-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   ```
 
 3. Create a Git Version Control deployment in cPanel:
    - Go to "Git Version Control"
@@ -31,11 +32,12 @@
 
 4. In Repository settings:
    - Set "Deployment Commands" to:
-     ```
-     npm ci
-     npm run build
-     touch tmp/restart.txt
-     ```
+
+   ```bash
+   npm ci
+   npm run build
+   touch tmp/restart.txt
+   ```
 
 5. Run a manual pull/deploy to initialize everything
 
