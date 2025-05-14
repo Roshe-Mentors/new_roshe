@@ -1,6 +1,7 @@
 # Deployment on cPanel
 
 This app requires a NodeJS environment (not just static hosting) because it uses:
+
 1. Server API Routes (`app/api/*`)
 2. Server-side rendering
 3. Dynamic data fetching
@@ -10,6 +11,7 @@ This app requires a NodeJS environment (not just static hosting) because it uses
 ### Manual Setup (Recommended)
 
 1. SSH into your cPanel server and:
+
    ```bash
    # Clone the repo to your home directory
    cd ~
@@ -49,6 +51,7 @@ If you prefer automated deployment:
    - Use server.js as startup
 
 3. Update your .cpanel.yml file in your repo with:
+
    ```yaml
    ---
    deployment:
