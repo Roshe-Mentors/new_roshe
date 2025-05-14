@@ -10,16 +10,17 @@ repository:
 
 deployment:
   tasks:
-    # Install deps and build the app
+    # Install deps and prepare Node.js app
     - npm ci
     - npm run build
+    # No need to copy files - run directly from repo
 
 application:
   type: "nodejs"
-  # Serve from built Next.js application directory
+  # Use custom server.js for cPanel Node.js app
   app_root: "."
-  startup_file: "node_modules/.bin/next"
-  startup_args: "start -p $PORT"
+  startup_file: "server.js"
+  passenger_app_env: "production"
   environment:
     NODE_ENV: "production"
     AGORA_APP_ID: "${AGORA_APP_ID}"
