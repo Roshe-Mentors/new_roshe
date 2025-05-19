@@ -43,3 +43,17 @@ export const getUser = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   return session?.user;
 };
+
+// Get user session
+export const getSession = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+};
+
+// Watch for auth changes (e.g., login, logout)
+export const onAuthStateChange = (callback: (session: any) => void) => {
+  const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(session);
+  });
+  return authListener;
+};

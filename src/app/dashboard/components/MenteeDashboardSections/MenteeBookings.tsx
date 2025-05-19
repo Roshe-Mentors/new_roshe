@@ -1,16 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Added for redirection
 import { Mentor } from '../common/types';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { saveAs } from 'file-saver';
 
 import { supabase } from '../../../../lib/supabaseClient';
-import dynamic from 'next/dynamic';
-// Dynamically load Agora meeting component on client only
-const AgoraMeeting = dynamic(() => import('../../../../components/AgoraMeeting'), { ssr: false });
 
 // Availability slot from mentor profile
 interface AvailabilitySlot {
@@ -41,6 +38,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   setSelectedMentorId,
   user
 }) => {
+  const router = useRouter(); // Initialize router
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
@@ -48,11 +46,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   // Fixed video call sessions, 30-minute duration
   const sessionDuration = 30;
   const [agenda, setAgenda] = useState<string>('');
-  const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details' | 'confirmation'>('select-mentor');
+  // Adjusted bookingStep type, removed 'confirmation' as we redirect
+  const [bookingStep, setBookingStep] = useState<'select-mentor' | 'select-time' | 'session-details'>('select-mentor');
   const [isBooking, setIsBooking] = useState(false);
   const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
-  const [bookingResult, setBookingResult] = useState<any>(null);
-  const [showMeetingRoom, setShowMeetingRoom] = useState(false);
 
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
 
@@ -153,35 +150,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         })
     : [];
 
-  const formatDateTime = (dateStr: string) => {
-    const dt = new Date(dateStr);
-    if (isNaN(dt.getTime())) return '';
-    return dt.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-  const generateICS = (session: any) => {
-    const dtstart = formatDateTime(session.start_time);
-    const dtend = formatDateTime(session.end_time);
-    const lines = [
-      'BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',
-      `DTSTART:${dtstart}`,`DTEND:${dtend}`,
-      `SUMMARY:${session.title}`,
-      `DESCRIPTION:${session.description || ''}`,
-      `URL:${session.meeting_link}`,
-      'END:VEVENT','END:VCALENDAR'
-    ];
-    return new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-  };
-  const generateGoogleLink = (session: any) => {
-    // Prevent invalid dates
-    const startRaw = formatDateTime(session.start_time);
-    const endRaw = formatDateTime(session.end_time);
-    if (!startRaw || !endRaw) return '';
-    const text = encodeURIComponent(session.title);
-    const details = encodeURIComponent(session.description || '');
-    const location = encodeURIComponent(session.meeting_link || '');
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startRaw}/${endRaw}&details=${details}&location=${location}`;
-  };
-
   const handleBookSession = async () => {
     if (!selectedMentor || !user.id || !selectedDate || !selectedTimeSlot) return;
     setIsBooking(true);
@@ -202,14 +170,18 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         }),
       });
       const data = await response.json();
-      if (data.success) {
-        setBookingResult(data.meeting);
-        setBookingStep('confirmation');
+      if (data.success && data.meeting) {
+        // Redirect to the dedicated meeting page
+        toast.success('Session booked successfully! Redirecting to meeting room...');
+        const { channelName, token, appId } = data.meeting;
+        router.push(`/meeting/${channelName}?token=${token}&appId=${appId}`);
+        // Removed setBookingResult and setBookingStep to 'confirmation'
       } else {
         toast.error(data.error || 'Failed to book session');
       }
-    } catch {
-      toast.error('Failed to book session');
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast.error('Failed to book session due to an unexpected error.');
     } finally {
       setIsBooking(false);
     }
@@ -448,22 +420,24 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   const renderSessionDetails = () => {
     return (
       <div className="space-y-6">
-        <div className="flex items-center">
-          <button
-            onClick={() => setBookingStep('select-time')}
-            className="mr-4 text-indigo-600 hover:text-indigo-800"
-            aria-label="Go back to time selection"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">Session Details</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <button
+              onClick={() => setBookingStep('select-time')}
+              className="mr-4 text-indigo-600 hover:text-indigo-800"
+              aria-label="Go back to time selection"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800">Session Details</h2>
+          </div>
         </div>
         
-        {selectedMentor && selectedDate && selectedTimeSlot && (
-          <div className="p-4 bg-indigo-50 rounded-lg space-y-2">
-            <div className="flex items-center">
+        {selectedMentor && (
+          <div className="p-4 bg-indigo-50 rounded-lg">
+            <div className="flex items-center mb-3">
               <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4 overflow-hidden">
                 {selectedMentor.imageUrl ? (
                   <Image 
@@ -484,106 +458,57 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
                 <p className="text-xs text-gray-500">{selectedMentor.role} at {selectedMentor.company}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="font-medium">Date: </span>
-                {new Date(selectedDate).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </div>
-              <div>
-                <span className="font-medium">Time: </span>
-                {new Date(`2000-01-01T${selectedTimeSlot}:00`).toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: 'numeric',
-                  hour12: true
-                })}
-              </div>
+            <div className="text-sm text-gray-700">
+              <p><span className="font-medium">Date:</span> {selectedDateObj ? selectedDateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</p>
+              <p><span className="font-medium">Time:</span> {selectedTimeSlot ? new Date(`1970-01-01T${selectedTimeSlot}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'N/A'} for {sessionDuration} minutes</p>
             </div>
           </div>
         )}
         
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Session Agenda</h3>
-            <textarea
-              className="w-full rounded-lg border border-gray-200 p-3 focus:border-indigo-500 focus:ring-indigo-500"
-              rows={4}
-              placeholder="Describe what you'd like to discuss in this session..."
-              value={agenda}
-              onChange={(e) => setAgenda(e.target.value)}
-            ></textarea>
-          </div>
-        </div>
-        
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={handleBookSession}
-            disabled={isBooking}
-            className={`px-6 py-2 bg-indigo-600 text-white rounded-lg ${
-              isBooking ? 'opacity-70 cursor-not-allowed' : 'hover:bg-indigo-700'
-            } transition-colors`}
-          >
-            {isBooking ? 'Booking...' : 'Book Session'}
-          </button>
-        </div>
-      </div>
-    );
-  };
-  
-  const renderConfirmation = () => {
-    const googleLink = generateGoogleLink(bookingResult);
-    return (
-    <div className="text-center space-y-6 py-10">
-      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-        {/* ...success icon... */}
-      </div>
-      <h2 className="text-2xl font-semibold text-gray-800">Session Booked!</h2>
-      <p className="mt-2 text-gray-600">Your session has been scheduled successfully.</p>
-      {bookingResult && (
-        <div className="mt-4 flex flex-col space-y-2 items-center">
-          <button onClick={() => setShowMeetingRoom(true)} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-            Join Session
-          </button>
-          {googleLink ? (
-            <a href={googleLink} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-              Add to Google Calendar
-            </a>
-           ) : (
-            <button disabled className="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
-              Calendar Unavailable
-            </button>
-           )}
-          <button onClick={() => saveAs(generateICS(bookingResult), `session-${bookingResult.id}.ics`)} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Add to Calendar (.ics)
-          </button>
-        </div>
-      )}      {showMeetingRoom && bookingResult && (
-        <div className="mt-6">
-          <AgoraMeeting
-            channel={bookingResult.channel || bookingResult.meeting_link}
-            token={bookingResult.token}
-            appId={bookingResult.appId}
-            userName={user.email as string}
+        <div>
+          <label htmlFor="agenda" className="block text-sm font-medium text-gray-700 mb-1">
+            What would you like to discuss? (Optional)
+          </label>
+          <textarea
+            id="agenda"
+            value={agenda}
+            onChange={(e) => setAgenda(e.target.value)}
+            rows={4}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="e.g., Career advice, project feedback, technical questions..."
           />
         </div>
-      )}
-      <div className="pt-6">
-        <button
-          onClick={() => {
-            setBookingStep('select-mentor');
-            setSelectedDate('');
-            setSelectedTimeSlot('');
-            setAgenda('');
-          }}
-          className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-        >
-          Book Another Session
-        </button>
+        
+        <div className="flex justify-between items-center mt-6">
+          <button
+            onClick={() => setBookingStep('select-time')}
+            className="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            Back
+          </button>
+          <button
+            onClick={handleBookSession}
+            disabled={isBooking || !selectedMentor || !selectedDate || !selectedTimeSlot}
+            className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center ${
+              isBooking || !selectedMentor || !selectedDate || !selectedTimeSlot
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            }`}
+          >
+            {isBooking ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Booking...
+              </>
+            ) : (
+              'Confirm & Book Session'
+            )}
+          </button>
+        </div>
       </div>
-    </div>
     );
   };
   
@@ -593,7 +518,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       {bookingStep === 'select-mentor' && renderMentorSelection()}
       {bookingStep === 'select-time' && renderTimeSelection()}
       {bookingStep === 'session-details' && renderSessionDetails()}
-      {bookingStep === 'confirmation' && renderConfirmation()}
     </div>
   );
 };

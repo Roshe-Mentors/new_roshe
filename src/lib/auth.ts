@@ -60,3 +60,13 @@ export function useUser(): UserContextType {
   }
   return context;
 }
+
+// Get currently logged-in user (imperative)
+export async function getUser(): Promise<User | null> {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error('Error getting session:', error.message);
+    return null;
+  }
+  return session?.user || null;
+}

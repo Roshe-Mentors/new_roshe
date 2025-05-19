@@ -1,17 +1,14 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { useUser } from '../../../../lib/auth';
 import Image from 'next/image';
 import { startSession, completeSession, cancelSession } from '../../../../services/sessionService';
 import { getMentorReviews } from '../../../../services/reviewService';
 import { toast } from 'react-toastify';
-import { FaVideo, FaPhoneAlt, FaCalendarCheck, FaClock, FaStar } from 'react-icons/fa';
+import { FaVideo, FaCalendarCheck, FaClock, FaStar, FaDownload, FaGoogle } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
 import { supabase } from '../../../../lib/supabaseClient';
-
-// Dynamically load AgoraMeeting on client only
-const AgoraMeeting = dynamic(() => import('../../../../components/AgoraMeeting'), { ssr: false });
 
 const formatICSDate = (dateString: string) => new Date(dateString).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 const generateICSString = (session: any) => {
@@ -23,7 +20,7 @@ const generateICSString = (session: any) => {
     `UID:session-${session.id}@roshe`,`DTSTAMP:${dtStamp}`,`DTSTART:${dtStart}`,`DTEND:${dtEnd}`,
     `SUMMARY:${session.title}`,`DESCRIPTION:${session.description || ''}`,`URL:${session.meeting_link || ''}`,
     'END:VEVENT','END:VCALENDAR'
-  ].join('\r\n');
+  ].join('\\r\\n');
 };
 const generateGoogleLink = (session: any) => {
   const start = formatICSDate(session.start_time);
@@ -34,28 +31,15 @@ const generateGoogleLink = (session: any) => {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
 };
 
-// Sync session to Google Calendar via API route
-async function syncSessionToGoogle(session: any, userId: string, userRole: 'mentor') {
-  const response = await fetch('/api/calendar/events', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session, userId, userRole })
-  });
-  if (!response.ok) throw new Error('Failed to sync event');
-  return await response.json();
-}
-
 interface MentorSessionsProps {
   mentorId: string;
 }
 
 const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
-  const { user } = useUser();  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { user } = useUser();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sessions, setSessions] = useState<any[]>([]);
-  const [showMeetingRoom, setShowMeetingRoom] = useState(false);
-  const [currentMeetingId, setCurrentMeetingId] = useState<string>('');
-  const [meetingToken, setMeetingToken] = useState<string>('');
-  const [appId, setAppId] = useState<string>('');
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'reviews'>('upcoming');
   const [cancelSessionId, setCancelSessionId] = useState<string | null>(null);
@@ -69,11 +53,9 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Load both sessions and reviews
         const sessionsPromise = fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
         const reviewsPromise = getMentorReviews(mentorId);
         
-        // Use Promise.allSettled instead of Promise.all to handle partial success
         const [sessionsResult, reviewsResult] = await Promise.allSettled([
           sessionsPromise,
           reviewsPromise
@@ -88,7 +70,6 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
         }
         setSessions(allSessions);
         
-        // Handle reviews result
         if (reviewsResult.status === 'fulfilled') {
           setReviews(reviewsResult.value);
         } else {
@@ -109,37 +90,25 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     }
   }, [mentorId]);
 
-  // Subscribe to real-time new session bookings for this mentor
   useEffect(() => {
     let sessionChannel: any;
     if (mentorId) {
       sessionChannel = supabase
         .channel(`mentor_sessions_${mentorId}`)
-        // New session booked
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
           const newSession = (payload as any).new;
           setSessions(prev => [...prev, newSession]);
           toast.info(
             <span>
-              A new session has been booked by a mentee.{' '}
-              <a
-                href={`/meeting/${newSession.meeting_link}`}
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Join Now
-              </a>
+              A new session has been booked by a mentee. Check your upcoming sessions.
             </span>
           );
         })
-        // Session record updated (status, times, etc.)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
           const updated = (payload as any).new;
           setSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
           toast.info('A session has been updated');
         })
-        // Session deleted or cancelled at DB-level
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'mentoring_sessions', filter: `mentor_id=eq.${mentorId}` }, payload => {
           const deleted = (payload as any).old;
           setSessions(prev => prev.filter(s => s.id !== deleted.id));
@@ -154,15 +123,12 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
   
   const handleCancelSession = async () => {
     if (!cancelSessionId) return;
-    
     setIsCancelling(true);
     try {
       await cancelSession(cancelSessionId, cancellationReason);
       toast.success('Session cancelled successfully');
       setCancelSessionId(null);
       setCancellationReason('');
-      
-      // Reload sessions
       const sessionsData = await fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
       setSessions(sessionsData);
     } catch (error) {
@@ -173,17 +139,29 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     }
   };
   
-  const handleStartSession = async (sessionId: string) => {
+  const handleStartSession = async (sessionId: string, meetingLink: string) => {
     try {
       await startSession(sessionId);
-      toast.success('Session started successfully');
-      
-      // Reload sessions
-      const sessionsData = await fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
-      setSessions(sessionsData);
+      toast.success('Session started! Redirecting to meeting room...');
+      if (user && meetingLink) {
+        const res = await fetch('/api/video/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ meetingId: meetingLink, userName: user.email || user.id })
+        });
+        const data = await res.json();
+        if (data.token && data.appId && data.channel) {
+          router.push(`/meeting/${data.channel}?token=${data.token}&appId=${data.appId}`);
+        } else {
+          toast.error('Could not retrieve meeting details. Please try again.');
+        }
+      } else {
+        toast.error('User or meeting link missing, cannot start session.');
+      }
+      fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => setSessions(data.sessions || []));
     } catch (error) {
       console.error('Error starting session:', error);
-      toast.error('Failed to start session');
+      toast.error('Failed to start session. Please try again.');
     }
   };
   
@@ -191,8 +169,6 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     try {
       await completeSession(sessionId);
       toast.success('Session completed successfully');
-      
-      // Reload sessions
       const sessionsData = await fetch(`/api/sessions?mentorId=${mentorId}`).then(res => res.json()).then(data => data.sessions || []);
       setSessions(sessionsData);
     } catch (error) {
@@ -200,25 +176,28 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       toast.error('Failed to complete session');
     }
   };
-    const handleJoinSession = async (session: any) => {
+
+  const handleJoinSession = async (session: any) => {
     if (session.meeting_link && user) {
-      // Generate token for this meeting
       try {
+        toast.info('Joining session... Please wait.');
         const res = await fetch('/api/video/token', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ meetingId: session.meeting_link, userName: user.email })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ meetingId: session.meeting_link, userName: user.email || user.id })
         });
         const data = await res.json();
-        setCurrentMeetingId(data.channel || session.meeting_link);
-        setMeetingToken(data.token);
-        setAppId(data.appId);
-        setShowMeetingRoom(true);
-      } catch {
-        toast.error('Unable to join session');
+        if (data.token && data.appId && data.channel) {
+          router.push(`/meeting/${data.channel}?token=${data.token}&appId=${data.appId}`);
+        } else {
+          toast.error('Could not retrieve meeting details. Please try again.');
+        }
+      } catch (error){
+        console.error('Error joining session:', error);
+        toast.error('Unable to join session. Please check your connection or try again later.');
       }
     } else {
-      toast.info('This session has no meeting link. Please contact support.');
+      toast.error('Meeting link is missing or user is not available. Cannot join session.');
     }
   };
   
@@ -229,7 +208,6 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     thisWeekStart.setDate(today.getDate() - today.getDay());
     const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
     
-    // First filter by status
     let filtered = sessions.filter(session => {
       if (status === 'upcoming') {
         return ['upcoming', 'active'].includes(session.status) && !session.cancelled_at;
@@ -238,11 +216,9 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       }
     });
     
-    // Then apply time period filter if not 'all'
     if (filterOption !== 'all') {
       filtered = filtered.filter(session => {
         const sessionDate = new Date(session.start_time);
-        
         if (filterOption === 'today') {
           return sessionDate >= today && sessionDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
         } else if (filterOption === 'thisWeek') {
@@ -258,7 +234,6 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       });
     }
     
-    // Apply search filter if there's a query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(session => 
@@ -268,15 +243,15 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       );
     }
     
-    // Apply sorting
     return filtered.sort((a, b) => {
       const dateA = new Date(a.start_time).getTime();
       const dateB = new Date(b.start_time).getTime();
-      return sortOption === 'newest' ? dateA - dateB : dateB - dateA;
+      return sortOption === 'newest' ? dateB - dateA : dateA - dateB;
     });
   };
   
   const formatDateTime = (dateString: string) => {
+    if (!dateString) return 'Date not set';
     const date = new Date(dateString);
     return date.toLocaleString(undefined, {
       weekday: 'short',
@@ -291,9 +266,11 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
   };
   
   const calculateDuration = (start: string, end: string) => {
+    if (!start || !end) return 'Duration not set';
     const startDate = new Date(start);
     const endDate = new Date(end);
     const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+    if (isNaN(durationMinutes) || durationMinutes < 0) return 'Invalid duration';
     return `${durationMinutes} minutes`;
   };
   
@@ -309,8 +286,10 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
       return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Completed</span>;
     } else if (isActive) {
       return <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded">In Progress</span>;
+    } else if (now > endTime && session.status !== 'completed') {
+      return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Pending Completion</span>;
     } else {
-      return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Upcoming</span>;
+      return <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Upcoming</span>;
     }
   };
   
@@ -328,49 +307,41 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     }
     
     return (
-      <div className="mt-2 space-x-2">
-        {isActive && (
-          <>
-            <button 
-              onClick={() => handleJoinSession(session)}
-              className="px-4 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
-            >
-              Join Session
-            </button>
+      <div className="mt-3 flex flex-wrap gap-2 items-center">
+        {isActive && session.meeting_link && (
+          <button 
+            onClick={() => handleJoinSession(session)}
+            className="flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700 transition-colors"
+          >
+            <FaVideo className="mr-1.5 h-3.5 w-3.5" /> Join Session
+          </button>
+        )}
+        
+        {isUpcoming && !isActive && session.meeting_link && (startTime.getTime() - now.getTime() < 10 * 60 * 1000) && (
+          <button 
+            onClick={() => handleStartSession(session.id, session.meeting_link)}
+            className="flex items-center px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded hover:bg-green-600 transition-colors"
+          >
+            <FaVideo className="mr-1.5 h-3.5 w-3.5" /> Start Session
+          </button>
+        )}
+
+        {(isActive || (isPast && !isCompleted)) && (
             <button 
               onClick={() => handleCompleteSession(session.id)}
-              className="px-4 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+              className="flex items-center px-3 py-1.5 bg-sky-500 text-white text-xs font-medium rounded hover:bg-sky-600 transition-colors"
             >
-              Complete Session
+              <FaCalendarCheck className="mr-1.5 h-3.5 w-3.5" /> 
+              {isPast && !isCompleted ? 'Mark Complete' : 'Complete Session'}
             </button>
-          </>
         )}
         
         {isUpcoming && (
-          <>
-            {startTime.getTime() - now.getTime() < 10 * 60 * 1000 && (
-              <button 
-                onClick={() => handleStartSession(session.id)}
-                className="px-4 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors"
-              >
-                Start Session
-              </button>
-            )}
-            <button 
-              onClick={() => setCancelSessionId(session.id)}
-              className="px-4 py-1 bg-red-100 text-red-600 text-sm rounded hover:bg-red-200 transition-colors"
-            >
-              Cancel
-            </button>
-          </>
-        )}
-        
-        {isPast && !isCompleted && (
           <button 
-            onClick={() => handleCompleteSession(session.id)}
-            className="px-4 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+            onClick={() => setCancelSessionId(session.id)}
+            className="flex items-center px-3 py-1.5 bg-red-100 text-red-600 text-xs font-medium rounded hover:bg-red-200 transition-colors"
           >
-            Mark Complete
+            Cancel
           </button>
         )}
       </div>
@@ -427,317 +398,178 @@ const MentorSessions: React.FC<MentorSessionsProps> = ({ mentorId }) => {
     );
   };
   
-  const renderEmptyState = (tab: 'upcoming' | 'past' | 'reviews') => (
-    <div className="text-center py-12">
-      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-        {tab === 'reviews' ? (
-          <FaStar className="text-gray-400 text-2xl" />
-        ) : (
-          <FaCalendarCheck className="text-gray-400 text-2xl" />
-        )}
-      </div>
-      <h3 className="text-lg font-medium text-gray-900">
-        {tab === 'upcoming'
-          ? "No upcoming sessions"
-          : tab === 'past'
-          ? "No past sessions"
-          : "No reviews yet"}
-      </h3>
-      <p className="text-gray-500 mt-2">
-        {tab === 'upcoming'
-          ? "You don't have any upcoming sessions with mentees."
-          : tab === 'past'
-          ? "You don't have any past mentoring sessions."
-          : "You haven't received any reviews from mentees yet."}
-      </p>
-    </div>
-  );
-  
   const renderReviews = () => {
+    if (reviews.length === 0) {
+      return <p className="text-center text-gray-500 py-8">No reviews yet.</p>;
+    }
     return (
-      <div className="space-y-6">
-        {reviews.length === 0 ? (
-          renderEmptyState('reviews')
-        ) : (
-          reviews.map((review) => (
-            <div key={review.id} className="border border-gray-200 rounded-lg p-4 bg-white">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-                  {review.mentees?.profile_image_url ? (
-                    <Image
-                      src={review.mentees.profile_image_url}
-                      alt={review.mentees?.name || 'Mentee'}
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-indigo-600 font-medium text-lg">
-                      {(review.mentees?.name?.charAt(0) || 'M').toUpperCase()
-                    }</span>
-                  )}
-                </div>
-                <div className="flex-grow">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    {review.mentees?.name || 'Anonymous Mentee'}
-                  </h3>
-                  
-                  <div className="flex items-center mt-1">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <FaStar
-                          key={i}
-                          className={i < review.rating ? "text-yellow-500" : "text-gray-300"}
-                        />
-                      ))}
-                    </div>
-                    <span className="ml-2 text-sm text-gray-600">{review.rating}/5</span>
-                  </div>
-                  
-                  {review.feedback && (
-                    <p className="text-sm text-gray-600 mt-2 border-t border-gray-100 pt-2">
-                      "{review.feedback}"
-                    </p>
-                  )}
-                  
-                  <p className="text-xs text-gray-500 mt-2">
-                    {new Date(review.created_at).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
-                    {review.session?.session_title || review.session?.name ? (
-                      <> • {review.session?.session_title || review.session?.name}</>
-                    ) : null}
-                  </p>
-                </div>
+      <div className="space-y-4">
+        {reviews.map(review => (
+          <div key={review.id} className="bg-white p-4 rounded-lg shadow border border-gray-200">
+            <div className="flex items-center mb-2">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'} />
+                ))}
               </div>
+              <span className="ml-2 text-sm text-gray-600">by {review.mentees?.name || 'Anonymous'}</span>
             </div>
-          ))
-        )}
+            <p className="text-gray-700">{review.comment}</p>
+            <p className="text-xs text-gray-400 mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
+          </div>
+        ))}
       </div>
     );
   };
-  // Render inline Agora meeting if toggled
-  if (showMeetingRoom && currentMeetingId && meetingToken && appId && user) {
-    return (
-      <AgoraMeeting
-        channel={currentMeetingId}
-        token={meetingToken}
-        appId={appId}
-        userName={user.email as string}
-      />
-    );
-  }
 
-  return (
-    <div className="space-y-6">
-      {renderCancelSessionModal()}
-      
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200">
-          <button
-            className={`flex-1 py-4 px-6 text-center focus:outline-none ${
-              activeTab === 'upcoming'
-                ? 'border-b-2 border-indigo-500 text-indigo-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('upcoming')}
-          >
-            Upcoming Sessions
-          </button>
-          <button
-            className={`flex-1 py-4 px-6 text-center focus:outline-none ${
-              activeTab === 'past'
-                ? 'border-b-2 border-indigo-500 text-indigo-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('past')}
-          >
-            Past Sessions
-          </button>
-          <button
-            className={`flex-1 py-4 px-6 text-center focus:outline-none ${
-              activeTab === 'reviews'
-                ? 'border-b-2 border-indigo-500 text-indigo-700 font-medium'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('reviews')}
-          >
-            Reviews
-          </button>
-        </div>
-        
-        {/* Filter and Sort Options */}
-        <div className="p-4 flex items-center gap-4">
-          <select
-            aria-label="Filter sessions"
-            value={filterOption}
-            onChange={(e) => setFilterOption(e.target.value as 'all' | 'today' | 'thisWeek' | 'thisMonth')}
-            className="border border-gray-300 rounded-lg p-2 text-sm"
-          >
-            <option value="all">All</option>
-            <option value="today">Today</option>
-            <option value="thisWeek">This Week</option>
-            <option value="thisMonth">This Month</option>
-          </select>
-          <select
-            aria-label="Sort sessions"
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value as 'newest' | 'oldest')}
-            className="border border-gray-300 rounded-lg p-2 text-sm"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-          </select>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search sessions..."
-            className="border border-gray-300 rounded-lg p-2 text-sm flex-grow"
-          />
-        </div>
-        
-        {/* Content */}
-        <div className="p-6">
-          {isLoading ? (
-            <div className="py-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
-              <p className="mt-3 text-gray-500">Loading data...</p>
-            </div>
-          ) : (
-            activeTab === 'reviews' ? (
-              renderReviews()
-            ) : (
-              <div className="space-y-6">
-                {filterSessions(activeTab).length === 0 ? (
-                  renderEmptyState(activeTab)
-                ) : (
-                  filterSessions(activeTab).map((session) => (
-                    <div key={session.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-                          {session.mentees?.profile_image_url ? (
-                            <Image
-                              src={session.mentees.profile_image_url}
-                              alt={session.mentees?.name || 'Mentee'}
-                              width={48}
-                              height={48}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-indigo-600 font-medium text-lg">
-                              {(session.mentees?.name?.charAt(0) || 'M').toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-grow">
-                          <div className="flex justify-between">
-                            <h3 className="text-sm font-medium text-gray-900">
-                              {session.title || `Session with ${session.mentees?.name || 'Mentee'}`}
-                            </h3>
-                            {renderStatus(session)}
-                          </div>
-                          <p className="text-xs text-gray-500">
-                            {session.mentees?.name || 'Mentee'}
-                          </p>
-                          {/* Show mentee email */}
-                          {session.mentees?.email && (
-                            <p className="text-xs text-gray-500">
-                              {session.mentees.email}
-                            </p>
-                          )}
-                          {/* Session description */}
-                          {session.description && (
-                            <p className="text-sm text-gray-700 mt-1">
-                              {session.description}
-                            </p>
-                          )}
-                          {/* Meeting link */}
-                          {session.meeting_link && (
-                            <div className="flex items-center text-xs text-indigo-600 mt-1">
-                              <FaVideo className="mr-1" />
-                              <a
-                                href={session.meeting_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline hover:text-indigo-800"
-                              >
-                                Join Meeting
-                              </a>
-                            </div>
-                          )}
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                            <div className="flex items-center text-xs text-gray-600">
-                              <FaClock className="mr-1 text-gray-400" />
-                              {formatDateTime(session.start_time)}
-                            </div>
-                            <div className="flex items-center text-xs text-gray-600">
-                              <span className="mr-1">Duration:</span>
-                              {calculateDuration(session.start_time, session.end_time)}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center text-xs text-gray-600 mt-1">
-                            {session.meeting_link ? (
-                              <>
-                                {session.title?.includes('Video') ? (
-                                  <FaVideo className="mr-1 text-gray-400" />
-                                ) : (
-                                  <FaPhoneAlt className="mr-1 text-gray-400" />
-                                )}
-                                <span>Online meeting available</span>
-                              </>
-                            ) : (
-                              <span>No meeting link</span>
-                            )}
-                          </div>
-                          
-                          <div className="mt-2 flex space-x-2">
-                            {/* Sync via API if connected, else fallback to link */}
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await syncSessionToGoogle(session, mentorId, 'mentor');
-                                  toast.success('Event synced to Google Calendar');
-                                } catch (e) {
-                                  console.error(e);
-                                  toast.error('Failed to sync event');
-                                }
-                              }}
-                              className="px-2 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
-                            >
-                              Sync to Google Calendar
-                            </button>
-                            <a
-                              href={generateGoogleLink(session)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-2 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
-                            >
-                              Add via Link
-                            </a>
-                            <button
-                              onClick={() => saveAs(new Blob([generateICSString(session)], { type: 'text/calendar;charset=utf-8' }), `session-${session.id}.ics`)}
-                              className="px-2 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
-                            >
-                              Add to Calendar (.ics)
-                            </button>
-                          </div>
-                          
-                          {renderSessionActions(session)}
-                        </div>
-                      </div>
+  const renderSessionsList = (sessionsToRender: any[], type: 'upcoming' | 'past') => {
+    if (sessionsToRender.length === 0) {
+      return <p className="text-center text-gray-500 py-8">No {type} sessions found.</p>;
+    }
+    return (
+      <div className="space-y-6">
+        {sessionsToRender.map(session => (
+          <div key={session.id} className="bg-white p-5 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-start">
+              <div>
+                <h3 className="text-lg font-semibold text-indigo-700 mb-1">{session.title || 'Mentoring Session'}</h3>
+                <div className="flex items-center text-sm text-gray-600 mb-1">
+                  <FaCalendarCheck className="mr-2 text-gray-400" />
+                  <span>{formatDateTime(session.start_time)}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600 mb-2">
+                  <FaClock className="mr-2 text-gray-400" />
+                  <span>{calculateDuration(session.start_time, session.end_time)}</span>
+                </div>
+                {session.mentees && (
+                  <div className="flex items-center text-sm text-gray-700 font-medium mb-2">
+                     <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center mr-2 overflow-hidden text-xs">
+                      {session.mentees.image_url ? (
+                        <Image src={session.mentees.image_url} alt={session.mentees.name || 'Mentee'} width={24} height={24} className="object-cover" />
+                      ) : (session.mentees.name || 'M').charAt(0).toUpperCase()}
                     </div>
-                  ))
+                    <span>With: {session.mentees.name || 'N/A'} ({session.mentees.email || 'N/A'})</span>
+                  </div>
                 )}
               </div>
-            )
-          )}
+              <div className="mt-3 sm:mt-0 sm:text-right">
+                {renderStatus(session)}
+              </div>
+            </div>
+            {session.description && (
+              <p className="text-sm text-gray-600 mt-2 mb-3 p-3 bg-gray-50 rounded-md">{session.description}</p>
+            )}
+            <div className="mt-3 pt-3 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center">
+              {renderSessionActions(session)}
+              <div className="flex items-center space-x-2 mt-3 sm:mt-0">
+                <button
+                  onClick={() => saveAs(new Blob([generateICSString(session)], { type: 'text/calendar;charset=utf-8' }), `session-${session.id}.ics`)}
+                  className="flex items-center text-xs text-gray-500 hover:text-indigo-600 transition-colors p-1.5 rounded hover:bg-indigo-50"
+                  title="Download .ICS File"
+                >
+                  <FaDownload className="h-4 w-4 mr-1" /> ICS
+                </button>
+                <a
+                  href={generateGoogleLink(session)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-xs text-gray-500 hover:text-indigo-600 transition-colors p-1.5 rounded hover:bg-indigo-50"
+                  title="Add to Google Calendar"
+                >
+                  <FaGoogle className="h-3.5 w-3.5 mr-1" /> Google Calendar
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800">My Sessions</h2>
         </div>
+
+        <div className="mb-6 bg-white shadow-sm rounded-lg p-1 sm:p-1.5">
+          <nav className="flex space-x-1 sm:space-x-2" aria-label="Tabs">
+            {[ 
+              { name: 'Upcoming', tab: 'upcoming' as const },
+              { name: 'Past', tab: 'past' as const },
+              { name: 'Reviews', tab: 'reviews' as const },
+            ].map((tabItem) => (
+              <button
+                key={tabItem.name}
+                onClick={() => setActiveTab(tabItem.tab)}
+                className={`flex-1 whitespace-nowrap py-2.5 px-2 sm:px-4 border-b-2 font-medium text-sm rounded-md transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 ${
+                  activeTab === tabItem.tab
+                    ? 'bg-indigo-100 text-indigo-700 border-indigo-500'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 hover:border-gray-300'
+                }`}
+              >
+                {tabItem.name}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {(activeTab === 'upcoming' || activeTab === 'past') && (
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end bg-white p-4 rounded-lg shadow-sm">
+            <div>
+              <label htmlFor="filter-sessions" className="block text-xs font-medium text-gray-700 mb-1">Filter by</label>
+              <select 
+                id="filter-sessions" 
+                value={filterOption}
+                onChange={(e) => setFilterOption(e.target.value as any)}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"
+              >
+                <option value="all">All</option>
+                <option value="today">Today</option>
+                <option value="thisWeek">This Week</option>
+                <option value="thisMonth">This Month</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="sort-sessions" className="block text-xs font-medium text-gray-700 mb-1">Sort by</label>
+              <select 
+                id="sort-sessions" 
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as any)}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"
+              >
+                <option value="newest">Date (Newest First)</option>
+                <option value="oldest">Date (Oldest First)</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="search-sessions" className="block text-xs font-medium text-gray-700 mb-1">Search</label>
+              <input 
+                type="text" 
+                id="search-sessions"
+                placeholder="Title, mentee, description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+            <p className="mt-3 text-sm text-gray-500">Loading sessions...</p>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'upcoming' && renderSessionsList(filterSessions('upcoming'), 'upcoming')}
+            {activeTab === 'past' && renderSessionsList(filterSessions('past'), 'past')}
+            {activeTab === 'reviews' && renderReviews()}
+          </>
+        )}
+        {renderCancelSessionModal()}
       </div>
     </div>
   );

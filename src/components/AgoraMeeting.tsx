@@ -1,19 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import AgoraRTC, { 
   IAgoraRTCClient, 
-  IAgoraRTCRemoteUser, 
   ICameraVideoTrack, 
   IMicrophoneAudioTrack
 } from 'agora-rtc-sdk-ng';
 import { AGORA_CLIENT_APP_ID } from '../config/agoraConfig';
-import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools, FaSpinner } from 'react-icons/fa';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools, FaSpinner, FaCommentDots, FaDesktop } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { IAgoraRTCRemoteUser } from 'agora-rtc-sdk-ng';
 import MediaTest from './MediaTest';
 import VirtualBackground from './VirtualBackground';
+import ChatPanel from './ChatPanel';
 
 interface AgoraMeetingProps {
   channel: string;
   token: string;
-  appId: string;
+  appId?: string; // made optional to allow default from config
   userName: string;
 }
 
@@ -34,10 +36,19 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const [fullScreenUser, setFullScreenUser] = useState<IAgoraRTCRemoteUser | null>(null);
   const [virtualBg, setVirtualBg] = useState(false);
   const [showDeviceTest, setShowDeviceTest] = useState(false);
+  const [chatStreamId, setChatStreamId] = useState<number | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const [screenSharing, setScreenSharing] = useState(false);
+  const [screenShareError, setScreenShareError] = useState<string | null>(null);
+  const screenTrackRef = useRef<any>(null);
   // Track connection state for UX
   const [connectionState, setConnectionState] = useState<'CONNECTED'|'RECONNECTING'|'DISCONNECTED'>('CONNECTED');
+  // Volume and network quality indicators
+  const [volumes, setVolumes] = useState<Record<string, number>>({});
+  // const [networkQualities, setNetworkQualities] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    let chatDataId: number | null = null;
     if (hasJoinedRef.current) return;
     hasJoinedRef.current = true;
 
@@ -97,8 +108,19 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         return;
       }
 
-      // Store tracks in ref and mark joined
+      // store tracks and mark joined
       localTracksRef.current = [microphoneTrack, cameraTrack];
+      // setup chat data stream if supported
+      if (typeof (client as any).createDataStream === 'function') {
+        try {
+          chatDataId = await (client as any).createDataStream({ ordered: true, reliable: true }) as number;
+          setChatStreamId(chatDataId);
+        } catch (e) {
+          console.error('Failed to create chat data stream', e);
+        }
+      } else {
+        console.warn('createDataStream not available on AgoraRTCClient, chat disabled');
+      }
       setJoined(true);
     };
     joinChannel();
@@ -117,8 +139,16 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     };
     client.on('connection-state-change', onConnectionStateChange);
     
-    // Helper to force reload the meeting on disconnect
+    // Enable audio volume indicator
+    (client as any).enableAudioVolumeIndicator();
+    const onVolumeIndicator = (volumesArray: any[]) => {
+      volumesArray.forEach(({ uid, level }) => {
+        setVolumes(prev => ({ ...prev, [uid]: level }));
+      });
+    };
+    client.on('volume-indicator', onVolumeIndicator);
 
+    // Network quality indicator removed (not supported in SDK NG typings)
 
     // Clean up on unmount
     return () => {
@@ -126,10 +156,19 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       client.off('user-unpublished', onUserUnpublished);
       client.off('user-left', onUserLeft);
       client.off('connection-state-change', onConnectionStateChange);
+      (client as any).off('volume-indicator', onVolumeIndicator);
       const tracks = localTracksRef.current;
       if (tracks) {
         tracks[0].close();
         tracks[1].close();
+      }
+      if (chatDataId !== null && typeof (client as any).destroyDataStream === 'function') {
+        (client as any).destroyDataStream(chatDataId);
+      }
+      // cleanup screen share
+      if (screenTrackRef.current) {
+        client.unpublish(screenTrackRef.current);
+        try { screenTrackRef.current.close(); } catch {};
       }
       client.leave();
     };
@@ -154,6 +193,62 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const toggleVirtualBg = () => {
     setVirtualBg(prev => !prev);
     // TODO: load and apply BodyPix segmentation for true background replacement
+  };
+
+  const toggleScreenShare = async () => {
+    const client = clientRef.current;
+    if (!client) return;
+    if (!screenSharing) {
+      setScreenShareError(null);
+      // Stop and close camera track before screen share
+      const tracks = localTracksRef.current;
+      if (tracks && tracks[1]) {
+        try {
+          await client.unpublish(tracks[1]);
+          tracks[1].stop();
+          tracks[1].close();
+        } catch (e) {
+          console.warn('Error closing camera for screen share', e);
+        }
+      }
+      try {
+        const screenTrack = await AgoraRTC.createScreenVideoTrack({ encoderConfig: '1080p_1' });
+        screenTrackRef.current = screenTrack;
+        await client.publish(screenTrack);
+        setScreenSharing(true);
+      } catch (err: any) {
+        console.error('Screen share failed', err);
+        if (err.name === 'NotAllowedError' || err.code === 'PERMISSION_DENIED') {
+          setScreenShareError('Screen share permission denied. Please allow screen sharing.');
+        } else {
+          setScreenShareError('Screen share failed: ' + (err.message || 'Unknown error'));
+        }
+      }
+    } else {
+      // Stop screen share
+      if (screenTrackRef.current) {
+        try {
+          await client.unpublish(screenTrackRef.current);
+          screenTrackRef.current.stop();
+          screenTrackRef.current.close();
+        } catch (e) {
+          console.warn('Error stopping screen share', e);
+        }
+        screenTrackRef.current = null;
+      }
+      // Recreate and publish camera track after screen share
+      const audioTrack = localTracksRef.current ? localTracksRef.current[0] : null;
+      try {
+        const newCameraTrack = await AgoraRTC.createCameraVideoTrack();
+        localTracksRef.current = audioTrack ? [audioTrack, newCameraTrack] : [null as any, newCameraTrack];
+        await client.publish(newCameraTrack);
+        setVideoEnabled(true);
+      } catch (e) {
+        console.error('Failed to reinitialize camera after screen share', e);
+        setScreenShareError('Could not restore camera: ' + (e.message || e));
+      }
+      setScreenSharing(false);
+    }
   };
 
   const leaveCall = async () => {
@@ -255,17 +350,39 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         </div>
       )}
 
-      {/* Controls */}
-      <div className="bg-gray-800 p-2 flex justify-center space-x-4">
-        <button onClick={toggleAudio} title={audioEnabled ? 'Mute' : 'Unmute'} className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'}>
-          {audioEnabled ? <FaMicrophone /> : <FaMicrophoneSlash />}
-        </button>
+      {/* Screen share error banner */}
+      {screenShareError && (
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-red-100 text-red-800 p-2 rounded z-50">
+          {screenShareError}
+        </div>
+      )}
+
+      {/* Floating Controls */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 bg-opacity-75 backdrop-filter backdrop-blur-md p-4 rounded-full flex space-x-6 z-50 animate-fade-in">
+        {/* Animated control buttons */}
+        <AnimatePresence>
+          <motion.button
+            onClick={toggleAudio}
+            title={audioEnabled ? 'Mute' : 'Unmute'}
+            className="text-white p-2 rounded hover:bg-gray-700"
+            disabled={connectionState !== 'CONNECTED'}
+            whileTap={{ scale: 0.9 }}
+          >
+            {audioEnabled ? <FaMicrophone /> : <FaMicrophoneSlash />}
+          </motion.button>
+        </AnimatePresence>
         <button onClick={toggleVideo} title={videoEnabled ? 'Hide Video' : 'Show Video'} className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'}>
           {videoEnabled ? <FaVideo /> : <FaVideoSlash />}
         </button>
         <button onClick={toggleDeviceTest} title="Test Camera & Mic" className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'}>
           <FaTools />
         </button>
+        <motion.button onClick={toggleScreenShare} title={screenSharing ? 'Stop Sharing' : 'Share Screen'} className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'} whileTap={{ scale: 0.9 }}>
+          <FaDesktop />
+        </motion.button>
+        <motion.button onClick={() => setShowChat(prev => !prev)} title="Toggle Chat" className="text-white p-2 rounded hover:bg-gray-700" disabled={connectionState !== 'CONNECTED'} whileTap={{ scale: 0.9 }}>
+          <FaCommentDots />
+        </motion.button>
         <button onClick={leaveCall} title="End Call" className="text-red-500 p-2 rounded hover:bg-red-700 bg-white">
           <FaPhoneSlash />
         </button>
@@ -273,57 +390,86 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
       {showDeviceTest && <MediaTest onClose={toggleDeviceTest} />}
 
       {/* Video Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100 transition-all duration-300 ease-in-out">
-        {/* Local video */}
-        <div role="button" tabIndex={0}
-             aria-label="Full screen local video"
-             className={`relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200 ${virtualBg ? 'filter-blur-sm' : ''}`}
-             onClick={() => setFullScreenUser(localTracksRef.current ? { uid: 0 } as any : null)}>
-          {localTracksRef.current && (() => {
-            // only extract camera track for video playback
-            const cam = localTracksRef.current[1];
-             return (
-               <>
-                 {virtualBg ? (
-                   <VirtualBackground
-                     videoTrack={cam}
-                     enabled={virtualBg}
-                     backgroundImageUrl="/images/rosheBackground.jpg"
-                   />
-                 ) : (
-                  <LocalVideoView videoTrack={cam} />
-                 )}
-                 <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                   {userName || 'You'}
-                 </div>
-               </>
-             );
-           })()}
-        </div>
-
-        {/* Remote videos */}
-        {remoteUsers.map(user => (
-          <div
-            key={user.uid}
-            role="button" tabIndex={0}
-            aria-label={`Full screen video of user ${user.uid}`}
-            className={`relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200 ${virtualBg ? 'filter-blur-sm' : ''}`}
-            onClick={() => setFullScreenUser(user)}
-          >
-            <RemoteVideoView user={user} />
-            <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-              {user.uid}
-            </div>
+      <AnimatePresence>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Local video */}
+          <div role="button" tabIndex={0}
+               aria-label="Full screen local video"
+               className={`relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200 ${virtualBg ? 'filter-blur-sm' : ''}`}
+               onClick={() => setFullScreenUser(localTracksRef.current ? { uid: 0 } as any : null)}>
+            {localTracksRef.current && (() => {
+              // only extract camera track for video playback
+              const cam = localTracksRef.current[1];
+               return (
+                 <>
+                   {virtualBg ? (
+                     <VirtualBackground
+                       videoTrack={cam}
+                       enabled={virtualBg}
+                       backgroundImageUrl="/images/rosheBackground.jpg"
+                     />
+                   ) : (
+                    <LocalVideoView videoTrack={cam} />
+                   )}
+                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                     {userName || 'You'}
+                   </div>
+                   {/* Volume meter for local user */}
+                   <motion.div
+                     className="absolute top-2 left-2 w-16 h-2 bg-gray-700 rounded overflow-hidden"
+                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+                   >
+                     <div
+                       className="h-full bg-green-400"
+                       style={{ width: `${Math.min((volumes[0] || 0) * 100, 100)}%` }}
+                     />
+                   </motion.div>
+                   {/* Network quality badge removed */}
+                 </>
+               );
+             })()}
           </div>
-        ))}
 
-        {/* Placeholder when no remote user */}
-        {remoteUsers.length === 0 && (
-          <div className="rounded-lg bg-gray-200 aspect-video flex items-center justify-center text-gray-500">
-            <p>Waiting for others to join...</p>
-          </div>
-        )}
-      </div>
+          {/* Remote users video */}
+          {remoteUsers.map(user => (
+             <motion.div
+               key={user.uid}
+               role="button"
+               tabIndex={0}
+               aria-label={`Full screen video for user ${user.uid}`}
+               className="relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200"
+               initial={{ scale: 0.8, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.8, opacity: 0 }}
+               layout
+               onClick={() => setFullScreenUser(user)}
+             >
+              <RemoteVideoView user={user} />
+               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                 {userName || `User ${user.uid}`}
+               </div>
+               {/* Volume meter */}
+               <div className="absolute top-2 left-2 w-12 h-1 bg-gray-700 rounded overflow-hidden">
+                 <div
+                   className="h-full bg-green-400"
+                   style={{ width: `${Math.min((volumes[user.uid?.toString()] || 0) * 100, 100)}%` }}
+                 />
+               </div>
+               {/* Network quality badge removed */}
+             </motion.div>
+           ))}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Chat Panel (hidden by default) */}
+      {showChat && clientRef.current && chatStreamId !== null && (
+        <ChatPanel client={clientRef.current} streamId={chatStreamId} userName={userName} onClose={() => setShowChat(false)} />
+      )}
     </div>
   );
 };
