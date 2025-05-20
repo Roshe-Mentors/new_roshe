@@ -34,6 +34,7 @@
     "dotenv": "^16.5.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.10.5",
+    "git-filter-repo": "^0.0.30",
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "jsonwebtoken": "^9.0.2",
