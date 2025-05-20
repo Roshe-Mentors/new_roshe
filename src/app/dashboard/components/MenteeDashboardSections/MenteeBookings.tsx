@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // Added for redirection
 import { Mentor } from '../common/types';
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
@@ -38,7 +37,6 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   setSelectedMentorId,
   user
 }) => {
-  const router = useRouter(); // Initialize router
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
@@ -174,8 +172,8 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         // Redirect to the dedicated meeting page
         toast.success('Session booked successfully! Redirecting to meeting room...');
         const { channelName, token, appId } = data.meeting;
-        router.push(`/meeting/${channelName}?token=${token}&appId=${appId}`);
-        // Removed setBookingResult and setBookingStep to 'confirmation'
+        // Open meeting in a new browser tab
+        window.open(`/meeting/${channelName}?token=${token}&appId=${appId}`, '_blank');
       } else {
         toast.error(data.error || 'Failed to book session');
       }

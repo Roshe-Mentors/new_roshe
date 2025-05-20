@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { IAgoraRTCClient, UID } from 'agora-rtc-sdk-ng';
+import { FaLink, FaUsers } from 'react-icons/fa';
 
 interface ChatPanelProps {
   client: IAgoraRTCClient;
-  streamId: number | null; // This is the Data Stream ID
+  streamId: number | null;
   userName: string;
+  channel: string;
+  participantsCount: number;
+  onToggleParticipants: () => void;
   onClose: () => void;
 }
 
@@ -18,7 +22,7 @@ type Message = {
   timestamp: number; // Added for ordering
 };
 
-const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, onClose }) => {
+const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, channel, participantsCount, onToggleParticipants, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -64,20 +68,24 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, onClo
   }, [messages]);
 
   const sendText = async () => {
-    if (!input.trim() || streamId === null) return;
-    const msg: Message = { 
+    if (!input.trim()) return;
+    const msg: Message = {
       user: userName, 
       type: 'text', 
       text: input.trim(), 
       timestamp: Date.now() 
     };
-    try {
-      const payload = new TextEncoder().encode(JSON.stringify(msg));
-      await (client as any).sendStreamMessage(payload, streamId); // Corrected arguments and payload type
-      setMessages(prev => [...prev, msg].sort((a, b) => a.timestamp - b.timestamp));
-      setInput('');
-    } catch (error) {
-      console.error("Failed to send text message:", error);
+    // Append locally
+    setMessages(prev => [...prev, msg].sort((a, b) => a.timestamp - b.timestamp));
+    setInput('');
+    // If stream exists, send to others
+    if (streamId !== null) {
+      try {
+        const payload = new TextEncoder().encode(JSON.stringify(msg));
+        await (client as any).sendStreamMessage(streamId, payload);
+      } catch (error) {
+        console.error("Failed to send text message:", error);
+      }
     }
   };
 
@@ -97,7 +105,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, onClo
       };
       try {
         const payload = new TextEncoder().encode(JSON.stringify(msg));
-        await (client as any).sendStreamMessage(payload, streamId); // Corrected arguments and payload type
+        await (client as any).sendStreamMessage(streamId, payload); // Corrected arguments and payload type
         setMessages(prev => [...prev, msg].sort((a, b) => a.timestamp - b.timestamp));
         if(fileRef.current) fileRef.current.value = ""; // Reset file input
       } catch (error) {
@@ -108,16 +116,24 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, onClo
   };
 
   return (
-    <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-lg flex flex-col z-50">
+    <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-lg flex flex-col z-50">
+      {/* Header: channel, status, copy link, participants, close */}
       <div className="p-3 bg-gray-100 border-b border-gray-300 flex justify-between items-center">
-        <span className="font-semibold text-gray-700">Chat</span>
-        <button 
-          onClick={onClose} 
-          className="text-gray-500 hover:text-red-600 transition-colors text-xl"
-          aria-label="Close chat"
-        >
-          &times;
-        </button>
+        <div className="flex items-center space-x-2">
+          <span className="font-semibold text-gray-700">{channel}</span>
+          <span className="text-sm text-green-600">Active</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button onClick={() => navigator.clipboard.writeText(window.location.href)} title="Copy Link" className="text-gray-600 hover:text-gray-800">
+            <FaLink />
+          </button>
+          <button onClick={onToggleParticipants} title="Participants" className="flex items-center space-x-1 text-gray-600 hover:text-gray-800">
+            <FaUsers /><span className="text-sm">{participantsCount}</span>
+          </button>
+          <button onClick={onClose} className="text-gray-500 hover:text-red-600 transition-colors text-xl" aria-label="Close chat">
+            &times;
+          </button>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50">
         {messages.map((m) => ( // Changed key to m.timestamp + m.user for better uniqueness
@@ -169,7 +185,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, onClo
           <button 
             onClick={sendText} 
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            disabled={!input.trim() || streamId === null}
+            disabled={!input.trim()}
           >
             Send
           </button>

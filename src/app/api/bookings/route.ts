@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 //import { createVideoSDKMeeting } from '../../../services/videoSDKService';
 import { createAgoraMeeting } from '../../../services/agoraService';
 import { createAdminClient } from '../../../lib/supabaseClient';
+import nodemailer from 'nodemailer';
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +68,45 @@ export async function POST(request: NextRequest) {
           .eq('id', bookingData.slotId);
       } catch (slotError) {
         console.error('Failed to mark slot as booked:', slotError);
+      }
+
+      // Send email notification to mentor
+      try {
+        // Fetch mentor's email from mentors table
+        const { data: mentorProfile, error: profileError } = await supabaseAdmin
+          .from('mentors')
+          .select('email')
+          .eq('id', bookingData.mentorId)
+          .single();
+        if (profileError) {
+          console.error('Failed to fetch mentor email:', profileError);
+        } else if (mentorProfile?.email) {
+          // Prepare email content
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+          const meetingUrl = `${baseUrl}/meeting/${channel}?token=${token}&appId=${appId}`;
+          const emailText = `A new mentoring session has been booked.
+
+Date & Time: ${startISO}
+Join here: ${meetingUrl}`;
+          // Create transporter
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            },
+          });
+          await transporter.sendMail({
+            from: process.env.EMAIL_FROM,
+            to: mentorProfile.email,
+            subject: 'Your mentoring session has been booked',
+            text: emailText,
+          });
+        }
+      } catch (emailErr) {
+        console.error('Error sending notification email:', emailErr);
       }
 
       // Return success response with Agora meeting credentials
