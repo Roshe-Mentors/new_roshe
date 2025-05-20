@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { FaArrowLeft } from 'react-icons/fa';
 import { getUser } from '@/lib/auth';
@@ -21,6 +21,9 @@ const AgoraMeeting = dynamic(() => import('../../../components/AgoraMeeting'), {
 const MeetingPageContent = () => {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const tokenParam = searchParams.get('token');
+  const appIdParam = searchParams.get('appId');
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -47,9 +50,19 @@ const MeetingPageContent = () => {
   const [meetingError, setMeetingError] = useState<string | null>(null);
   const [meetingChannel, setMeetingChannel] = useState<string>('');
 
-  // Fetch token and appId from server
+  // Initialize meeting details from URL if present
   useEffect(() => {
-    if (!urlChannel) return;
+    if (tokenParam && appIdParam && urlChannel) {
+      setMeetingToken(tokenParam);
+      setMeetingAppId(appIdParam);
+      setMeetingChannel(urlChannel);
+      setLoadingMeeting(false);
+    }
+  }, [tokenParam, appIdParam, urlChannel]);
+
+  // Fetch token and appId from server when not provided via URL
+  useEffect(() => {
+    if ((tokenParam && appIdParam) || !urlChannel) return;
     (async () => {
       try {
         const res = await fetch('/api/video/token', {
@@ -63,7 +76,6 @@ const MeetingPageContent = () => {
         }
         setMeetingToken(data.token);
         setMeetingAppId(data.appId);
-        // Use server-provided channel name (may include prefix)
         if (data.channel) setMeetingChannel(data.channel);
       } catch (err: any) {
         console.error('Error fetching Agora token:', err);
@@ -72,7 +84,7 @@ const MeetingPageContent = () => {
         setLoadingMeeting(false);
       }
     })();
-  }, [urlChannel, userName]);
+  }, [urlChannel, userName, tokenParam, appIdParam]);
 
   if (loadingUser) return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">

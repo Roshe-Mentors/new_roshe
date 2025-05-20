@@ -62,8 +62,12 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     // suppress WS_ABORT traffic_stats errors
     client.on('error', (err: any) => {
-      // Suppress WS_ABORT for internal stats/ping channels
-      if (err.code === 'WS_ABORT' && (err.message.includes('traffic_stats') || err.message.includes('ping'))) {
+      // Suppress WS_ABORT for internal stats/ping and PERMISSION_DENIED for permissions
+      if (
+        (err.code === 'WS_ABORT' && (err.message.includes('traffic_stats') || err.message.includes('ping'))) ||
+        err.code === 'PERMISSION_DENIED' ||
+        err.message.includes('Permission denied')
+      ) {
         return;
       }
       console.error('AgoraRTC client error:', err);
@@ -460,81 +464,27 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         </div>
         {showDeviceTest && <MediaTest onClose={toggleDeviceTest} />}
 
-        {/* Video Grid */}
+        {/* Video Layout */}
         <AnimatePresence>
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-100"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            {/* Local video */}
-            <div role="button" tabIndex={0}
-                 aria-label="Full screen local video"
-                 className={`relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200 ${virtualBg ? 'filter-blur-sm' : ''}`}
-                 onClick={() => setFullScreenUser(localTracksRef.current ? { uid: 0 } as any : null)}>
-              {localTracksRef.current && (() => {
-                // only extract camera track for video playback
-                const cam = localTracksRef.current[1];
-                 return (
-                 <>
-                   {virtualBg ? (
-                     <VirtualBackground
-                       videoTrack={cam}
-                       enabled={virtualBg}
-                       backgroundImageUrl="/images/rosheBackground.jpg"
-                     />
-                   ) : (
-                    <LocalVideoView videoTrack={cam} />
-                   )}
-                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                     {userName || 'You'}
-                   </div>
-                   {/* Volume meter for local user */}
-                   <motion.div
-                     className="absolute top-2 left-2 w-16 h-2 bg-gray-700 rounded overflow-hidden"
-                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-                   >
-                     <div
-                       className="h-full bg-green-400"
-                       style={{ width: `${Math.min(localVolumeLevel * 100, 100)}%` }}
-                     />
-                   </motion.div>
-                   {/* Network quality badge removed */}
-                 </>
-               );
-             })()}
-            </div>
-
-            {/* Remote users video */}
+          {/* Main local video view, large */}
+          <div className="w-full bg-black mb-4" style={{ height: '60vh' }}>
+            {localTracksRef.current && (
+              <div className="w-full h-full">
+                <LocalVideoView videoTrack={localTracksRef.current[1]} />
+              </div>
+            )}
+          </div>
+          {/* Remote users thumbnails, horizontal list */}
+          <div className="flex space-x-2 p-2 overflow-x-auto">
             {remoteUsers.map(user => (
-             <motion.div
-               key={user.uid}
-               role="button"
-               tabIndex={0}
-               aria-label={`Full screen video for user ${user.uid}`}
-               className="relative rounded-lg overflow-hidden aspect-video bg-black cursor-pointer transform hover:scale-105 transition-transform duration-200"
-               initial={{ scale: 0.8, opacity: 0 }}
-               animate={{ scale: 1, opacity: 1 }}
-               exit={{ scale: 0.8, opacity: 0 }}
-               layout
-               onClick={() => setFullScreenUser(user)}
-             >
-              <RemoteVideoView user={user} />
-               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                 {userName || `User ${user.uid}`}
-               </div>
-               {/* Volume meter */}
-               <div className="absolute top-2 left-2 w-12 h-1 bg-gray-700 rounded overflow-hidden">
-                 <div
-                   className="h-full bg-green-400"
-                   style={{ width: `${Math.min((volumes[user.uid?.toString()] || 0) * 100, 100)}%` }}
-                 />
-               </div>
-               {/* Network quality badge removed */}
-             </motion.div>
-           ))}
-          </motion.div>
+              <div key={user.uid} className="w-32 h-24 relative bg-black rounded-lg overflow-hidden flex-shrink-0">
+                <RemoteVideoView user={user} />
+                <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  User {user.uid}
+                </div>
+              </div>
+            ))}
+          </div>
         </AnimatePresence>
 
         {/* Chat Panel (hidden by default) */}
