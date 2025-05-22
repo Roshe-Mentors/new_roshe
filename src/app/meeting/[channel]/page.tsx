@@ -10,6 +10,7 @@ import type { User } from '@supabase/supabase-js';
 // Dynamically import AgoraMeeting with corrected path
 const AgoraMeeting = dynamic(() => import('../../../components/AgoraMeeting'), { 
   ssr: false,
+  // Force client-side only to ensure we get fresh environment variables on each page load
   loading: () => (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -41,7 +42,24 @@ const MeetingPageContent = () => {
     })();
   }, []);
 
-  const urlChannel = (params.channel as string) || '';
+  // Derive channel from route param or query param fallback,
+  // and ensure the string "undefined" is treated as an empty/invalid channel.
+  let derivedChannelFromParams: string | null = params.channel as string;
+  if (derivedChannelFromParams === "undefined") {
+    derivedChannelFromParams = null; // Treat "undefined" string as not provided
+  }
+
+  let derivedChannelFromQuery = searchParams.get('channel');
+  if (derivedChannelFromQuery === "undefined") {
+    derivedChannelFromQuery = null;
+  }
+
+  let derivedMeetingIdFromQuery = searchParams.get('meetingId');
+  if (derivedMeetingIdFromQuery === "undefined") {
+    derivedMeetingIdFromQuery = null;
+  }
+
+  const urlChannel = derivedChannelFromParams || derivedChannelFromQuery || derivedMeetingIdFromQuery || '';
   const userName = user?.email || user?.id || 'Guest';
   // State for server-generated token and App ID
   const [meetingToken, setMeetingToken] = useState<string>('');
@@ -116,7 +134,12 @@ const MeetingPageContent = () => {
   return (
     <div className="relative pt-16 h-screen w-screen bg-gray-800">
       {/* Pass server-provided channel and App ID to AgoraMeeting */}
-      <AgoraMeeting channel={meetingChannel} token={meetingToken} appId={meetingAppId} userName={userName} />
+      <AgoraMeeting 
+        channel={meetingChannel} 
+        token={meetingToken} 
+        appId={meetingAppId} 
+        userName={userName} 
+      />
       <button
         onClick={() => router.push('/dashboard')}
         title="Go to Dashboard"

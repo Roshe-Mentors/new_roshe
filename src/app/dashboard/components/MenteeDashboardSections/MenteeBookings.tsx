@@ -37,6 +37,21 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   setSelectedMentorId,
   user
 }) => {
+  // Helper to load available periods from API
+  const loadAvailability = async () => {
+    if (!selectedMentorId) return;
+    try {
+      const res = await fetch(`/api/mentors/${selectedMentorId}/availability`);
+      const data = await res.json();
+      const validSlots = Array.isArray(data)
+        ? data.filter(slot => slot.status?.trim().toLowerCase() !== 'booked')
+        : [];
+      setAvailabilitySlots(validSlots);
+    } catch (err) {
+      console.error('Error loading availability:', err);
+    }
+  };
+
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
@@ -57,24 +72,17 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     setSelectedTimeSlot('');
     setAgenda('');
     setBookingStep('select-mentor');
+   // load availability on mentor change
+    loadAvailability();
   }, [selectedMentorId]);
-  
+
   // Load mentor availability when selected and subscribe to real-time changes
   useEffect(() => {
     let channel: any;
     if (selectedMentorId) {
-      // Fetch availability directly from API
-      fetch(`/api/mentors/${selectedMentorId}/availability`)
-        .then(response => response.json())
-        .then(data => {
-          // Exclude only slots explicitly marked as 'booked'
-          const validSlots = Array.isArray(data)
-            ? data.filter(slot => (slot.status?.trim().toLowerCase() !== 'booked'))
-            : [];
-           setAvailabilitySlots(validSlots);
-        })
-        .catch(err => console.error('Error fetching availability:', err));
-      
+      // Initial fetch via helper
+      loadAvailability();
+
       // Subscribe to real-time changes for this mentor's availability
       channel = supabase
         .channel(`availability_${selectedMentorId}`)
@@ -182,6 +190,8 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       toast.error('Failed to book session due to an unexpected error.');
     } finally {
       setIsBooking(false);
+     // Refresh availability after booking
+     loadAvailability();
     }
   };
   
@@ -400,10 +410,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
         
         <div className="flex justify-end mt-6">
           <button
-            onClick={() => (selectedDate && selectedTimeSlot) && setBookingStep('session-details')}
-            disabled={!selectedDate || !selectedTimeSlot}
+            onClick={() => (selectedDate && selectedTimeSlot && selectedTimeSlotId) && setBookingStep('session-details')}
+            disabled={!selectedDate || !selectedTimeSlot || !selectedTimeSlotId}
             className={`px-6 py-2 rounded-lg transition-colors ${
-              selectedDate && selectedTimeSlot
+              selectedDate && selectedTimeSlot && selectedTimeSlotId
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                 : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
@@ -486,9 +496,9 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
           </button>
           <button
             onClick={handleBookSession}
-            disabled={isBooking || !selectedMentor || !selectedDate || !selectedTimeSlot}
+            disabled={isBooking || !selectedMentor || !selectedDate || !selectedTimeSlot || !selectedTimeSlotId}
             className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center ${
-              isBooking || !selectedMentor || !selectedDate || !selectedTimeSlot
+              isBooking || !selectedMentor || !selectedDate || !selectedTimeSlot || !selectedTimeSlotId
                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'
             }`}

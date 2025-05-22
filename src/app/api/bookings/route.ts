@@ -59,15 +59,62 @@ export async function POST(request: NextRequest) {
         description: bookingData.sessionType
       }]);
 
-      // Mark the availability slot as booked
+      // Mark the availability slot as booked and split the time period
       try {
-        const supabaseAdminSlot = (await import('../../../lib/supabaseClient')).createAdminClient();
-        await supabaseAdminSlot
+        const slotId = bookingData.slotId;
+        // Fetch the original availability period
+        const { data: period, error: fetchError } = await supabaseAdmin
           .from('availability')
-          .update({ status: 'booked' })
-          .eq('id', bookingData.slotId);
+          .select('start_time, end_time, mentor_id')
+          .eq('id', slotId)
+          .single();
+        if (fetchError || !period) {
+          console.error('Failed to fetch original availability period:', fetchError);
+        } else {
+          const { start_time: periodStartStr, end_time: periodEndStr, mentor_id } = period;
+          const periodStart = new Date(periodStartStr);
+          const periodEnd = new Date(periodEndStr);
+          const slotStart = new Date(`${bookingData.date}T${bookingData.time}`);
+          const slotEnd = new Date(slotStart.getTime() + 30 * 60000);
+          // Remove the original period
+          await supabaseAdmin.from('availability').delete().eq('id', slotId);
+          // Prepare new segments
+          const inserts: Array<any> = [];
+          // Pre-booking segment
+          if (periodStart < slotStart) {
+            inserts.push({
+              mentor_id,
+              start_time: periodStart.toISOString(),
+              end_time: slotStart.toISOString(),
+              status: 'available',
+            });
+          }
+          // Booked segment
+          inserts.push({
+            mentor_id,
+            start_time: slotStart.toISOString(),
+            end_time: slotEnd.toISOString(),
+            status: 'booked',
+          });
+          // Post-booking segment
+          if (slotEnd < periodEnd) {
+            inserts.push({
+              mentor_id,
+              start_time: slotEnd.toISOString(),
+              end_time: periodEnd.toISOString(),
+              status: 'available',
+            });
+          }
+          // Insert new availability rows
+          const { error: insertError } = await supabaseAdmin
+            .from('availability')
+            .insert(inserts);
+          if (insertError) {
+            console.error('Failed to insert split availability segments:', insertError);
+          }
+        }
       } catch (slotError) {
-        console.error('Failed to mark slot as booked:', slotError);
+        console.error('Failed to split availability after booking:', slotError);
       }
 
       // Send email notification to mentor

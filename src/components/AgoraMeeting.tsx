@@ -11,6 +11,8 @@ import type { IAgoraRTCRemoteUser } from 'agora-rtc-sdk-ng';
 import MediaTest from './MediaTest';
 import VirtualBackground from './VirtualBackground';
 import ChatPanel from './ChatPanel';
+import Image from 'next/image';
+import AgoraDiagnostics from './AgoraDiagnostics';
 
 interface AgoraMeetingProps {
   channel: string;
@@ -22,9 +24,27 @@ interface AgoraMeetingProps {
 const AgoraMeeting: React.FC<AgoraMeetingProps> = ({ 
   channel, 
   token, 
-  appId = AGORA_CLIENT_APP_ID, 
+  appId = AGORA_CLIENT_APP_ID || '6bce0f40bd7e431ea852bcb69f66ad61', 
   userName 
 }) => {
+  // Debug - check if App ID is available client-side
+  useEffect(() => {
+    // Log with more detailed information about the appId
+    const appIdInfo = appId ? {
+      value: `${appId.substring(0, 3)}...${appId.substring(appId.length - 3)}`, 
+      length: appId.length,
+      isEmpty: appId === '',
+      isUndefined: appId === undefined
+    } : 'undefined/empty';
+    
+    console.log('DEBUG Agora Configuration:', {
+      configAppId: AGORA_CLIENT_APP_ID ? `${AGORA_CLIENT_APP_ID.substring(0, 3)}...${AGORA_CLIENT_APP_ID.substring(AGORA_CLIENT_APP_ID.length - 3)}` : 'not available',
+      propsAppId: appIdInfo,
+      tokenLength: token?.length || 0,
+      channel
+    });
+  }, [appId, token, channel]);
+
   const localTracksRef = useRef<[IMicrophoneAudioTrack, ICameraVideoTrack] | null>(null);
   const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const clientRef = useRef<IAgoraRTCClient | null>(null);
@@ -35,6 +55,16 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [fullScreenUser, setFullScreenUser] = useState<IAgoraRTCRemoteUser | null>(null);
   const [virtualBg, setVirtualBg] = useState(false);
+  const bgFileRef = useRef<HTMLInputElement>(null);
+  const [bgImageUrl, setBgImageUrl] = useState<string>('');
+
+  // Revoke object URL for background image on change/unmount
+  useEffect(() => {
+    return () => {
+      if (bgImageUrl) URL.revokeObjectURL(bgImageUrl);
+    };
+  }, [bgImageUrl]);
+
   const [showDeviceTest, setShowDeviceTest] = useState(false);
   const [chatStreamId, setChatStreamId] = useState<number | null>(null);
   const [showChat, setShowChat] = useState(false);
@@ -52,6 +82,27 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   const glowRadius = Math.min(localVolumeLevel * 20 + 2, 24);
 
   useEffect(() => {
+    // Filter out non-fatal permission and SDK errors
+    const originalConsoleError = console.error;
+    console.error = (...args: any[]) => {
+      // Combine all args into a single string for robust matching
+      const msg = args.map(arg => {
+        if (typeof arg === 'string') return arg;
+        try { return JSON.stringify(arg); } catch { return String(arg); }
+      }).join(' ');
+      const lower = msg.toLowerCase();
+      // Suppress Agora permission and internal error logs
+      if (
+        lower.includes('permission_denied') ||
+        lower.includes('permission denied') ||
+        lower.includes('notallowederror') ||
+        lower.includes('agorartcerror')
+      ) {
+        return;
+      }
+      originalConsoleError(...args);
+    };
+
     // reduce SDK verbosity to warnings and above
     AgoraRTC.setLogLevel(2);
     let chatDataId: number | null = null;
@@ -61,12 +112,39 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     // Initialize Agora client
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     // suppress WS_ABORT traffic_stats errors
-    client.on('error', (err: any) => {
-      // Suppress WS_ABORT for internal stats/ping and PERMISSION_DENIED for permissions
+    client.on('error', async (err: any) => {
+      const msg = (err.message || '').toLowerCase();
+      
+      // Add more detailed logging for app ID errors
+      if (err.code === 'CAN_NOT_GET_GATEWAY_SERVER' && (msg.includes('invalid vendor key') || msg.includes('can not find appid'))) {
+        console.error('CRITICAL: Invalid Agora App ID error:', { 
+          appId: appId ? `${appId.substring(0, 3)}...${appId.substring(appId.length - 3)}` : 'undefined',
+          appIdLength: appId?.length || 0,
+          isEmptyString: appId === '',
+          isUndefined: appId === undefined
+        });
+        setError(`Agora configuration error: Invalid App ID. Please check your environment variables (.env.local) and ensure NEXT_PUBLIC_AGORA_APP_ID is set correctly.`);
+        return;
+      }
+      
+      // Auto-renew token if invalid or unauthorized
+      if (err.code === 'CAN_NOT_GET_GATEWAY_SERVER' || msg.includes('invalid token') || msg.includes('authorized failed')) {
+        try {
+          const res = await fetch(`/api/video/token?channel=${channel}`);
+          const json = await res.json();
+          await client.renewToken(json.token);
+          console.log('Agora token renewed after error');
+        } catch (renewErr: any) {
+          console.error('Token renewal failed:', renewErr);
+          setError('Failed to renew token: ' + (renewErr.message || renewErr));
+        }
+        return;
+      }
+      // Suppress WS_ABORT for internal stats/ping and all permission errors
       if (
-        (err.code === 'WS_ABORT' && (err.message.includes('traffic_stats') || err.message.includes('ping'))) ||
-        err.code === 'PERMISSION_DENIED' ||
-        err.message.includes('Permission denied')
+        (err.code === 'WS_ABORT' && (msg.includes('traffic_stats') || msg.includes('ping'))) ||
+        err.name === 'NotAllowedError' ||
+        msg.includes('permission')
       ) {
         return;
       }
@@ -92,42 +170,56 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     // Register listeners
     client.on('user-published', onUserPublished);
     client.on('user-unpublished', onUserUnpublished);
-    client.on('user-left', onUserLeft);
-
-    // Join the channel when component mounts
+    client.on('user-left', onUserLeft);    // Join the channel when component mounts
     const joinChannel = async () => {
       // DEBUG: inspect Agora credentials
       console.log('AgoraMeeting.joinChannel => appId:', appId, 'channel:', channel, 'token length:', token?.length);
+      
+      // Validate App ID - make sure it's present and has correct format
       if (!appId) {
-        setError('Missing Agora App ID (empty string).');
+        const errorMsg = 'Missing Agora App ID (empty string).';
+        console.error(errorMsg);
+        setError(errorMsg);
         return;
       }
+      
+      // Add validation for proper format - Agora App IDs are typically 32 characters
+      if (appId.length !== 32) {
+        console.warn(`App ID may be invalid: length ${appId.length} (expected 32 characters)`);
+      }
+
       let microphoneTrack: IMicrophoneAudioTrack;
       let cameraTrack: ICameraVideoTrack;
       // Request media tracks first to trigger permissions prompt
       try {
-        // Suppress permission-denied logging while requesting media
-        const originalConsoleError = console.error;
-        console.error = (...args: any[]) => {
-          if (args[0]?.toString().includes('Permission denied')) return;
-          originalConsoleError(...args);
-        };
         [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        // Restore console.error
-        console.error = originalConsoleError;
       } catch (trackError: any) {
-        // Restore console.error if error occurred
-        try { console.error = originalConsoleError; } catch {}
-        console.warn('Track creation canceled or failed before join:', trackError);
-        return; // Abort if user cancels permissions
-      }
-
-      try {
+        console.error('Track creation failed:', trackError);
+        setError(trackError.message || 'Failed to access camera and microphone.');
+        return;
+      }      try {
         // Join the channel with the UID matching the token (default 0)
+        console.log(`Joining channel: ${channel} with appId: ${appId.substring(0, 3)}...${appId.substring(appId.length - 3)}`);
         await client.join(appId, channel, token, 0);
+        console.log('Successfully joined channel');
       } catch (joinError: any) {
-        console.error('Error joining channel with App ID', appId, 'UID 0', joinError);
-        setError(joinError.message || 'Failed to join meeting. Check your Agora App ID and token UID.');
+        console.error('Error joining channel:', joinError);
+        
+        // Provide more specific error messages based on common issues
+        if (joinError.code === 'CAN_NOT_GET_GATEWAY_SERVER') {
+          if (joinError.message && joinError.message.includes('invalid vendor key')) {
+            setError(`Invalid Agora App ID: ${appId.substring(0, 3)}...${appId.substring(appId.length - 3)} (length: ${appId.length}). Please check your Agora credentials.`);
+          } else {
+            setError(`Connection error: Cannot connect to Agora servers. Please check your internet connection and Agora App ID.`);
+          }
+        } else if (joinError.code === 'DYNAMIC_KEY_TIMEOUT') {
+          setError('Your token has expired. Please refresh the page to get a new token.');
+        } else if (joinError.code === 'INVALID_VENDOR_KEY') {
+          setError('Invalid Agora App ID. Please check your credentials.');
+        } else {
+          setError(joinError.message || 'Failed to join meeting. Check your Agora App ID and token UID.');
+        }
+        
         // Cleanup tracks
         microphoneTrack.close();
         cameraTrack.close();
@@ -206,6 +298,8 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         try { screenTrackRef.current.close(); } catch {};
       }
       client.leave();
+      // restore console.error
+      console.error = originalConsoleError;
     };
   }, [appId, channel, token]);
 
@@ -246,9 +340,25 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
     }
   };
 
-  const toggleVirtualBg = () => {
-    setVirtualBg(prev => !prev);
-    // TODO: load and apply BodyPix segmentation for true background replacement
+  const handleBgToggle = () => {
+    if (virtualBg) {
+      // disable virtual background and revoke URL
+      setVirtualBg(false);
+      if (bgImageUrl) URL.revokeObjectURL(bgImageUrl);
+      setBgImageUrl('');
+    } else {
+      // open file picker
+      bgFileRef.current?.click();
+    }
+  };
+
+  const onBgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setBgImageUrl(url);
+      setVirtualBg(true);
+    }
   };
 
   const toggleScreenShare = async () => {
@@ -322,12 +432,35 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
   };
 
   const toggleParticipants = () => setShowParticipants(prev => !prev);
-
   if (error) {
     return (
-      <div className="p-4 text-center text-red-500 bg-red-50 rounded-lg border border-red-200">
-        <h3 className="font-medium">Error connecting to meeting</h3>
-        <p>{error}</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+        <div className="max-w-2xl w-full p-8 bg-gray-800 rounded-lg shadow-lg">
+          <h1 className="text-2xl font-bold mb-4 text-red-400">Meeting Error</h1>
+          <p className="mb-6 text-gray-300">{error}</p>
+          
+          {/* Display diagnostics to aid troubleshooting */}
+          <AgoraDiagnostics 
+            channel={channel}
+            token={token}
+            appId={appId}
+          />
+          
+          <div className="flex space-x-4 mt-4">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
+            >
+              Try Again
+            </button>
+            <a 
+              href="/dashboard" 
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+            >
+              Back to Dashboard
+            </a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -383,12 +516,23 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
           <h3 className="font-medium">{channel}</h3>
           <div className="flex space-x-2">
             <button
-              onClick={toggleVirtualBg}
+              onClick={handleBgToggle}
               title={virtualBg ? 'Disable Virtual Background' : 'Enable Virtual Background'}
               className="text-white p-2 rounded hover:bg-gray-700 transition-colors duration-200"
             >
               <FaImage />
             </button>
+            {bgImageUrl && (
+              <div className="relative h-6 w-6">
+                <Image
+                  src={bgImageUrl}
+                  alt="Background preview"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-full border border-gray-300"
+                />
+              </div>
+            )}
             <button
               className="bg-red-600 hover:bg-red-700 rounded-full p-2 transition-colors duration-200"
               onClick={() => window.location.reload()}
@@ -402,7 +546,17 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
               </svg>
             </button>
           </div>
-        </div>
+        </div>  {/* end of Header */}
+
+        {/* hidden file input for background image selection */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={bgFileRef}
+          onChange={onBgFileChange}
+          aria-label="Select background image"
+          style={{ display: 'none' }}
+        />
 
         {/* Connection State Banner */}
         {joined && connectionState !== 'CONNECTED' && (
@@ -467,11 +621,17 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         {/* Video Layout */}
         <AnimatePresence>
           {/* Main local video view, large */}
-          <div className="w-full bg-black mb-4" style={{ height: '60vh' }}>
+          <div className="relative w-full bg-black mb-4" style={{ height: '60vh' }}>
             {localTracksRef.current && (
-              <div className="w-full h-full">
+              virtualBg ? (
+                <VirtualBackground
+                  videoTrack={localTracksRef.current[1]}
+                  enabled={true}
+                  backgroundImageUrl={bgImageUrl}
+                />
+              ) : (
                 <LocalVideoView videoTrack={localTracksRef.current[1]} />
-              </div>
+              )
             )}
           </div>
           {/* Remote users thumbnails, horizontal list */}

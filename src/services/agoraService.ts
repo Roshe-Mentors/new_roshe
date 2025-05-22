@@ -19,7 +19,13 @@ if (!APP_ID || !APP_CERT) {
  * @param uid Optional user ID for this token; default is 0 (anonymous).
  */
 export function createAgoraMeeting(meetingId: string, uid: number = 0) {
-  const channel = `roshe_${meetingId}`;
+  if (!meetingId || typeof meetingId !== 'string' || meetingId.trim().length === 0) {
+    console.error('Invalid meetingId for createAgoraMeeting:', meetingId);
+    // Consider how to handle this error. Throwing an error here would
+    // be caught by the route handler, which is appropriate.
+    throw new Error('Invalid or empty meetingId provided for Agora meeting creation.');
+  }
+  const channel = `roshe_${meetingId.replace(/[^a-zA-Z0-9_\\-]/g, '_')}`; // Sanitize meetingId for channel name
   const now = Math.floor(Date.now() / 1000);
   const expire = now + 60 * 60; // token valid for 1 hour
 

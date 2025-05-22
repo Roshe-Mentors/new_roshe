@@ -5,61 +5,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "../../../lib/auth";
 import { fetchAllMentors } from "../../../lib/mentors";
 import MenteeSessions from './MenteeSessions';
-
-// Define types
-interface Mentor {
-  id: string;
-  name: string;
-  // Add other mentor properties as needed
-}
-
-// Create placeholder components until the actual components are created
-const MenteeStats = () => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold mb-4">Mentee Stats</h3>
-    <p>Stats will be displayed here</p>
-  </div>
-);
-
-const RecommendedMentors = ({ mentors }: { mentors: Mentor[] }) => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold mb-4">Recommended Mentors</h3>
-    {mentors.length > 0 ? (
-      <ul>
-        {mentors.map(mentor => (
-          <li key={mentor.id}>{mentor.name}</li>
-        ))}
-      </ul>
-    ) : (
-      <p>No recommended mentors yet</p>
-    )}
-  </div>
-);
-
-const MenteeBookings = ({ 
-  mentors, 
-  selectedMentorId,
-  setSelectedMentorId,
-  user
-}: { 
-  mentors: Mentor[],
-  selectedMentorId: string | null,
-  setSelectedMentorId: React.Dispatch<React.SetStateAction<string | null>>,
-  user: Record<string, unknown>
-}) => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold mb-4">Book a Mentor</h3>
-    {mentors.length > 0 && (
-      <div>
-        <p>Select a mentor: {selectedMentorId || 'None selected'}</p>
-        <button onClick={() => setSelectedMentorId(mentors[0].id)}>
-          Select first mentor
-        </button>
-        <p>User ID: {String(user.id || 'Unknown')}</p>
-      </div>
-    )}
-  </div>
-);
+import MenteeBookings from '../../components/MenteeDashboardSections/MenteeBookings';
 
 export default function MenteeDashboard() {
   const { user, loading } = useUser();

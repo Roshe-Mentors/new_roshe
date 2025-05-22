@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { IAgoraRTCClient, UID } from 'agora-rtc-sdk-ng';
 import { FaLink, FaUsers } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import EmojiPicker from 'emoji-picker-react';
+import Image from 'next/image';
 
 interface ChatPanelProps {
   client: IAgoraRTCClient;
@@ -13,13 +17,15 @@ interface ChatPanelProps {
 }
 
 type Message = {
+  id: string;
   user: string;
   type: 'text' | 'file';
+  status?: 'pending' | 'sent' | 'seen';
   text?: string;
   fileName?: string;
-  fileType?: string; // Added for proper file handling on receiver side
-  data?: string; // For DataURL of files
-  timestamp: number; // Added for ordering
+  fileType?: string;
+  data?: string;
+  timestamp: number;
 };
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, channel, participantsCount, onToggleParticipants, onClose }) => {
@@ -27,24 +33,40 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, chann
   const [input, setInput] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const lastTypingSentRef = useRef<number>(0);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   useEffect(() => {
     if (streamId !== null && client) {
       const handleStreamMessage = (uid: UID, payload: Uint8Array, eventStreamId: number) => {
         if (eventStreamId !== streamId) return; // Filter messages for this specific stream
-        try {
-          const textDecoder = new TextDecoder();
-          const decodedMsg = textDecoder.decode(payload);
-          const msgObj: Message = JSON.parse(decodedMsg);
-
-          // Ensure timestamp exists, though sender should always include it
-          if (typeof msgObj.timestamp !== 'number') {
-            (msgObj as any).timestamp = Date.now(); 
-          }
-          
-          setMessages(prev => [...prev, msgObj].sort((a, b) => a.timestamp - b.timestamp));
-        } catch (error) {
-            console.error("Failed to parse stream message or update state:", error);
+        const decodedMsg = new TextDecoder().decode(payload);
+        const msgObj = JSON.parse(decodedMsg) as any;
+        // Handle typing indicator
+        if (msgObj.type === 'typing' && msgObj.user !== userName) {
+          setTypingUsers(prev => Array.from(new Set([...prev, msgObj.user])));
+          setTimeout(() => setTypingUsers(prev => prev.filter(u => u !== msgObj.user)), 3000);
+          return;
+        }
+        // Handle ACKs
+        if (msgObj.type === 'ack') {
+          setMessages(prev => prev.map(m => m.id === msgObj.ackId ? { ...m, status: 'seen' } : m));
+          return;
+        }
+        // Handle incoming text/file
+        if (msgObj.type === 'text' || msgObj.type === 'file') {
+          // ACK back
+          const ack = { user: userName, type: 'ack', ackId: msgObj.id, timestamp: Date.now() };
+          const payloadAck = new TextEncoder().encode(JSON.stringify(ack));
+          (client as any).sendStreamMessage(streamId, payloadAck).catch(() => {});
+          // Append message
+          const msg: Message = { ...msgObj, status: 'sent' };
+          setMessages(prev => {
+            const arr: Message[] = [...prev, msg];
+            arr.sort((a, b) => a.timestamp - b.timestamp);
+            return arr;
+          });
         }
       };
       
@@ -55,7 +77,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, chann
         (client as any).off('stream-message', handleStreamMessage);
       };
     }
-  }, [client, streamId]); // streamId is crucial here
+  }, [client, streamId, userName]); // streamId is crucial here
 
   useEffect(() => {
     const scrollToBottom = () => {
@@ -69,23 +91,22 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, chann
 
   const sendText = async () => {
     if (!input.trim()) return;
-    const msg: Message = {
-      user: userName, 
-      type: 'text', 
-      text: input.trim(), 
-      timestamp: Date.now() 
-    };
+    const id = `${Date.now()}-${Math.random()}`;
+    const msg: Message = { id, user: userName, type: 'text', text: input.trim(), timestamp: Date.now(), status: 'pending' };
     // Append locally
-    setMessages(prev => [...prev, msg].sort((a, b) => a.timestamp - b.timestamp));
+    setMessages(prev => {
+      const arr: Message[] = [...prev, msg];
+      arr.sort((a, b) => a.timestamp - b.timestamp);
+      return arr;
+    });
     setInput('');
-    // If stream exists, send to others
+    setTypingUsers([]);
     if (streamId !== null) {
       try {
         const payload = new TextEncoder().encode(JSON.stringify(msg));
         await (client as any).sendStreamMessage(streamId, payload);
-      } catch (error) {
-        console.error("Failed to send text message:", error);
-      }
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, status: 'sent' } : m));
+      } catch { /* swallow */ }
     }
   };
 
@@ -95,24 +116,32 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, chann
     const reader = new FileReader();
     reader.onload = async () => {
       const dataUrl = reader.result as string;
-      const msg: Message = { 
-        user: userName, 
-        type: 'file', 
-        fileName: file.name, 
-        fileType: file.type,
-        data: dataUrl, 
-        timestamp: Date.now() 
-      };
+      const id = `${Date.now()}-${Math.random()}`;
+      const msg: Message = { id, user: userName, type: 'file', fileName: file.name, fileType: file.type, data: dataUrl, timestamp: Date.now() };
       try {
         const payload = new TextEncoder().encode(JSON.stringify(msg));
-        await (client as any).sendStreamMessage(streamId, payload); // Corrected arguments and payload type
-        setMessages(prev => [...prev, msg].sort((a, b) => a.timestamp - b.timestamp));
-        if(fileRef.current) fileRef.current.value = ""; // Reset file input
+        await (client as any).sendStreamMessage(streamId, payload);
+        setMessages(prev => {
+          const arr = [...prev, msg];
+          arr.sort((a, b) => a.timestamp - b.timestamp);
+          return arr;
+        });
+        fileRef.current!.value = '';
       } catch (error) {
-        console.error("Failed to send file message:", error);
+        console.error('Failed to send file message:', error);
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  // Handler for drag-and-drop file uploads
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (fileRef.current) {
+      fileRef.current.files = e.dataTransfer.files;
+      // reuse existing sendFile logic
+      sendFile();
+    }
   };
 
   return (
@@ -135,73 +164,72 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ client, streamId, userName, chann
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50">
-        {messages.map((m) => ( // Changed key to m.timestamp + m.user for better uniqueness
-          <div 
-            key={`${m.timestamp}-${m.user}-${m.text ? m.text.slice(0,5) : m.fileName}`} 
-            className={`flex flex-col ${m.user === userName ? 'items-end' : 'items-start'}`}
-          >
-            <div 
-              className={`max-w-xs p-2 rounded-lg shadow ${
-                m.user === userName 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-200 text-gray-800'
-              }`}
-            >
+      <div
+        className="flex-1 overflow-y-auto p-3 bg-gray-50"
+        onDragOver={e => e.preventDefault()}
+        onDrop={handleDrop}
+      >
+        {messages.map(m => (
+          <div key={m.id} className={`flex flex-col ${m.user === userName ? 'items-end' : 'items-start'}`}>
+            <div className={`max-w-xs p-2 rounded-lg shadow ${m.user === userName ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}>
               <strong className="text-sm block mb-0.5">{m.user === userName ? 'You' : m.user}</strong>
               {m.type === 'text' ? (
-                <p className="text-sm whitespace-pre-wrap break-words">{m.text}</p>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text || ''}</ReactMarkdown>
+              ) : m.fileType?.startsWith('image/') ? (
+                <>
+                  <Image src={m.data!} alt={m.fileName || ''} width={200} height={150} objectFit="contain" className="mb-1 rounded" />
+                  <a href={m.data} download={m.fileName} className="text-sm underline">{m.fileName}</a>
+                </>
               ) : (
-                <a 
-                  href={m.data} 
-                  download={m.fileName} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className={`text-sm underline ${
-                    m.user === userName ? 'hover:text-blue-200' : 'text-indigo-600 hover:text-indigo-800'
-                  }`}
-                >
-                  {m.fileName} ({m.fileType})
-                </a>
+                <a href={m.data} download={m.fileName} className="text-sm underline">{m.fileName} ({m.fileType})</a>
               )}
-              <div className={`text-xs mt-1 ${m.user === userName ? 'text-blue-200' : 'text-gray-500'} text-right`}>
-                {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
+              <div className={`text-xs mt-1 ${m.user === userName ? 'text-blue-200' : 'text-gray-500'} text-right`}>{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
             </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
+        {typingUsers.length > 0 && <div className="text-xs text-gray-500 italic">{typingUsers.join(', ')} typing...</div>}
       </div>
-      <div className="p-3 border-t border-gray-300 bg-gray-100">
+      <div className="p-3 border-t border-gray-300 bg-gray-100 relative">
         <div className="flex items-center space-x-2 mb-2">
           <input
             type="text"
+            aria-label="Chat message"
+            placeholder="Type a message..."
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={e => {
+              setInput(e.target.value);
+              const now = Date.now();
+              if (streamId && now - lastTypingSentRef.current > 2000) {
+                lastTypingSentRef.current = now;
+                const typingEvent = { user: userName, type: 'typing', timestamp: now };
+                (client as any).sendStreamMessage(streamId, new TextEncoder().encode(JSON.stringify(typingEvent))).catch(() => {});
+              }
+            }}
             onKeyPress={e => e.key === 'Enter' && sendText()}
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Type a message..."
           />
-          <button 
-            onClick={sendText} 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            disabled={!input.trim()}
-          >
+          <button onClick={() => setShowEmojiPicker(prev => !prev)} type="button" aria-label="Emoji picker" className="text-gray-600">
+            😊
+          </button>
+          {showEmojiPicker && (
+            <div className="absolute bottom-24 right-3 z-50">
+              <EmojiPicker onEmojiClick={(emoji) => setInput(prev => prev + emoji.emoji)} />
+            </div>
+          )}
+          <button onClick={sendText} disabled={!input.trim()} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
             Send
           </button>
         </div>
-        <div className="flex items-center space-x-2">
-          <label htmlFor="chat-file-input" className="sr-only">Choose file</label>
-          <input 
-            id="chat-file-input" 
-            type="file" 
-            ref={fileRef} 
-            onChange={sendFile} // Send file immediately on change
-            aria-label="Select file" 
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
-          />
-          {/* Removed separate upload button, file sends on selection */}
-        </div>
+        <label htmlFor="file-input" className="sr-only">Attach file</label>
+        <input
+          id="file-input"
+          type="file"
+          ref={fileRef}
+          onChange={sendFile}
+          aria-label="Select file to send"
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
       </div>
     </div>
   );

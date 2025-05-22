@@ -8,10 +8,10 @@ export const runtime = 'nodejs';
 
 export async function GET(
   request: NextRequest,
-  context: any
+  { params }: { params: { mentorId: string } }
 ): Promise<NextResponse> {
   const supabaseAdmin = createAdminClient();
-  const mentorId = context.params.mentorId as string;
+  const mentorId = params.mentorId;
   console.log('API: Fetching availability for mentor ID:', mentorId);
 
   // Get current time to filter out past slots
@@ -38,28 +38,13 @@ export async function GET(
       latest: allData?.length ? new Date(Math.max(...allData.map(i => new Date(i.start_time).getTime()))).toISOString() : 'none',
     });
 
-    // Modified: Use a more flexible approach for status - now we check for status that contains 'available'
-    // rather than being exactly 'available'
-    console.log('API: Filtering with mentor_id =', mentorId, ', status LIKE available, start_time >', now);
-    
-    // Using ILIKE for case-insensitive matching with wildcards
-    const { data, error } = await supabaseAdmin
-      .from('availability')
-      .select('id, start_time, end_time, status, mentor_id')
-      .eq('mentor_id', mentorId)
-      .ilike('status', '%available%')
-      .gt('start_time', now)
-      .order('start_time', { ascending: true });
+    // Return raw availability periods with status "available" and end_time in the future
+    const availablePeriods = (allData || []).filter(item =>
+      item.status.toLowerCase().includes('available') && new Date(item.end_time) > new Date(now)
+    );
+    console.log('API: Available periods:', availablePeriods);
+    return NextResponse.json(availablePeriods);
 
-    console.log('API: Filtered availability results:', data);
-
-    if (error) {
-      console.error('API: Error filtering availability records:', error);
-      // Return empty list instead of error
-      return NextResponse.json([], { status: 200 });
-    }
-
-    return NextResponse.json(data || []);
   } catch (err) {
     console.error('API: Unexpected error in availability endpoint:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -68,10 +53,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  context: any
+  { params }: { params: { mentorId: string } }
 ): Promise<NextResponse> {
   const supabaseAdmin = createAdminClient();
-  const mentorId = context.params.mentorId as string;
+  const mentorId = params.mentorId;
   const body = await request.json();
   const { start_time, end_time } = body;
 

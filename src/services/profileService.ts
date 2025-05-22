@@ -108,9 +108,11 @@ export async function getAvailability(mentorId: string) {
 }
 
 export async function createAvailability(slot: Omit<AvailabilityRecord, 'id' | 'created_at'>) {
+  // Always set new slot to 'available' to satisfy the CHECK constraint
+  const toInsert = { ...slot, status: 'available' };
   const { data, error } = await supabase
     .from('availability')
-    .insert(slot)
+    .insert(toInsert)
     .select()
     .single();
   
