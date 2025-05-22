@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { useUser } from "../../../lib/auth";
 import { fetchAllMentors } from "../../../lib/mentors";
 import MenteeSessions from './MenteeSessions';
-import MenteeBookings from '../../components/MenteeDashboardSections/MenteeBookings';
+import MenteeBookings from '../components/MenteeDashboardSections/MenteeBookings';
+import MenteeAchievements from '../components/MenteeDashboardSections/MenteeAchievements';
+import { Mentor } from '../components/common/types';
 
 export default function MenteeDashboard() {
   const { user, loading } = useUser();
@@ -75,19 +77,11 @@ export default function MenteeDashboard() {
         
         <Tab.Panel>
           {/* Overview Tab */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-8">
-              <MenteeStats />
-              
-              {/* Recently added upcoming sessions section */}
-              <div className="mt-8">
-                <MenteeSessions menteeId={String(user.id)} />
-              </div>
-            </div>
-            
-            <div className="space-y-8">
-              <RecommendedMentors mentors={mentors} />
-            </div>
+          <div className="space-y-8">
+            {/* Progress & stats overview */}
+            <MenteeAchievements user={user as unknown as { id?: string }} />
+            {/* Recently added upcoming sessions section */}
+            <MenteeSessions menteeId={String(user.id)} />
           </div>
         </Tab.Panel>
         

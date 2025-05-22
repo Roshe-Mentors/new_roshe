@@ -42,24 +42,12 @@ const MeetingPageContent = () => {
     })();
   }, []);
 
-  // Derive channel from route param or query param fallback,
-  // and ensure the string "undefined" is treated as an empty/invalid channel.
-  let derivedChannelFromParams: string | null = params.channel as string;
-  if (derivedChannelFromParams === "undefined") {
-    derivedChannelFromParams = null; // Treat "undefined" string as not provided
-  }
+  // Derive channel from dynamic route param, fallback to 'channel' query param
+  const routeChannel = typeof params.channel === 'string' && params.channel !== 'undefined' ? params.channel : '';
+  const queryChannel = searchParams.get('channel');
+  const validQueryChannel = queryChannel && queryChannel !== 'undefined' ? queryChannel : '';
+  const urlChannel = routeChannel || validQueryChannel;
 
-  let derivedChannelFromQuery = searchParams.get('channel');
-  if (derivedChannelFromQuery === "undefined") {
-    derivedChannelFromQuery = null;
-  }
-
-  let derivedMeetingIdFromQuery = searchParams.get('meetingId');
-  if (derivedMeetingIdFromQuery === "undefined") {
-    derivedMeetingIdFromQuery = null;
-  }
-
-  const urlChannel = derivedChannelFromParams || derivedChannelFromQuery || derivedMeetingIdFromQuery || '';
   const userName = user?.email || user?.id || 'Guest';
   // State for server-generated token and App ID
   const [meetingToken, setMeetingToken] = useState<string>('');
@@ -94,7 +82,8 @@ const MeetingPageContent = () => {
         }
         setMeetingToken(data.token);
         setMeetingAppId(data.appId);
-        if (data.channel) setMeetingChannel(data.channel);
+        // Ensure meetingChannel is set from response
+        setMeetingChannel(data.channel || urlChannel);
       } catch (err: any) {
         console.error('Error fetching Agora token:', err);
         setMeetingError(err.message);
@@ -117,6 +106,13 @@ const MeetingPageContent = () => {
       <p className="mb-6 text-center text-gray-300">
         {meetingError || (!meetingAppId || !meetingToken ? 'Invalid meeting configuration.' : 'Missing channel configuration.')}
       </p>
+      
+      <details className="bg-gray-800 text-left p-3 rounded mb-4">
+        <summary className="cursor-pointer">Debug Info</summary>
+        <pre className="text-sm text-gray-200 mt-2">
+          {JSON.stringify({ urlChannel, tokenParam, appIdParam, meetingChannel, meetingAppId, meetingToken, meetingError }, null, 2)}
+        </pre>
+      </details>
       
      <button onClick={() => router.push('/dashboard')} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded">
        <FaArrowLeft className="mr-2" />Go to Dashboard

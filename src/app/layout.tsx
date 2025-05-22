@@ -1,10 +1,9 @@
-
 import React from 'react'
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import ConditionalFooter from "../components/ConditionalFooter";
 import { UserProvider } from "../lib/auth";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -55,7 +54,7 @@ export default function RootLayout({
           <Navbar />
           <ToastContainer position="top-right" />
           {children}
-          <Footer />
+          <ConditionalFooter />
         </UserProvider>  
       </body>
     </html>

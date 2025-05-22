@@ -5,13 +5,12 @@ import AgoraRTC, {
   IMicrophoneAudioTrack
 } from 'agora-rtc-sdk-ng';
 import { AGORA_CLIENT_APP_ID } from '../config/agoraConfig';
-import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools, FaSpinner, FaCommentDots, FaDesktop, FaUsers } from 'react-icons/fa';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash, FaImage, FaTools, FaSpinner, FaCommentDots, FaDesktop, FaUsers, FaRedo } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { IAgoraRTCRemoteUser } from 'agora-rtc-sdk-ng';
 import MediaTest from './MediaTest';
 import VirtualBackground from './VirtualBackground';
 import ChatPanel from './ChatPanel';
-import Image from 'next/image';
 import AgoraDiagnostics from './AgoraDiagnostics';
 
 interface AgoraMeetingProps {
@@ -204,27 +203,29 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         console.log('Successfully joined channel');
       } catch (joinError: any) {
         console.error('Error joining channel:', joinError);
-        
-        // Provide more specific error messages based on common issues
-        if (joinError.code === 'CAN_NOT_GET_GATEWAY_SERVER') {
-          if (joinError.message && joinError.message.includes('invalid vendor key')) {
+        const msg = joinError.message || '';
+        // Handle token expiration (dynamic key timeout) from both explicit and gateway errors
+        if (joinError.code === 'DYNAMIC_KEY_TIMEOUT' ||
+            (joinError.code === 'CAN_NOT_GET_GATEWAY_SERVER' && msg.toLowerCase().includes('dynamic key expired'))) {
+          setError('Your token has expired. Please refresh the page to get a new token.');
+        } else if (joinError.code === 'CAN_NOT_GET_GATEWAY_SERVER') {
+          // Gateway/server errors not related to token expiration
+          if (msg.toLowerCase().includes('invalid vendor key') || msg.toLowerCase().includes('can not find appid')) {
             setError(`Invalid Agora App ID: ${appId.substring(0, 3)}...${appId.substring(appId.length - 3)} (length: ${appId.length}). Please check your Agora credentials.`);
           } else {
-            setError(`Connection error: Cannot connect to Agora servers. Please check your internet connection and Agora App ID.`);
+            setError(`Connection error: ${msg || 'Cannot connect to Agora servers'}. Please check your internet connection and Agora App ID.`);
           }
-        } else if (joinError.code === 'DYNAMIC_KEY_TIMEOUT') {
-          setError('Your token has expired. Please refresh the page to get a new token.');
         } else if (joinError.code === 'INVALID_VENDOR_KEY') {
           setError('Invalid Agora App ID. Please check your credentials.');
         } else {
-          setError(joinError.message || 'Failed to join meeting. Check your Agora App ID and token UID.');
+          setError(msg || 'Failed to join meeting. Check your Agora App ID and token UID.');
         }
         
-        // Cleanup tracks
-        microphoneTrack.close();
-        cameraTrack.close();
-        return;
-      }
+         // Cleanup tracks
+         microphoneTrack.close();
+         cameraTrack.close();
+         return;
+       }
 
       try {
         // Publish local tracks
@@ -514,38 +515,7 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         {/* Header */}
         <div className="bg-gray-900 text-white p-3 flex justify-between items-center transition-colors duration-200">
           <h3 className="font-medium">{channel}</h3>
-          <div className="flex space-x-2">
-            <button
-              onClick={handleBgToggle}
-              title={virtualBg ? 'Disable Virtual Background' : 'Enable Virtual Background'}
-              className="text-white p-2 rounded hover:bg-gray-700 transition-colors duration-200"
-            >
-              <FaImage />
-            </button>
-            {bgImageUrl && (
-              <div className="relative h-6 w-6">
-                <Image
-                  src={bgImageUrl}
-                  alt="Background preview"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-full border border-gray-300"
-                />
-              </div>
-            )}
-            <button
-              className="bg-red-600 hover:bg-red-700 rounded-full p-2 transition-colors duration-200"
-              onClick={() => window.location.reload()}
-              title="Reload Meeting"
-              aria-label="Reload Meeting"
-            >
-              {/* reload icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path d="M4 3a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L20 6.161V5a2 2 0 00-2-2H4z" />
-                <path d="M18 8.672v5.328a2 2 0 01-2 2H4a2 2 0 01-2-2V8.672l8.105 4.053a2.5 2.5 0 002.79 0L18 8.672z" />
-              </svg>
-            </button>
-          </div>
+          {/* Header icons removed — relocated to floating controls */}
         </div>  {/* end of Header */}
 
         {/* hidden file input for background image selection */}
@@ -612,6 +582,25 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
           <motion.button onClick={toggleParticipants} title="Participants" className="text-white p-2 rounded hover:bg-gray-700" whileTap={{ scale: 0.9 }}>
             <FaUsers />
           </motion.button>
+          {/* Virtual Background toggle */}
+          <motion.button
+            onClick={handleBgToggle}
+            title={virtualBg ? 'Disable Virtual Background' : 'Enable Virtual Background'}
+            className="text-white p-2 rounded hover:bg-gray-700"
+            disabled={connectionState !== 'CONNECTED'}
+            whileTap={{ scale: 0.9 }}
+          >
+            <FaImage />
+          </motion.button>
+          {/* Reload Meeting button */}
+          <motion.button
+            onClick={() => window.location.reload()}
+            title="Reload Meeting"
+            className="text-white p-2 rounded hover:bg-gray-700"
+            whileTap={{ scale: 0.9 }}
+          >
+            <FaRedo />
+          </motion.button>
           <button onClick={leaveCall} title="End Call" className="text-red-500 p-2 rounded hover:bg-red-700 bg-white">
             <FaPhoneSlash />
           </button>
@@ -621,7 +610,7 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
         {/* Video Layout */}
         <AnimatePresence>
           {/* Main local video view, large */}
-          <div className="relative w-full bg-black mb-4" style={{ height: '60vh' }}>
+          <motion.div key="local-video-view" className="relative w-full bg-black mb-4" style={{ height: '60vh' }}>
             {localTracksRef.current && (
               virtualBg ? (
                 <VirtualBackground
@@ -633,18 +622,18 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
                 <LocalVideoView videoTrack={localTracksRef.current[1]} />
               )
             )}
-          </div>
+          </motion.div>
           {/* Remote users thumbnails, horizontal list */}
-          <div className="flex space-x-2 p-2 overflow-x-auto">
-            {remoteUsers.map(user => (
-              <div key={user.uid} className="w-32 h-24 relative bg-black rounded-lg overflow-hidden flex-shrink-0">
+          <motion.div key="remote-thumbnails" className="flex space-x-2 p-2 overflow-x-auto">
+            {remoteUsers.map((user, idx) => (
+               <div key={`${user.uid}-${idx}`} className="w-32 h-24 relative bg-black rounded-lg overflow-hidden flex-shrink-0">
                 <RemoteVideoView user={user} />
                 <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
                   User {user.uid}
                 </div>
               </div>
             ))}
-          </div>
+          </motion.div>
         </AnimatePresence>
 
         {/* Chat Panel (hidden by default) */}
@@ -673,8 +662,8 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
                 <span>You</span>
               </li>
               {/* Remote users */}
-              {remoteUsers.map(user => (
-                <li key={user.uid} className="flex items-center mb-2">
+              {remoteUsers.map((user, idx) => (
+                <li key={`${user.uid}-${idx}`} className="flex items-center mb-2">
                   {volumes[user.uid]?.toString() && volumes[user.uid]! > 0 ? (
                     <FaMicrophone className="mr-2 text-green-500" />
                   ) : (
@@ -719,6 +708,11 @@ const LocalVideoView = ({ videoTrack }: { videoTrack: ICameraVideoTrack }) => {
     if (el) {
       try {
         videoTrack.play(el);
+        // Ensure full camera feed is visible without zoom
+        const videoElem = el.querySelector('video');
+        if (videoElem) {
+          videoElem.style.objectFit = 'contain';
+        }
       } catch (err) {
         console.error('Error playing local track', err);
       }
@@ -727,7 +721,7 @@ const LocalVideoView = ({ videoTrack }: { videoTrack: ICameraVideoTrack }) => {
       try { videoTrack.stop(); } catch {};
     };
   }, [videoTrack]);
-  return <div ref={containerRef} className="h-full w-full"></div>;
+  return <div ref={containerRef} className="h-full w-full bg-black"></div>;
 };
 
 export default AgoraMeeting;

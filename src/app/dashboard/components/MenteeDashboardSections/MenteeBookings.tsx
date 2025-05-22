@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Mentor } from '../common/types';
 import { toast } from 'react-toastify';
@@ -38,7 +38,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
   user
 }) => {
   // Helper to load available periods from API
-  const loadAvailability = async () => {
+  const loadAvailability = useCallback(async () => {
     if (!selectedMentorId) return;
     try {
       const res = await fetch(`/api/mentors/${selectedMentorId}/availability`);
@@ -50,7 +50,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     } catch (err) {
       console.error('Error loading availability:', err);
     }
-  };
+  }, [selectedMentorId]);
 
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedDateObj, setSelectedDateObj] = useState<Date | null>(null);
@@ -66,15 +66,15 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
 
   const selectedMentor = selectedMentorId ? mentors.find(m => m.id === selectedMentorId) : null;
 
-  // Reset form when mentor changes
+  // Reset form when mentor changes and reload availability
   useEffect(() => {
     setSelectedDate('');
+    setSelectedDateObj(null);
     setSelectedTimeSlot('');
     setAgenda('');
     setBookingStep('select-mentor');
-   // load availability on mentor change
     loadAvailability();
-  }, [selectedMentorId]);
+  }, [selectedMentorId, loadAvailability]);
 
   // Load mentor availability when selected and subscribe to real-time changes
   useEffect(() => {
@@ -105,7 +105,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
     return () => {
       if (channel) supabase.removeChannel(channel);
     };
-  }, [selectedMentorId]);
+  }, [selectedMentorId, loadAvailability]);
 
   // Compute available dates from availability slots with local date strings
   const now = new Date();
@@ -179,9 +179,10 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
       if (data.success && data.meeting) {
         // Redirect to the dedicated meeting page
         toast.success('Session booked successfully! Redirecting to meeting room...');
-        const { channelName, token, appId } = data.meeting;
-        // Open meeting in a new browser tab
-        window.open(`/meeting/${channelName}?token=${token}&appId=${appId}`, '_blank');
+        const { channel, token, appId } = data.meeting;
+        // Open meeting in a new browser tab using absolute URL to ensure correct domain and path
+        const meetingUrl = `${window.location.origin}/meeting/${channel}?token=${token}&appId=${appId}`;
+        window.open(meetingUrl, '_blank');
       } else {
         toast.error(data.error || 'Failed to book session');
       }
@@ -328,11 +329,18 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
               <div className="border rounded-lg p-4">
                 <DatePicker
                   selected={selectedDateObj}
-                  onChange={(date) => {
+                  onChange={(date: Date | null) => {
                     if (date) {
+                      const formatted = date.toISOString().split('T')[0];
+                      setSelectedDate(formatted);
                       setSelectedDateObj(date);
-                      setSelectedDate(date.toISOString().split('T')[0]);
-                      setSelectedTimeSlot(''); // Reset time slot when date changes
+                      setSelectedTimeSlot('');
+                      setSelectedTimeSlotId(''); // reset slot ID when date changes
+                    } else {
+                      setSelectedDate('');
+                      setSelectedDateObj(null);
+                      setSelectedTimeSlot('');
+                      setSelectedTimeSlotId('');
                     }
                   }}
                   filterDate={isDateAvailable}
@@ -467,7 +475,7 @@ const MenteeBookings: React.FC<MenteeBookingsProps> = ({
               </div>
             </div>
             <div className="text-sm text-gray-700">
-              <p><span className="font-medium">Date:</span> {selectedDateObj ? selectedDateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</p>
+              <p><span className="font-medium">Date:</span> {selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</p>
               <p><span className="font-medium">Time:</span> {selectedTimeSlot ? new Date(`1970-01-01T${selectedTimeSlot}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : 'N/A'} for {sessionDuration} minutes</p>
             </div>
           </div>

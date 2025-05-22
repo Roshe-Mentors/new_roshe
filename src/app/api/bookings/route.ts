@@ -156,7 +156,7 @@ Join here: ${meetingUrl}`;
         console.error('Error sending notification email:', emailErr);
       }
 
-      // Return success response with Agora meeting credentials
+      // Return success response with Agora meeting credentials, using channelName for client consumption
       return NextResponse.json({
         success: true,
         message: 'Session booked successfully',
@@ -169,10 +169,10 @@ Join here: ${meetingUrl}`;
         { status: 500 }
       );
     }
-  } catch (error: any) {
-    console.error('Error handling booking request:', error.message, error.stack, error);
+  } catch (error) {
+    console.error('Unexpected error in POST /api/bookings:', error);
     return NextResponse.json(
-      { error: `Internal server error: ${error.message}` },
+      { error: 'Unexpected server error' },
       { status: 500 }
     );
   }

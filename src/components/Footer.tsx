@@ -20,7 +20,7 @@ import {
 import { usePathname } from 'next/navigation';
 import { motion } from "framer-motion";
 
-const Footer: React.FC = () => {
+const ConditionalFooter: React.FC = () => {
   const pathname = usePathname();
   if (pathname.startsWith('/dashboard')) return null;
 
@@ -102,66 +102,68 @@ const Footer: React.FC = () => {
         {/* Navigation Links */}
         <div className="flex flex-col md:flex-row justify-center md:justify-between gap-6">
           {/* Left Links */}
-          <motion.ul
-            className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 text-black text-sm"
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <li className="flex items-center gap-2">
-              <FaUserFriends className="text-[#9898FA]" size={18} />
-              <Link href="/signIn" className="hover:text-[#9898FA] transition font-bold">
-                Find mentors
-              </Link>
-            </li>
-            <li className="flex items-center gap-2">
-              <FaChalkboardTeacher className="text-[#9898FA]" size={18} />
-              <Link href="/signup/mentor" className="hover:text-[#9898FA] transition font-bold">
-                Become a mentor
-              </Link>
-            </li>
-            <li className="flex items-center gap-2">
-              <FaUsers className="text-[#9898FA]" size={18} />
-              <Link href="/" className="hover:text-[#9898FA] transition font-bold">
-                Community
-              </Link>
-            </li>
-            <li className="flex items-center gap-2">
-              <FaBlog className="text-[#9898FA]" size={18} />
-              <Link href="/blog" className="hover:text-[#9898FA] transition font-bold">
-                Blog
-              </Link>
-            </li>
-          </motion.ul>
+            <ul role="list" className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 text-black text-sm">
+              <li className="flex items-center gap-2">
+                <FaUserFriends className="text-[#9898FA]" size={18} />
+                <Link href="/signIn" className="hover:text-[#9898FA] transition font-bold">
+                  Find mentors
+                </Link>
+              </li>
+              <li className="flex items-center gap-2">
+                <FaChalkboardTeacher className="text-[#9898FA]" size={18} />
+                <Link href="/signup/mentor" className="hover:text-[#9898FA] transition font-bold">
+                  Become a mentor
+                </Link>
+              </li>
+              <li className="flex items-center gap-2">
+                <FaUsers className="text-[#9898FA]" size={18} />
+                <Link href="/" className="hover:text-[#9898FA] transition font-bold">
+                  Community
+                </Link>
+              </li>
+              <li className="flex items-center gap-2">
+                <FaBlog className="text-[#9898FA]" size={18} />
+                <Link href="/blog" className="hover:text-[#9898FA] transition font-bold">
+                  Blog
+                </Link>
+              </li>
+            </ul>
+          </motion.div>
 
           {/* Right Links */}
-          <motion.ul
-            className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 text-black text-sm"
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            <li className="flex items-center gap-2">
-              <FaUserPlus className="text-[#9898FA]" size={18} />
-              <Link href="/signIn" className="hover:text-[#9898FA] transition font-bold">
-                Join Roshe Mentorship
-              </Link>
-            </li>
-            <li className="flex items-center gap-2">
-              <FaQuestionCircle className="text-[#9898FA]" size={18} />
-              <Link href="/faq" className="hover:text-[#9898FA] transition font-bold">
-                FAQs
-              </Link>
-            </li>
-            <li className="flex items-center gap-2">
-              <FaHandshake className="text-[#9898FA]" size={18} />
-              <a href="mailto:roshementorship@gmail.com" className="hover:text-[#9898FA] transition font-bold">
-                Partnerships
-              </a>
-            </li>
-          </motion.ul>
+            <ul role="list" className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-4 text-black text-sm">
+              <li className="flex items-center gap-2">
+                <FaUserPlus className="text-[#9898FA]" size={18} />
+                <Link href="/signIn" className="hover:text-[#9898FA] transition font-bold">
+                  Join Roshe Mentorship
+                </Link>
+              </li>
+              <li className="flex items-center gap-2">
+                <FaQuestionCircle className="text-[#9898FA]" size={18} />
+                <Link href="/faq" className="hover:text-[#9898FA] transition font-bold">
+                  FAQs
+                </Link>
+              </li>
+              <li className="flex items-center gap-2">
+                <FaHandshake className="text-[#9898FA]" size={18} />
+                <a href="mailto:roshementorship@gmail.com" className="hover:text-[#9898FA] transition font-bold">
+                  Partnerships
+                </a>
+              </li>
+            </ul>
+          </motion.div>
         </div>
 
         {/* Copyright */}
@@ -179,4 +181,4 @@ const Footer: React.FC = () => {
   );
 };
 
-export default Footer;
+export default ConditionalFooter;
