@@ -209,9 +209,9 @@ const AgoraMeeting: React.FC<AgoraMeetingProps> = ({
             (joinError.code === 'CAN_NOT_GET_GATEWAY_SERVER' && msg.toLowerCase().includes('dynamic key expired'))) {
           setError('Your token has expired. Please refresh the page to get a new token.');
         } else if (joinError.code === 'CAN_NOT_GET_GATEWAY_SERVER') {
-          // Gateway/server errors not related to token expiration
+          // If the message indicates vendor key/appId issues, surface a clear credential error
           if (msg.toLowerCase().includes('invalid vendor key') || msg.toLowerCase().includes('can not find appid')) {
-            setError(`Invalid Agora App ID: ${appId.substring(0, 3)}...${appId.substring(appId.length - 3)} (length: ${appId.length}). Please check your Agora credentials.`);
+            setError('Invalid Agora App ID or certificate. Please verify your AGORA_APP_ID and AGORA_APP_CERTIFICATE environment variables.');
           } else {
             setError(`Connection error: ${msg || 'Cannot connect to Agora servers'}. Please check your internet connection and Agora App ID.`);
           }

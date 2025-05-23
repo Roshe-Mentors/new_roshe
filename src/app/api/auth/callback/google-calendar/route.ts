@@ -46,10 +46,8 @@ export async function GET(request: Request) {
       return NextResponse.redirect(
         `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=token_exchange_failed`
       );
-    }
-
-    // Get user info from cookies (server-side only)
-    const cookieStore = cookies();
+    }    // Get user info from cookies (server-side only)
+    const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
     // Get user session

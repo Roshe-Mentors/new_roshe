@@ -1,138 +1,1502 @@
-# Database Schema Overview
-
-The following is a complete, up‑to‑date overview of every table and column in the Supabase schema.
-
-## 1. Users
-
-- user_id (uuid, PK, NOT NULL)
-- created_at (timestamp with time zone, NOT NULL)
-- name (text, nullable)
-- linkedin (text, nullable)
-- dob (date, nullable)
-
-## 2. availability
-
-- id (uuid, PK, NOT NULL)
-- mentor_id (uuid, NOT NULL)
-- start_time (timestamp with time zone, NOT NULL)
-- status (text, NOT NULL)
-- created_at (timestamp with time zone, nullable)
-- end_time (timestamp with time zone, NOT NULL)
-- updated_at (timestamp with time zone, nullable)
-
-## 3. bookings
-
-- id (uuid, PK, NOT NULL)
-- mentor_id (text, NOT NULL)
-- mentor_name (text, nullable)
-- mentor_email (text, nullable)
-- user_id (text, NOT NULL)
-- user_email (text, nullable)
-- date (text, nullable)
-- time (text, nullable)
-- booking_date (text, nullable)
-- booking_time (text, nullable)
-- session_type (text, NOT NULL)
-- meeting_id (text, NOT NULL)
-- meeting_url (text, NOT NULL)
-- password (text, nullable)
-- meeting_password (text, nullable)
-- status (text, nullable)
-- created_at (timestamp with time zone, nullable)
-- updated_at (timestamp with time zone, nullable)
-- slot_id (uuid, nullable)
-
-## 4. expertise_tags
-
-- id (uuid, PK, NOT NULL)
-- name (text, NOT NULL)
-- created_at (timestamp with time zone, NOT NULL)
-
-## 5. mentees
-
-- id (uuid, PK, NOT NULL)
-- user_id (uuid, nullable)
-- name (text, nullable)
-- email (text, NOT NULL)
-- dob (date, nullable)
-- created_at (timestamp with time zone, nullable)
-- linkedin (text, nullable)
-- biography (text, nullable)
-- linkedin_url (text, NOT NULL)
-- date_of_birth (date, nullable)
-- role (text, NOT NULL)
-- profile_image_url (text, nullable)
-- bio (text, nullable)
-- location (text, nullable)
-- company (text, nullable)
-- specialization (text, nullable)
-- years_experience (integer, nullable)
-
-## 6. mentor_calendar_oauth
-
-- id (uuid, PK, NOT NULL)
-- mentor_id (uuid, NOT NULL)
-- provider (text, NOT NULL)
-- access_token (text, NOT NULL)
-- refresh_token (text, NOT NULL)
-- expires_at (timestamp with time zone, NOT NULL)
-- created_at (timestamp with time zone, NOT NULL)
-
-## 7. mentor_expertise
-
-- mentor_id (uuid, NOT NULL)
-- tag_id (uuid, NOT NULL)
-- created_at (timestamp with time zone, NOT NULL)
-
-## 8. mentor_reviews
-
-- id (uuid, PK, NOT NULL)
-- mentor_id (uuid, nullable)
-- mentee_id (uuid, nullable)
-- session_id (uuid, nullable)
-- rating (integer, NOT NULL)
-- feedback (text, nullable)
-- created_at (timestamp with time zone, nullable)
-
-## 9. mentor_social_links
-
-- id (uuid, PK, NOT NULL)
-- mentor_id (uuid, NOT NULL)
-- platform (text, NOT NULL)
-- url (text, NOT NULL)
-- created_at (timestamp with time zone, NOT NULL)
-
-## 10. mentoring_sessions
-
-- id (uuid, PK, NOT NULL)
-- mentor_id (uuid, nullable)
-- mentee_id (uuid, nullable)
-- status (text, NOT NULL)
-- start_time (timestamp with time zone, nullable)
-- end_time (timestamp with time zone, nullable)
-- cancelled_at (timestamp with time zone, nullable)
-- created_at (timestamp with time zone, nullable)
-- title (text, nullable)
-- meeting_link (text, nullable)
-- cancellation_reason (text, nullable)
-- description (text, nullable)
-
-## 11. mentors
-
-- id (uuid, PK, NOT NULL)
-- user_id (uuid, nullable)
-- name (text, nullable)
-- dob (date, nullable)
-- created_at (timestamp with time zone, nullable)
-- linkedin (text, nullable)
-- biography (text, nullable)
-- linkedin_url (text, NOT NULL)
-- date_of_birth (date, nullable)
-- email (text, NOT NULL)
-- role (text, NOT NULL)
-- location (text, nullable)
-- company (text, nullable)
-- sessions_completed (integer, nullable)
-- reviews_count (integer, nullable)
-
----
+[
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "instance_id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "payload",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "json",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "json",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "created_at",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "audit_log_entries",
+    "column_name": "ip_address",
+    "ordinal_position": 5,
+    "column_default": "''::character varying",
+    "is_nullable": "NO",
+    "data_type": "character varying",
+    "character_maximum_length": 64,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "user_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "auth_code",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "code_challenge_method",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "USER-DEFINED",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "code_challenge_method",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "code_challenge",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "provider_type",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "provider_access_token",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "provider_refresh_token",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "created_at",
+    "ordinal_position": 9,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "updated_at",
+    "ordinal_position": 10,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "authentication_method",
+    "ordinal_position": 11,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "flow_state",
+    "column_name": "auth_code_issued_at",
+    "ordinal_position": 12,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "provider_id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "user_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "identity_data",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "jsonb",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "jsonb",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "provider",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "last_sign_in_at",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "created_at",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "updated_at",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "email",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": "Auth: Email is a generated column that references the optional email property in the identity_data"
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "identities",
+    "column_name": "id",
+    "ordinal_position": 9,
+    "column_default": "gen_random_uuid()",
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "uuid",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "raw_base_config",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "created_at",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "instances",
+    "column_name": "updated_at",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "session_id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "created_at",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "updated_at",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "authentication_method",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_amr_claims",
+    "column_name": "id",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "factor_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "created_at",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "verified_at",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "ip_address",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "inet",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "inet",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "otp_code",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_challenges",
+    "column_name": "web_authn_session_data",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "jsonb",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "jsonb",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "user_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "friendly_name",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "factor_type",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "USER-DEFINED",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "factor_type",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "status",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "USER-DEFINED",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "factor_status",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "created_at",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "updated_at",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "secret",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "phone",
+    "ordinal_position": 9,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "last_challenged_at",
+    "ordinal_position": 10,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "web_authn_credential",
+    "ordinal_position": 11,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "jsonb",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "jsonb",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "mfa_factors",
+    "column_name": "web_authn_aaguid",
+    "ordinal_position": 12,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "user_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "token_type",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "USER-DEFINED",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "one_time_token_type",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "token_hash",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "relates_to",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "created_at",
+    "ordinal_position": 6,
+    "column_default": "now()",
+    "is_nullable": "NO",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamp",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "one_time_tokens",
+    "column_name": "updated_at",
+    "ordinal_position": 7,
+    "column_default": "now()",
+    "is_nullable": "NO",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamp",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "instance_id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "id",
+    "ordinal_position": 2,
+    "column_default": "nextval('auth.refresh_tokens_id_seq'::regclass)",
+    "is_nullable": "NO",
+    "data_type": "bigint",
+    "character_maximum_length": null,
+    "numeric_precision": 64,
+    "numeric_scale": 0,
+    "datetime_precision": null,
+    "udt_name": "int8",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "token",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "character varying",
+    "character_maximum_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "user_id",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "character varying",
+    "character_maximum_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "revoked",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "boolean",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "bool",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "created_at",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "updated_at",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "parent",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "character varying",
+    "character_maximum_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "refresh_tokens",
+    "column_name": "session_id",
+    "ordinal_position": 9,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "sso_provider_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "entity_id",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "metadata_xml",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "metadata_url",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "attribute_mapping",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "jsonb",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "jsonb",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "created_at",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "updated_at",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_providers",
+    "column_name": "name_id_format",
+    "ordinal_position": 9,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "sso_provider_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "request_id",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "for_email",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "redirect_to",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "created_at",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "updated_at",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "saml_relay_states",
+    "column_name": "flow_state_id",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "schema_migrations",
+    "column_name": "version",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "character varying",
+    "character_maximum_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "schema_migrations",
+    "column_name": "version",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "character varying",
+    "character_maximum_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "schema_migrations",
+    "column_name": "version",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "character varying",
+    "character_maximum_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "varchar",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "id",
+    "ordinal_position": 1,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "user_id",
+    "ordinal_position": 2,
+    "column_default": null,
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "created_at",
+    "ordinal_position": 3,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "updated_at",
+    "ordinal_position": 4,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "factor_id",
+    "ordinal_position": 5,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "uuid",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "aal",
+    "ordinal_position": 6,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "USER-DEFINED",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "aal_level",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "not_after",
+    "ordinal_position": 7,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp with time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamptz",
+    "column_comment": "Auth: Not after is a nullable column that contains a timestamp after which the session should be regarded as expired."
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "refreshed_at",
+    "ordinal_position": 8,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": 6,
+    "udt_name": "timestamp",
+    "column_comment": null
+  },
+  {
+    "table_schema": "auth",
+    "table_name": "sessions",
+    "column_name": "user_agent",
+    "ordinal_position": 9,
+    "column_default": null,
+    "is_nullable": "YES",
+    "data_type": "text",
+    "character_maximum_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "datetime_precision": null,
+    "udt_name": "text",
+    "column_comment": null
+  }
+]

@@ -7,7 +7,9 @@ import ConditionalFooter from "../components/ConditionalFooter";
 import { UserProvider } from "../lib/auth";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import SupabaseProvider from '@/components/SupabaseProvider';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 const montserrat = Montserrat({
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
@@ -42,20 +44,22 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Create Supabase server-side client and get initial session
+  const cookieStore = await cookies();
+  const supabase = createServerComponentClient({ cookies: () => cookieStore });
+  const { data: { session } } = await supabase.auth.getSession();
   return (
-    <html lang="en" className={`${montserrat.variable}`}>
-      <body className={`${montserrat.className}`}>
-        <UserProvider>
-          <Navbar />
-          <ToastContainer position="top-right" />
-          {children}
-          <ConditionalFooter />
-        </UserProvider>  
+    <html lang="en" className={`${montserrat.variable}`}>  
+      <body className={`${montserrat.className}`}>  
+        <SupabaseProvider initialSession={session}>
+          <UserProvider>
+            <Navbar />
+            <ToastContainer position="top-right" />
+            {children}
+            <ConditionalFooter />
+          </UserProvider>
+        </SupabaseProvider>
       </body>
     </html>
   );
