@@ -145,8 +145,8 @@ export default function useChat() {
       ...prev,
       [roomId]: prev[roomId] ? [...prev[roomId], inserted] : [inserted],
     }));
-    // Refresh rooms to update last_message and last_message_at
-    const updated = await fetchRooms();
+    // Update last message fields on rooms
+    setChatRooms(prev => prev.map(r => r.id === roomId ? { ...r, last_message: inserted.text, last_message_at: inserted.inserted_at } : r));
     return true;
   }
 
