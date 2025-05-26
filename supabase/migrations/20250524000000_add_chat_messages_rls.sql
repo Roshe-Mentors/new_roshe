@@ -21,7 +21,11 @@ CREATE POLICY "Users can view messages in their rooms"
   );
 
 -- Policy: allow realtime replication
-CREATE POLICY "Allow replication"
-  ON public.chat_messages
-  FOR ALL
-  USING (true);
+--DROP POLICY IF EXISTS "Allow replication" ON public.chat_messages;
+-- Allow replication via service_role
+ CREATE POLICY "Allow replication"
+   ON public.chat_messages
+   FOR ALL
+   USING ( true );
+-- Ensure SELECT by Supabase real-time uses service_role bypassing RLS
+ GRANT SELECT ON public.chat_messages TO "service_role";

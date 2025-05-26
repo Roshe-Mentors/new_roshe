@@ -2,12 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import useChat from '@/hooks/useChat';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { FiSend } from 'react-icons/fi';
 
 const MentorChat: React.FC = () => {
   const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId } = useChat();
-  const supabase = createClientComponentClient();
+  const supabase = useSupabaseClient();
+  // DEBUG: log rooms and messages for troubleshooting
+  useEffect(() => {
+    console.log('MentorChat - chatRooms:', chatRooms);
+    console.log('MentorChat - messages:', messages);
+  }, [chatRooms, messages]);
   const [members, setMembers] = useState<Array<{ user_id: string; full_name: string; avatar_url: string }>>([]);
 
   // Fetch all mentees as potential chat members
@@ -28,6 +33,39 @@ const MentorChat: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [newMessage, setNewMessage] = useState<string>('');
+  
+  // Auto-select the first room on initial load
+  useEffect(() => {
+    if (!selectedRoom && chatRooms.length > 0) {
+      setSelectedRoom(chatRooms[0].id);
+    }
+  }, [chatRooms, selectedRoom]);
+
+  // User clicks a member to start or open a room
+  const handleMemberSelect = async (otherId: string) => {
+    try {
+      const roomId = await getOrCreateRoomWithUser(otherId);
+      if (roomId) {
+        setSelectedRoom(roomId);
+        setSearchTerm('');
+      }
+    } catch (err) {
+      console.error('MentorChat: handleMemberSelect error', err);
+    }
+  };
+  
+  const handleRoomSelect = (roomId: string) => setSelectedRoom(roomId);
+  // Send a chat message in the selected room
+  const handleSend = async () => {
+    if (selectedRoom && newMessage.trim()) {
+      const success = await sendMessageToRoom(selectedRoom, newMessage.trim());
+      if (success) {
+        setNewMessage('');
+      } else {
+        console.error('MentorChat: failed to send message');
+      }
+    }
+  };
 
   // Show loading until authentication is ready
   if (!userId) {
@@ -40,38 +78,6 @@ const MentorChat: React.FC = () => {
   });
   const filteredMembers = members.filter(m => m.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const handleRoomSelect = (roomId: string) => setSelectedRoom(roomId);
-  const handleMemberSelect = async (otherId: string) => {
-    console.log('MentorChat: member clicked', otherId);
-    console.log('MentorChat: current userId', userId);
-    
-    try {
-      const roomId = await getOrCreateRoomWithUser(otherId);
-      console.log('MentorChat: getOrCreateRoomWithUser returned:', roomId);
-      
-      if (roomId) {
-        setSelectedRoom(roomId);
-        setSearchTerm(''); // clear search to display rooms
-        console.log('MentorChat: room selected successfully:', roomId);
-      } else {
-        console.error('MentorChat: Failed to create/get room');
-      }
-    } catch (error) {
-      console.error('MentorChat: Error in handleMemberSelect:', error);
-    }
-  };  const handleSend = async () => {
-    console.log('MentorChat: send clicked', selectedRoom, newMessage);
-    if (selectedRoom && newMessage.trim()) {
-      const success = await sendMessageToRoom(selectedRoom, newMessage);
-      if (success) {
-        setNewMessage('');
-      } else {
-        console.error('MentorChat: failed to send message');
-      }
-    }
-  };
-
-  // Render chat interface or loading state
   return userId ? (
     <div className="flex flex-col w-full max-w-6xl mx-auto">
       {/* Chat Interface - Split View */}
@@ -100,18 +106,32 @@ const MentorChat: React.FC = () => {
             
             {/* Show search results: members when searching or if no rooms exist, else show existing rooms */}
             {(searchTerm || chatRooms.length === 0)
-              ? filteredMembers.map(m => (
-                  <div key={m.user_id} onClick={() => handleMemberSelect(m.user_id)} className="p-4 flex items-center cursor-pointer hover:bg-gray-50">
-                    <Image src={m.avatar_url} alt={m.full_name} width={40} height={40} className="rounded-full" />
-                    <div className="ml-4 flex-1">
-                      <h4 className="font-semibold text-gray-900">{m.full_name}</h4>
+              ? filteredMembers.map(m => {
+                  const isActiveMember = chatRooms.some(
+                    r => r.id === selectedRoom && r.participants.some(p => p.user_id === m.user_id)
+                  );
+                  return (
+                    <div
+                      key={m.user_id}
+                      onClick={() => handleMemberSelect(m.user_id)}
+                      className={`p-4 flex items-center cursor-pointer hover:bg-gray-50 ${isActiveMember ? 'bg-blue-100' : ''}`}
+                    >
+                      <Image src={m.avatar_url} alt={m.full_name} width={40} height={40} className="rounded-full" />
+                      <div className="ml-4 flex-1">
+                        <h4 className="font-semibold text-gray-900">{m.full_name}</h4>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               : filteredRooms.map(room => {
                   const other = room.participants.find(p => p.user_id !== userId);
+                  const isActiveRoom = room.id === selectedRoom;
                   return (
-                    <div key={room.id} onClick={() => handleRoomSelect(room.id)} className="p-4 flex items-center cursor-pointer hover:bg-gray-50">
+                    <div
+                      key={room.id}
+                      onClick={() => handleRoomSelect(room.id)}
+                      className={`p-4 flex items-center cursor-pointer hover:bg-gray-50 ${isActiveRoom ? 'bg-blue-100' : ''}`}
+                    >
                       <Image src={other?.avatar_url || ''} alt={other?.full_name || 'User'} width={40} height={40} className="rounded-full" />
                       <div className="ml-4 flex-1">
                         <div className="flex justify-between">

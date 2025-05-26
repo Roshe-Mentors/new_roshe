@@ -89,64 +89,37 @@ export default function useChat() {
     await fetchRooms();
   }  // Get or create a 1:1 chat room without sending message
   async function getOrCreateRoomWithUser(otherUserId: string): Promise<string | null> {
-    console.log('useChat: getOrCreateRoomWithUser called with:', { userId, otherUserId });
-    
     if (!userId) {
-      console.warn('useChat: Not authenticated - no userId');
       setError('Not authenticated');
       return null;
     }
-
-    console.log('useChat: Calling get_or_create_one_to_one_room RPC');
     const { data: roomData, error: roomErr } = await supabase.rpc(
       'get_or_create_one_to_one_room',
       { user1: userId, user2: otherUserId }
     );
-    
-    console.log('useChat: RPC response:', { roomData, roomErr });
-    
     if (roomErr || !roomData?.length) {
-      console.warn('useChat: Error creating/getting room:', roomErr?.message || 'Room error');
       setError(roomErr?.message || 'Room error');
       return null;
     }
-    
     const roomId = (roomData as ChatRoom[])[0].id;
-    console.log('useChat: Successfully got/created room:', roomId);
-    
     // Refresh rooms to update the UI
     await fetchRooms();
-    
     return roomId;
   }
 
   // Send message to existing room
   async function sendMessageToRoom(roomId: string, text: string): Promise<boolean> {
-    console.log('useChat: sendMessageToRoom called', { roomId, text, userId });
     if (!userId) {
-      console.error('useChat: Not authenticated - cannot send');
       setError('Not authenticated');
       return false;
     }
-    // Insert and return the new message
-    const { data: inserted, error: insertErr } = await supabase
+    const { error: insertErr } = await supabase
       .from('chat_messages')
-      .insert({ room_id: roomId, sender_id: userId, text })
-      .select('*')
-      .single();
-    if (insertErr || !inserted) {
-      console.error('useChat: insert message error', insertErr);
-      setError(insertErr?.message || 'Insert error');
+      .insert({ room_id: roomId, sender_id: userId, text });
+    if (insertErr) {
+      setError(insertErr.message);
       return false;
     }
-    console.log('useChat: message inserted', inserted);
-    // Update local messages state immediately
-    setMessages(prev => ({
-      ...prev,
-      [roomId]: prev[roomId] ? [...prev[roomId], inserted] : [inserted],
-    }));
-    // Update last message fields on rooms
-    setChatRooms(prev => prev.map(r => r.id === roomId ? { ...r, last_message: inserted.text, last_message_at: inserted.inserted_at } : r));
     return true;
   }
 
