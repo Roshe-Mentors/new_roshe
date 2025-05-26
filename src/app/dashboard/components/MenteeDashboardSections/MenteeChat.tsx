@@ -60,11 +60,15 @@ const MenteeChat: React.FC = () => {
       console.error('MenteeChat: Error in handleMemberSelect:', error);
     }
   };
-  const handleSend = () => {
-    console.log('Send clicked for room:', selectedRoom, 'message:', newMessage);
+  const handleSend = async () => {
+    console.log('MenteeChat: send clicked', { selectedRoom, newMessage });
     if (selectedRoom && newMessage.trim()) {
-      sendMessageToRoom(selectedRoom, newMessage);
-      setNewMessage('');
+      const success = await sendMessageToRoom(selectedRoom, newMessage);
+      if (success) {
+        setNewMessage('');
+      } else {
+        console.error('MenteeChat: failed to send message');
+      }
     }
   };
 

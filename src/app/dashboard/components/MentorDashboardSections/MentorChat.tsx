@@ -59,11 +59,15 @@ const MentorChat: React.FC = () => {
     } catch (error) {
       console.error('MentorChat: Error in handleMemberSelect:', error);
     }
-  };  const handleSend = () => {
+  };  const handleSend = async () => {
     console.log('MentorChat: send clicked', selectedRoom, newMessage);
     if (selectedRoom && newMessage.trim()) {
-      sendMessageToRoom(selectedRoom, newMessage);
-      setNewMessage('');
+      const success = await sendMessageToRoom(selectedRoom, newMessage);
+      if (success) {
+        setNewMessage('');
+      } else {
+        console.error('MentorChat: failed to send message');
+      }
     }
   };
 

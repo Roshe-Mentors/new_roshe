@@ -121,12 +121,33 @@ export default function useChat() {
   }
 
   // Send message to existing room
-  async function sendMessageToRoom(roomId: string, text: string) {
-    if (!userId) { setError('Not authenticated'); return; }
-    const { error: insertErr } = await supabase
+  async function sendMessageToRoom(roomId: string, text: string): Promise<boolean> {
+    console.log('useChat: sendMessageToRoom called', { roomId, text, userId });
+    if (!userId) {
+      console.error('useChat: Not authenticated - cannot send');
+      setError('Not authenticated');
+      return false;
+    }
+    // Insert and return the new message
+    const { data: inserted, error: insertErr } = await supabase
       .from('chat_messages')
-      .insert({ room_id: roomId, sender_id: userId, text });
-    if (insertErr) { setError(insertErr.message); return; }
+      .insert({ room_id: roomId, sender_id: userId, text })
+      .select('*')
+      .single();
+    if (insertErr || !inserted) {
+      console.error('useChat: insert message error', insertErr);
+      setError(insertErr?.message || 'Insert error');
+      return false;
+    }
+    console.log('useChat: message inserted', inserted);
+    // Update local messages state immediately
+    setMessages(prev => ({
+      ...prev,
+      [roomId]: prev[roomId] ? [...prev[roomId], inserted] : [inserted],
+    }));
+    // Refresh rooms to update last_message and last_message_at
+    const updated = await fetchRooms();
+    return true;
   }
 
   return { chatRooms, messages, sendMessageToUser, sendMessageToRoom, getOrCreateRoomWithUser, loading, error, userId };
