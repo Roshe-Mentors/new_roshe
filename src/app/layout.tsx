@@ -46,8 +46,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Create Supabase server-side client and get initial session
-  const cookieStore = await cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore });
+  const supabase = createServerComponentClient({ cookies });
   const { data: { session } } = await supabase.auth.getSession();
   return (
     <html lang="en" className={`${montserrat.variable}`}>  

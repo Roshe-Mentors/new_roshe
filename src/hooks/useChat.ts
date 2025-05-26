@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
 interface ChatRoom {
@@ -26,9 +26,8 @@ export default function useChat() {
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-
   // Fetch rooms and preload messages
-  async function fetchRooms() {
+  const fetchRooms = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     const { data: roomsData, error: roomsError } = await supabase.rpc('get_user_chat_rooms', {});
@@ -45,11 +44,10 @@ export default function useChat() {
       })
     );
     setLoading(false);
-  }
-
+  }, [userId, supabase]);
   useEffect(() => {
     fetchRooms();
-  }, [userId]);
+  }, [fetchRooms]);
 
   // Subscribe to new rooms
   useEffect(() => {
@@ -61,7 +59,7 @@ export default function useChat() {
       })
       .subscribe();
     return () => { supabase.removeChannel(roomChannel); };
-  }, [supabase, userId]);
+  }, [supabase, userId, fetchRooms]);
 
   // Subscribe to new messages
   useEffect(() => {
@@ -89,24 +87,47 @@ export default function useChat() {
     if (insertErr) { setError(insertErr.message); return; }
     // refresh rooms so new 1:1 appears
     await fetchRooms();
-  }
-
-  // Get or create a 1:1 chat room without sending message
+  }  // Get or create a 1:1 chat room without sending message
   async function getOrCreateRoomWithUser(otherUserId: string): Promise<string | null> {
+    console.log('useChat: getOrCreateRoomWithUser called with:', { userId, otherUserId });
+    
     if (!userId) {
+      console.warn('useChat: Not authenticated - no userId');
       setError('Not authenticated');
       return null;
     }
+
+    console.log('useChat: Calling get_or_create_one_to_one_room RPC');
     const { data: roomData, error: roomErr } = await supabase.rpc(
       'get_or_create_one_to_one_room',
       { user1: userId, user2: otherUserId }
     );
+    
+    console.log('useChat: RPC response:', { roomData, roomErr });
+    
     if (roomErr || !roomData?.length) {
+      console.warn('useChat: Error creating/getting room:', roomErr?.message || 'Room error');
       setError(roomErr?.message || 'Room error');
       return null;
     }
-    return (roomData as ChatRoom[])[0].id;
+    
+    const roomId = (roomData as ChatRoom[])[0].id;
+    console.log('useChat: Successfully got/created room:', roomId);
+    
+    // Refresh rooms to update the UI
+    await fetchRooms();
+    
+    return roomId;
   }
 
-  return { chatRooms, messages, sendMessageToUser, getOrCreateRoomWithUser, loading, error, userId };
+  // Send message to existing room
+  async function sendMessageToRoom(roomId: string, text: string) {
+    if (!userId) { setError('Not authenticated'); return; }
+    const { error: insertErr } = await supabase
+      .from('chat_messages')
+      .insert({ room_id: roomId, sender_id: userId, text });
+    if (insertErr) { setError(insertErr.message); return; }
+  }
+
+  return { chatRooms, messages, sendMessageToUser, sendMessageToRoom, getOrCreateRoomWithUser, loading, error, userId };
 }

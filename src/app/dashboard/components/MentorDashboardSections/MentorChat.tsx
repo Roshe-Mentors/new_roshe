@@ -3,12 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import useChat from '@/hooks/useChat';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { FiSend } from 'react-icons/fi';
 
 const MentorChat: React.FC = () => {
-  const { chatRooms, messages, sendMessageToUser, getOrCreateRoomWithUser, userId } = useChat();
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [newMessage, setNewMessage] = useState<string>('');
+  const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId } = useChat();
   const supabase = createClientComponentClient();
   const [members, setMembers] = useState<Array<{ user_id: string; full_name: string; avatar_url: string }>>([]);
 
@@ -26,6 +24,16 @@ const MentorChat: React.FC = () => {
       });
   }, [supabase]);
 
+  // Internal state for room, search and message
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [newMessage, setNewMessage] = useState<string>('');
+
+  // Show loading until authentication is ready
+  if (!userId) {
+    return <div className="p-4">Loading chat...</div>;
+  }
+
   const filteredRooms = chatRooms.filter(room => {
     const other = room.participants.find(p => p.user_id !== userId);
     return other?.full_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -35,21 +43,32 @@ const MentorChat: React.FC = () => {
   const handleRoomSelect = (roomId: string) => setSelectedRoom(roomId);
   const handleMemberSelect = async (otherId: string) => {
     console.log('MentorChat: member clicked', otherId);
-    const roomId = await getOrCreateRoomWithUser(otherId);
-    if (roomId) {
-      setSelectedRoom(roomId);
-      setSearchTerm(''); // clear search to display rooms
+    console.log('MentorChat: current userId', userId);
+    
+    try {
+      const roomId = await getOrCreateRoomWithUser(otherId);
+      console.log('MentorChat: getOrCreateRoomWithUser returned:', roomId);
+      
+      if (roomId) {
+        setSelectedRoom(roomId);
+        setSearchTerm(''); // clear search to display rooms
+        console.log('MentorChat: room selected successfully:', roomId);
+      } else {
+        console.error('MentorChat: Failed to create/get room');
+      }
+    } catch (error) {
+      console.error('MentorChat: Error in handleMemberSelect:', error);
     }
-  };
-  const handleSend = () => {
+  };  const handleSend = () => {
     console.log('MentorChat: send clicked', selectedRoom, newMessage);
     if (selectedRoom && newMessage.trim()) {
-      sendMessageToUser(selectedRoom, newMessage);
+      sendMessageToRoom(selectedRoom, newMessage);
       setNewMessage('');
     }
   };
 
-  return (
+  // Render chat interface or loading state
+  return userId ? (
     <div className="flex flex-col w-full max-w-6xl mx-auto">
       {/* Chat Interface - Split View */}
       <div className="flex bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
@@ -75,8 +94,8 @@ const MentorChat: React.FC = () => {
               .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; overflow-y: auto !important; }
             `}</style>
             
-            {/* Show search results: members if searching, else existing rooms */}
-            {searchTerm
+            {/* Show search results: members when searching or if no rooms exist, else show existing rooms */}
+            {(searchTerm || chatRooms.length === 0)
               ? filteredMembers.map(m => (
                   <div key={m.user_id} onClick={() => handleMemberSelect(m.user_id)} className="p-4 flex items-center cursor-pointer hover:bg-gray-50">
                     <Image src={m.avatar_url} alt={m.full_name} width={40} height={40} className="rounded-full" />
@@ -122,11 +141,15 @@ const MentorChat: React.FC = () => {
                onChange={e => setNewMessage(e.target.value)}
                onKeyDown={e => e.key === 'Enter' && handleSend()}
              />
-             <button onClick={handleSend} className="ml-4 text-blue-500">Send</button>
+             <button onClick={handleSend} className="ml-4 text-blue-500 hover:text-blue-600" aria-label="Send message">
+               <FiSend size={20} />
+             </button>
            </div>
          </div>
        </div>
     </div>
+  ) : (
+    <div className="p-4">Loading chat...</div>
   );
 };
 

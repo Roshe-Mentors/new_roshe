@@ -1,5 +1,5 @@
 // Callback route to receive the authorization code and exchange it for tokens
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient, CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -39,16 +39,32 @@ export async function GET(request: Request) {
       }),
     });
 
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenResponse.ok) {
+    const tokenData = await tokenResponse.json();    if (!tokenResponse.ok) {
       console.error('Failed to exchange code for token:', tokenData);
       return NextResponse.redirect(
         `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=token_exchange_failed`
       );
-    }    // Get user info from cookies (server-side only)
+    }
+
+    // Get user info from cookies (server-side only)
     const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            cookieStore.set(name, value, options)
+          },
+          remove(name: string, options: CookieOptions) {
+            cookieStore.delete({ name, ...options })
+          }
+        }
+      }
+    );
 
     // Get user session
     const { data: { session } } = await supabase.auth.getSession();

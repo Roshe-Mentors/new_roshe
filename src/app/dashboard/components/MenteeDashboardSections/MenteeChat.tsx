@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import useChat from '@/hooks/useChat';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { FaEnvelope } from 'react-icons/fa';
 
 const MenteeChat: React.FC = () => {
-  const { chatRooms, messages, sendMessageToUser, getOrCreateRoomWithUser, userId } = useChat();
+  const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId } = useChat();
   const supabase = useSupabaseClient();
   const [members, setMembers] = useState<Array<{ user_id: string; full_name: string; avatar_url: string }>>([]);
   useEffect(() => {
@@ -26,6 +27,11 @@ const MenteeChat: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [newMessage, setNewMessage] = useState<string>('');
 
+  // Wait until userId is available before rendering chat
+  if (!userId) {
+    return <div className="p-4">Loading chat...</div>;
+  }
+
   const filteredRooms = chatRooms.filter(room => {
     const other = room.participants.find(p => p.user_id !== userId);
     return other?.full_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -35,20 +41,29 @@ const MenteeChat: React.FC = () => {
   const handleRoomSelect = (roomId: string) => {
     console.log('Room clicked:', roomId);
     setSelectedRoom(roomId);
-  };
-  const handleMemberSelect = async (otherId: string) => {
-    console.log('Member clicked:', otherId);
-    const roomId = await getOrCreateRoomWithUser(otherId);
-    if (roomId !== null) {
-      setSelectedRoom(roomId);
-      setSearchTerm(''); // clear search to show chat rooms
+  };  const handleMemberSelect = async (otherId: string) => {
+    console.log('MenteeChat: member clicked', otherId);
+    console.log('MenteeChat: current userId', userId);
+    
+    try {
+      const roomId = await getOrCreateRoomWithUser(otherId);
+      console.log('MenteeChat: getOrCreateRoomWithUser returned:', roomId);
+      
+      if (roomId) {
+        setSelectedRoom(roomId);
+        setSearchTerm(''); // clear search to display rooms
+        console.log('MenteeChat: room selected successfully:', roomId);
+      } else {
+        console.error('MenteeChat: Failed to create/get room');
+      }
+    } catch (error) {
+      console.error('MenteeChat: Error in handleMemberSelect:', error);
     }
   };
-
   const handleSend = () => {
     console.log('Send clicked for room:', selectedRoom, 'message:', newMessage);
     if (selectedRoom && newMessage.trim()) {
-      sendMessageToUser(selectedRoom, newMessage);
+      sendMessageToRoom(selectedRoom, newMessage);
       setNewMessage('');
     }
   };
@@ -76,8 +91,8 @@ const MenteeChat: React.FC = () => {
               /* Hide scrollbar for IE, Edge and Firefox */
               .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; overflow-y: auto !important; }
             `}</style>
-            {/* show members when searching, else show existing rooms */}
-            {searchTerm
+            {/* show members when searching or if no rooms exist, else show existing rooms */}
+            {(searchTerm || chatRooms.length === 0)
               ? filteredMembers.map(m => (
                   <div key={m.user_id} onClick={() => handleMemberSelect(m.user_id)} className="p-4 flex items-center cursor-pointer hover:bg-gray-50">
                     <Image src={m.avatar_url} alt={m.full_name} width={40} height={40} className="rounded-full" />
@@ -122,7 +137,9 @@ const MenteeChat: React.FC = () => {
                onChange={e => setNewMessage(e.target.value)}
                onKeyDown={e => e.key === 'Enter' && handleSend()}
              />
-             <button onClick={handleSend} className="ml-4 text-blue-500">Send</button>
+             <button onClick={handleSend} className="ml-4 text-blue-500 hover:text-blue-600" aria-label="Send message">
+               <FaEnvelope size={20} />
+             </button>
            </div>
          </div>
        </div>
