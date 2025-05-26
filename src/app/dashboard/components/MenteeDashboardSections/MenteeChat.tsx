@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import useChat from '@/hooks/useChat';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { FaEnvelope } from 'react-icons/fa';
+import { FiSend } from 'react-icons/fi';
 
 const MenteeChat: React.FC = () => {
   const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId } = useChat();
@@ -138,7 +138,7 @@ const MenteeChat: React.FC = () => {
                onKeyDown={e => e.key === 'Enter' && handleSend()}
              />
              <button onClick={handleSend} className="ml-4 text-blue-500 hover:text-blue-600" aria-label="Send message">
-               <FaEnvelope size={20} />
+               <FiSend size={20} />
              </button>
            </div>
          </div>
