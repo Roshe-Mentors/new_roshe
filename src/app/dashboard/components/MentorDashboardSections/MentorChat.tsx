@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import useChat from '@/hooks/useChat';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { FiSend } from 'react-icons/fi';
+import { FiSend, FiPaperclip } from 'react-icons/fi';
 
 const MentorChat: React.FC = () => {
-  const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId } = useChat();
+  const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId, loading } = useChat();
   const supabase = useSupabaseClient();
+  
   // DEBUG: log rooms and messages for troubleshooting
   useEffect(() => {
     console.log('MentorChat - chatRooms:', chatRooms);
@@ -66,10 +67,51 @@ const MentorChat: React.FC = () => {
       }
     }
   };
+  // Upload a file and send its public URL
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedRoom) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be under 2MB');
+      return;
+    }
+    const ext = file.name.split('.').pop();
+    const path = `${selectedRoom}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('chat_files').upload(path, file);
+    if (error) {
+      console.error('Upload error:', error.message);
+      return;
+    }
+    const { data } = supabase.storage.from('chat_files').getPublicUrl(path);
+    await sendMessageToRoom(selectedRoom, data.publicUrl);
+  };
+
+  // Show loading skeleton while fetching chat data
+  if (loading) {
+    return (
+      <div className="flex animate-pulse flex-col w-full max-w-6xl mx-auto">
+        <div className="flex bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          {/* Left skeleton list */}
+          <div className="w-1/3 border-r border-gray-100 p-4 space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded" />
+            ))}
+          </div>
+          {/* Right skeleton messages */}
+          <div className="flex-1 flex flex-col p-4 space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-3/4 self-start" />
+            <div className="h-4 bg-gray-200 rounded w-1/2 self-end" />
+            <div className="h-4 bg-gray-200 rounded w-2/3 self-start" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading until authentication is ready
   if (!userId) {
-    return <div className="p-4">Loading chat...</div>;
+    return <div className="p-4">Loading authentication...</div>;
   }
 
   const filteredRooms = chatRooms.filter(room => {
@@ -105,44 +147,46 @@ const MentorChat: React.FC = () => {
             `}</style>
             
             {/* Show search results: members when searching or if no rooms exist, else show existing rooms */}
-            {(searchTerm || chatRooms.length === 0)
-              ? filteredMembers.map(m => {
-                  const isActiveMember = chatRooms.some(
-                    r => r.id === selectedRoom && r.participants.some(p => p.user_id === m.user_id)
-                  );
-                  return (
-                    <div
-                      key={m.user_id}
-                      onClick={() => handleMemberSelect(m.user_id)}
-                      className={`p-4 flex items-center cursor-pointer hover:bg-gray-50 ${isActiveMember ? 'bg-blue-100' : ''}`}
-                    >
-                      <Image src={m.avatar_url} alt={m.full_name} width={40} height={40} className="rounded-full" />
-                      <div className="ml-4 flex-1">
-                        <h4 className="font-semibold text-gray-900">{m.full_name}</h4>
-                      </div>
+            {(searchTerm || chatRooms.length === 0) ? (
+              filteredMembers.map(m => {
+                const isActive = chatRooms.some(
+                  r => r.id === selectedRoom && r.participants.some(p => p.user_id === m.user_id)
+                );
+                return (
+                  <div
+                    key={m.user_id}
+                    onClick={() => handleMemberSelect(m.user_id)}
+                    className={`p-4 flex items-center cursor-pointer hover:bg-gray-50 ${isActive ? 'bg-blue-100' : ''}`}
+                  >
+                    <Image src={m.avatar_url} alt={m.full_name} width={40} height={40} className="rounded-full" />
+                    <div className="ml-4 flex-1">
+                      <h4 className="font-semibold text-gray-900">{m.full_name}</h4>
                     </div>
-                  );
-                })
-              : filteredRooms.map(room => {
-                  const other = room.participants.find(p => p.user_id !== userId);
-                  const isActiveRoom = room.id === selectedRoom;
-                  return (
-                    <div
-                      key={room.id}
-                      onClick={() => handleRoomSelect(room.id)}
-                      className={`p-4 flex items-center cursor-pointer hover:bg-gray-50 ${isActiveRoom ? 'bg-blue-100' : ''}`}
-                    >
-                      <Image src={other?.avatar_url || ''} alt={other?.full_name || 'User'} width={40} height={40} className="rounded-full" />
-                      <div className="ml-4 flex-1">
-                        <div className="flex justify-between">
-                          <h4 className="font-semibold text-gray-900">{other?.full_name}</h4>
-                          <span className="text-xs text-gray-400">{new Date(room.last_message_at).toLocaleTimeString()}</span>
-                        </div>
-                        <p className="text-sm text-gray-600 truncate">{room.last_message}</p>
+                  </div>
+                );
+              })
+            ) : (
+              filteredRooms.map(room => {
+                const other = room.participants.find(p => p.user_id !== userId);
+                const isActive = room.id === selectedRoom;
+                return (
+                  <div
+                    key={room.id}
+                    onClick={() => handleRoomSelect(room.id)}
+                    className={`p-4 flex items-center cursor-pointer hover:bg-gray-50 ${isActive ? 'bg-blue-100' : ''}`}
+                  >
+                    <Image src={other?.avatar_url || ''} alt={other?.full_name || 'User'} width={40} height={40} className="rounded-full" />
+                    <div className="ml-4 flex-1">
+                      <div className="flex justify-between">
+                        <h4 className="font-semibold text-gray-900">{other?.full_name}</h4>
+                        <span className="text-xs text-gray-400">{new Date(room.last_message_at).toLocaleTimeString()}</span>
                       </div>
+                      <p className="text-sm text-gray-600 truncate">{room.last_message}</p>
                     </div>
-                  );
-                })}
+                  </div>
+                );
+              })
+            )}
            </div>
          </div>
          
@@ -156,7 +200,12 @@ const MentorChat: React.FC = () => {
                </div>
              ))}
            </div>
-           <div className="p-4 border-t border-gray-100 flex">
+           <div className="p-4 border-t border-gray-100 flex items-center">
+             {/* File upload on left */}
+             <input type="file" id="mentor-file-input" accept="*/*" className="hidden" onChange={handleFileUpload} />
+             <label htmlFor="mentor-file-input" className="mr-4 text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Attach file">
+               <FiPaperclip size={20} />
+             </label>
              <input
                type="text"
                className="flex-1 pl-4 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"

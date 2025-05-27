@@ -31,6 +31,7 @@ export default function useChat() {
     if (!userId) return;
     setLoading(true);
     const { data: roomsData, error: roomsError } = await supabase.rpc('get_user_chat_rooms', {});
+    console.log('useChat: get_user_chat_rooms result', { roomsData, roomsError });
     if (roomsError) { setError(roomsError.message); setLoading(false); return; }
     setChatRooms(roomsData || []);
     await Promise.all(
@@ -41,6 +42,7 @@ export default function useChat() {
           .eq('room_id', r.id)
           .order('inserted_at', { ascending: true });
         if (!msgErr) setMessages(prev => ({ ...prev, [r.id]: msgs }));
+        else console.error('useChat: fetchRooms messages error for room', r.id, msgErr);
       })
     );
     setLoading(false);
@@ -67,6 +69,7 @@ export default function useChat() {
     const msgChannel = supabase
       .channel('public:chat_messages')
       .on('postgres_changes', { schema: 'public', table: 'chat_messages', event: 'INSERT' }, (payload) => {
+        console.log('useChat: new message payload', payload);
         const m = payload.new as Message;
         setMessages(prev => ({ ...prev, [m.room_id]: prev[m.room_id] ? [...prev[m.room_id], m] : [m] }));
         setChatRooms(prev => prev.map(r => r.id === m.room_id ? { ...r, last_message: m.text, last_message_at: m.inserted_at } : r));

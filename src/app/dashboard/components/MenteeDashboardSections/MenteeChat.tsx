@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import useChat from '@/hooks/useChat';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { FiSend } from 'react-icons/fi';
+import { FiSend, FiPaperclip } from 'react-icons/fi';
 
 const MenteeChat: React.FC = () => {
-  const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId } = useChat();
+  const { chatRooms, messages, sendMessageToRoom, getOrCreateRoomWithUser, userId, loading } = useChat();
   const supabase = useSupabaseClient();
   const [members, setMembers] = useState<Array<{ user_id: string; full_name: string; avatar_url: string }>>([]);
   useEffect(() => {
@@ -27,7 +27,29 @@ const MenteeChat: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [newMessage, setNewMessage] = useState<string>('');
 
-  // Wait until userId is available before rendering chat
+  // Show loading skeleton while fetching chat data
+  if (loading) {
+    return (
+      <div className="flex animate-pulse flex-col w-full max-w-6xl mx-auto">
+        <div className="flex bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          {/* Left skeleton list */}
+          <div className="w-1/3 border-r border-gray-100 p-4 space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded" />
+            ))}
+          </div>
+          {/* Right skeleton messages */}
+          <div className="flex-1 flex flex-col p-4 space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-3/4 self-start" />
+            <div className="h-4 bg-gray-200 rounded w-1/2 self-end" />
+            <div className="h-4 bg-gray-200 rounded w-2/3 self-start" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Wait until authentication is ready
   if (!userId) {
     return <div className="p-4">Loading chat...</div>;
   }
@@ -60,16 +82,33 @@ const MenteeChat: React.FC = () => {
       console.error('MenteeChat: Error in handleMemberSelect:', error);
     }
   };
+  // Send a chat message
   const handleSend = async () => {
-    console.log('MenteeChat: send clicked', { selectedRoom, newMessage });
     if (selectedRoom && newMessage.trim()) {
-      const success = await sendMessageToRoom(selectedRoom, newMessage);
+      const success = await sendMessageToRoom(selectedRoom, newMessage.trim());
       if (success) {
         setNewMessage('');
       } else {
         console.error('MenteeChat: failed to send message');
       }
     }
+  };
+  
+  // Upload a file and send its public URL
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedRoom) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be under 2MB');
+      return;
+    }
+    const ext = file.name.split('.').pop();
+    const path = `${selectedRoom}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('chat_files').upload(path, file);
+    if (error) { console.error('Upload error:', error.message); return; }
+    const { data } = supabase.storage.from('chat_files').getPublicUrl(path);
+    await sendMessageToRoom(selectedRoom, data.publicUrl);
   };
 
   return (
@@ -132,7 +171,7 @@ const MenteeChat: React.FC = () => {
                </div>
              ))}
            </div>
-           <div className="p-4 border-t border-gray-100 flex">
+           <div className="p-4 border-t border-gray-100 flex items-center">
              <input
                type="text"
                className="flex-1 pl-4 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -141,6 +180,11 @@ const MenteeChat: React.FC = () => {
                onChange={e => setNewMessage(e.target.value)}
                onKeyDown={e => e.key === 'Enter' && handleSend()}
              />
+             {/* hidden file input & label for upload */}
+             <input type="file" id="mentee-file-input" accept="*/*" className="hidden" onChange={handleFileUpload} />
+             <label htmlFor="mentee-file-input" className="ml-4 text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Attach file">
+               <FiPaperclip size={20} />
+             </label>
              <button onClick={handleSend} className="ml-4 text-blue-500 hover:text-blue-600" aria-label="Send message">
                <FiSend size={20} />
              </button>
