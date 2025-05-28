@@ -66,8 +66,7 @@ const MentorChat: React.FC = () => {
         console.error('MentorChat: failed to send message');
       }
     }
-  };
-  // Upload a file and send its public URL
+  };  // Upload a file and send its public URL
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!selectedRoom) return;
     const file = e.target.files?.[0];
@@ -76,15 +75,51 @@ const MentorChat: React.FC = () => {
       alert('File size must be under 2MB');
       return;
     }
-    const ext = file.name.split('.').pop();
-    const path = `${selectedRoom}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('chat_files').upload(path, file);
-    if (error) {
-      console.error('Upload error:', error.message);
-      return;
+    
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${selectedRoom}/${Date.now()}.${ext}`;
+      
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('chat-files')
+        .upload(path, file);
+      
+      if (uploadError) {
+        console.error('Upload error:', uploadError.message);
+        if (uploadError.message.includes('Bucket not found')) {
+          alert('Upload failed: storage bucket "chat-files" not found. Please create this bucket in your Supabase project storage.');
+        } else {
+          alert('Failed to upload file: ' + uploadError.message);
+        }
+        return;
+      }
+      
+      // Get public URL
+      const { data } = supabase.storage.from('chat-files').getPublicUrl(path);
+      
+      // Store file metadata in chat_files table
+      const { error: dbError } = await supabase
+        .from('chat_files')
+        .insert({
+          room_id: selectedRoom,
+          sender_id: userId,
+          file_name: file.name,
+          file_url: data.publicUrl
+        });
+      
+      if (dbError) {
+        console.error('Database error:', dbError);
+        console.error('Database error message:', dbError.message);
+        // Still send the message even if DB insert fails
+      }
+      
+      // Send the file URL as a message
+      await sendMessageToRoom(selectedRoom, `📎 ${file.name}: ${data.publicUrl}`);
+    } catch (error) {
+      console.error('File upload failed:', error);
+      alert('File upload failed. Please try again.');
     }
-    const { data } = supabase.storage.from('chat_files').getPublicUrl(path);
-    await sendMessageToRoom(selectedRoom, data.publicUrl);
   };
 
   // Show loading skeleton while fetching chat data
@@ -191,14 +226,42 @@ const MentorChat: React.FC = () => {
          </div>
          
          {/* Right side - Chat Messages */}
-         <div className="flex-1 flex flex-col">
-           <div className="flex-1 overflow-y-auto p-4">
-             {selectedRoom != null && messages[selectedRoom]?.map(msg => (
-               <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right' : 'text-left'}`}>
-                 <p className="inline-block px-4 py-2 rounded-lg bg-blue-100 text-gray-800">{msg.text}</p>
-                 <p className="text-xs text-gray-400 mt-1">{new Date(msg.inserted_at).toLocaleTimeString()}</p>
-               </div>
-             ))}
+         <div className="flex-1 flex flex-col">           <div className="flex-1 overflow-y-auto p-4">
+             {selectedRoom != null && messages[selectedRoom]?.map(msg => {
+               // Check if message is a file link
+               const isFileMessage = msg.text.startsWith('📎 ') && msg.text.includes(': https://');
+               
+               if (isFileMessage) {
+                 const [fileInfo, fileUrl] = msg.text.split(': ');
+                 const fileName = fileInfo.replace('📎 ', '');
+                 
+                 return (
+                   <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right' : 'text-left'}`}>
+                     <div className="inline-block px-4 py-2 rounded-lg bg-blue-100 text-gray-800">
+                       <div className="flex items-center gap-2">
+                         <span>📎</span>
+                         <a 
+                           href={fileUrl} 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           className="text-blue-600 hover:text-blue-800 underline"
+                         >
+                           {fileName}
+                         </a>
+                       </div>
+                     </div>
+                     <p className="text-xs text-gray-400 mt-1">{new Date(msg.inserted_at).toLocaleTimeString()}</p>
+                   </div>
+                 );
+               }
+               
+               return (
+                 <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right' : 'text-left'}`}>
+                   <p className="inline-block px-4 py-2 rounded-lg bg-blue-100 text-gray-800">{msg.text}</p>
+                   <p className="text-xs text-gray-400 mt-1">{new Date(msg.inserted_at).toLocaleTimeString()}</p>
+                 </div>
+               );
+             })}
            </div>
            <div className="p-4 border-t border-gray-100 flex items-center">
              {/* File upload on left */}

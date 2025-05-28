@@ -93,8 +93,7 @@ const MenteeChat: React.FC = () => {
       }
     }
   };
-  
-  // Upload a file and send its public URL
+    // Upload a file and send its public URL
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!selectedRoom) return;
     const file = e.target.files?.[0];
@@ -103,12 +102,46 @@ const MenteeChat: React.FC = () => {
       alert('File size must be under 2MB');
       return;
     }
-    const ext = file.name.split('.').pop();
-    const path = `${selectedRoom}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('chat_files').upload(path, file);
-    if (error) { console.error('Upload error:', error.message); return; }
-    const { data } = supabase.storage.from('chat_files').getPublicUrl(path);
-    await sendMessageToRoom(selectedRoom, data.publicUrl);
+    
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${selectedRoom}/${Date.now()}.${ext}`;
+      
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('chat-files')
+        .upload(path, file);
+      
+      if (uploadError) { 
+        console.error('Upload error:', uploadError.message); 
+        alert('Failed to upload file: ' + uploadError.message);
+        return; 
+      }
+      
+      // Get public URL
+      const { data } = supabase.storage.from('chat-files').getPublicUrl(path);
+        // Store file metadata in chat_files table
+      const { error: dbError } = await supabase
+        .from('chat_files')
+        .insert({
+          room_id: selectedRoom,
+          sender_id: userId,
+          file_name: file.name,
+          file_url: data.publicUrl
+        });
+      
+      if (dbError) {
+        console.error('Database error:', dbError);
+        console.error('Database error message:', dbError.message);
+        // Still send the message even if DB insert fails
+      }
+      
+      // Send the file URL as a message
+      await sendMessageToRoom(selectedRoom, `📎 ${file.name}: ${data.publicUrl}`);
+    } catch (error) {
+      console.error('File upload failed:', error);
+      alert('File upload failed. Please try again.');
+    }
   };
 
   return (
@@ -162,16 +195,49 @@ const MenteeChat: React.FC = () => {
            </div>
          </div>
          {/* Message Area */}
-         <div className="flex-1 flex flex-col">
-           <div className="flex-1 overflow-y-auto p-4">
-             {selectedRoom && messages[selectedRoom]?.map(msg => (
-               <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right' : 'text-left'}`}>
-                 <p className="inline-block px-4 py-2 rounded-lg bg-blue-100 text-gray-800">{msg.text}</p>
-                 <p className="text-xs text-gray-400 mt-1">{new Date(msg.inserted_at).toLocaleTimeString()}</p>
-               </div>
-             ))}
+         <div className="flex-1 flex flex-col">           <div className="flex-1 overflow-y-auto p-4">
+             {selectedRoom && messages[selectedRoom]?.map(msg => {
+               // Check if message is a file link
+               const isFileMessage = msg.text.startsWith('📎 ') && msg.text.includes(': https://');
+               
+               if (isFileMessage) {
+                 const [fileInfo, fileUrl] = msg.text.split(': ');
+                 const fileName = fileInfo.replace('📎 ', '');
+                 
+                 return (
+                   <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right' : 'text-left'}`}>
+                     <div className="inline-block px-4 py-2 rounded-lg bg-blue-100 text-gray-800">
+                       <div className="flex items-center gap-2">
+                         <span>📎</span>
+                         <a 
+                           href={fileUrl} 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           className="text-blue-600 hover:text-blue-800 underline"
+                         >
+                           {fileName}
+                         </a>
+                       </div>
+                     </div>
+                     <p className="text-xs text-gray-400 mt-1">{new Date(msg.inserted_at).toLocaleTimeString()}</p>
+                   </div>
+                 );
+               }
+               
+               return (
+                 <div key={msg.id} className={`mb-2 ${msg.sender_id === userId ? 'text-right' : 'text-left'}`}>
+                   <p className="inline-block px-4 py-2 rounded-lg bg-blue-100 text-gray-800">{msg.text}</p>
+                   <p className="text-xs text-gray-400 mt-1">{new Date(msg.inserted_at).toLocaleTimeString()}</p>
+                 </div>
+               );
+             })}
            </div>
            <div className="p-4 border-t border-gray-100 flex items-center">
+             {/* hidden file input & paperclip label on the left */}
+             <input type="file" id="mentee-file-input" accept="*/*" className="hidden" onChange={handleFileUpload} />
+             <label htmlFor="mentee-file-input" className="mr-4 text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Attach file">
+               <FiPaperclip size={20} />
+             </label>
              <input
                type="text"
                className="flex-1 pl-4 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -180,11 +246,6 @@ const MenteeChat: React.FC = () => {
                onChange={e => setNewMessage(e.target.value)}
                onKeyDown={e => e.key === 'Enter' && handleSend()}
              />
-             {/* hidden file input & label for upload */}
-             <input type="file" id="mentee-file-input" accept="*/*" className="hidden" onChange={handleFileUpload} />
-             <label htmlFor="mentee-file-input" className="ml-4 text-gray-500 hover:text-gray-700 cursor-pointer" aria-label="Attach file">
-               <FiPaperclip size={20} />
-             </label>
              <button onClick={handleSend} className="ml-4 text-blue-500 hover:text-blue-600" aria-label="Send message">
                <FiSend size={20} />
              </button>
