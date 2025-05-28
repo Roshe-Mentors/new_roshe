@@ -61,22 +61,45 @@ export default function useChat() {
       })
       .subscribe();
     return () => { supabase.removeChannel(roomChannel); };
-  }, [supabase, userId, fetchRooms]);
-
-  // Subscribe to new messages
+  }, [supabase, userId, fetchRooms]);  // Subscribe to new messages
   useEffect(() => {
     if (!userId) return;
+    
+    console.log('useChat: setting up message subscription for user:', userId);
+    
     const msgChannel = supabase
       .channel('public:chat_messages')
-      .on('postgres_changes', { schema: 'public', table: 'chat_messages', event: 'INSERT' }, (payload) => {
+      .on('postgres_changes', { 
+        schema: 'public', 
+        table: 'chat_messages', 
+        event: 'INSERT'
+      }, (payload) => {
         console.log('useChat: new message payload', payload);
         const m = payload.new as Message;
-        setMessages(prev => ({ ...prev, [m.room_id]: prev[m.room_id] ? [...prev[m.room_id], m] : [m] }));
-        setChatRooms(prev => prev.map(r => r.id === m.room_id ? { ...r, last_message: m.text, last_message_at: m.inserted_at } : r));
+        
+        // Only process messages for rooms this user participates in
+        const userRoomIds = chatRooms.map(room => room.id);
+        console.log('useChat: checking if message room', m.room_id, 'is in user rooms:', userRoomIds);
+        
+        if (userRoomIds.includes(m.room_id)) {
+          console.log('useChat: processing message for room', m.room_id);
+          setMessages(prev => ({ 
+            ...prev, 
+            [m.room_id]: prev[m.room_id] ? [...prev[m.room_id], m] : [m] 
+          }));
+          setChatRooms(prev => prev.map(r => 
+            r.id === m.room_id 
+              ? { ...r, last_message: m.text, last_message_at: m.inserted_at } 
+              : r
+          ));
+        } else {
+          console.log('useChat: ignoring message for room not in user rooms');
+        }
       })
       .subscribe();
+      
     return () => { supabase.removeChannel(msgChannel); };
-  }, [supabase, userId]);
+  }, [supabase, userId, chatRooms]);
 
   // Create or fetch room and send a message
   async function sendMessageToUser(otherUserId: string, text: string) {

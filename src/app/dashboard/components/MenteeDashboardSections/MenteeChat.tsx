@@ -119,21 +119,22 @@ const MenteeChat: React.FC = () => {
       }
       
       // Get public URL
-      const { data } = supabase.storage.from('chat-files').getPublicUrl(path);
-        // Store file metadata in chat_files table
-      const { error: dbError } = await supabase
-        .from('chat_files')
-        .insert({
-          room_id: selectedRoom,
-          sender_id: userId,
-          file_name: file.name,
-          file_url: data.publicUrl
-        });
-      
-      if (dbError) {
-        console.error('Database error:', dbError);
-        console.error('Database error message:', dbError.message);
-        // Still send the message even if DB insert fails
+      const { data } = supabase.storage.from('chat-files').getPublicUrl(path);      // Store file metadata in chat_files table (optional - don't fail if table doesn't exist)
+      try {
+        const { error: dbError } = await supabase
+          .from('chat_files')
+          .insert({
+            room_id: selectedRoom,
+            sender_id: userId,
+            file_name: file.name,
+            file_url: data.publicUrl
+          });
+        
+        if (dbError) {
+          console.warn('chat_files table insert failed (table may not exist yet):', dbError);
+        }
+      } catch (dbErr) {
+        console.warn('chat_files table operation failed:', dbErr);
       }
       
       // Send the file URL as a message
